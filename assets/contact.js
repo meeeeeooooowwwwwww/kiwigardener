@@ -43,7 +43,7 @@
       feedback.textContent="Thank you. Your enquiry was submitted successfully.";
       form.reset();
     }catch(err){
-      feedback.textContent=(err.message||"Could not send enquiry.")+" You can email david@americafirst.co.nz directly.";
+      feedback.textContent=(err.message||"Could not send enquiry.")+" You can email dallas@kiwigardeners.com directly.";
     }finally{
       window.turnstile?.reset(widgetId);
       button.disabled=false;
