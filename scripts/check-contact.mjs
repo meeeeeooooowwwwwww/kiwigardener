@@ -40,7 +40,7 @@ test("rate limiting prevents email before Turnstile verification",async()=>{cons
 test("valid request only sends to owner's fixed address and fixed sender",async()=>{
   const out=await run(request({...good,message:"Clean garden\nThanks"}));
   assert.equal(out.status,200);assert.equal(out.body.ok,true);assert.equal(out.sent.length,1);
-  assert.equal(out.sent[0].to,"dallas@kiwigardeners.com");assert.equal(out.sent[0].from,"dallas@kiwigardeners.com");
+  assert.equal(out.sent[0].to,"david@americafirst.co.nz");assert.equal(out.sent[0].from,"dallas@kiwigardeners.com");
   assert.equal(out.sent[0].replyTo,"gardener@example.org");assert.ok(out.sent[0].text.includes("Linwood"));
 });
 test("Cloudflare email send failure returns 502, never false success",async()=>{
