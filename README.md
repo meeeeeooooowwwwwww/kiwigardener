@@ -18,15 +18,23 @@ npm run check
 ```
 `npm run build` writes the site to `dist/`.
 
-## Cloudflare Pages
-1. Workers & Pages → Create Pages project → connect GitHub repository `meeeeeooooowwwwwww/kiwigardener`.
-2. Production branch: `main` (after review and merging).
-3. Framework: None. Build command: `npm run build`. Output directory: `dist`.
-4. After successful deployment, attach `kiwigardeners.com` as a Pages custom domain and verify DNS and TLS.
-5. Test `/`, `/areas/linwood/`, `/services/garden-maintenance/`, `/sitemap.xml` and `/robots.txt`.
-6. Verify the domain in Google Search Console and submit the sitemap.
+## Cloudflare Workers Builds: LIVE CONFIGURATION
+Cloudflare has a Worker project called `kiwigardener` connected to GitHub `main`, rather than a Pages project. The successful GitHub build check does not prove a Cloudflare deployment.
 
-A domain registered in Cloudflare is **not** necessarily already attached to Pages. Do not change other website deployments, Worker routes or DNS without checking them.
+A `wrangler.jsonc` config lives at the repository root, specifying the **existing** Worker name `kiwigardener` and static assets from `./dist`. This is the supported deployment path and prevents Wrangler from requiring a worker script entry point.
+
+### Build settings in Cloudflare
+1. Cloudflare → Workers & Pages → `kiwigardener` → Settings → Build.
+2. GitHub repository: `meeeeeooooowwwwwww/kiwigardener`, production branch: `main`.
+3. Build command `npm run build`.
+4. Deploy command `npx wrangler deploy`.
+5. Root directory `/`, no environment variables required for this static site.
+6. Retry the latest failed build if an automatic deployment has not started after the config commit.
+7. Check Deploying logs, published Worker URL, and verify `/`, `/contact/`, `/areas/linwood/`, `/sitemap.xml` and `/robots.txt`.
+8. Under Worker → Domains, add `kiwigardeners.com` as a **Custom Domain** (not an unrelated Pages project), then verify TLS and DNS.
+9. Verify Google Search Console and submit sitemap once the public domain works.
+
+Source: https://developers.cloudflare.com/workers/static-assets/ and https://developers.cloudflare.com/workers/ci-cd/builds/troubleshoot/
 
 ## Editorial and future release rules
 - At present the site is a gardening information resource only. No local provider or booking service has been verified.
@@ -37,7 +45,7 @@ A domain registered in Cloudflare is **not** necessarily already attached to Pag
 
 ## Release milestones and what to improve next
 - R1 (this PR): photo-led 23 page static site, unique metadata and internal links, email enquiries, privacy notice, working external link, basic schema. Verify GitHub CI before merging.
-- R2: Connect Cloudflare Pages to this repository, attach DNS for apex/www and check HTTPS, routes, assets, mobile Core Web Vitals, crawl and indexing.
+- R2: Verify the connected Cloudflare Worker build, attach custom domain apex/www and check HTTPS, routes, assets, mobile Core Web Vitals, crawl and indexing.
 - R3: Verify Christchurch business identity, actual service area and phone/hours, collect before/after work photos (with customer consent), convert local enquiry into a secure first-party form with Turnstile and CRM only after legitimate operator is established.
 - R4: Search Console, keywords by service/suburb, convert rate, editorial improvements based on measured search behaviour; no mass-generated doorway URLs.
 
@@ -46,4 +54,4 @@ A domain registered in Cloudflare is **not** necessarily already attached to Pag
 - Additional illustrative lawn/garden photos: Marc Pell and Declan Sun, Unsplash (https://unsplash.com/license). These are **not** examples of work carried out by Kiwi Gardeners.
 
 ### Deployment limitation
-This repository has validation CI, **not** authenticated Cloudflare deployment. A Cloudflare Pages project must be connected to GitHub `main` in Cloudflare or deployed using an authorised Cloudflare API token. Merging this PR does **not** by itself prove production deployment.
+This repository has validation CI and a Worker-compatible `wrangler.jsonc`. Cloudflare Workers Builds must publish it using its own authorised build token; merging or pushing code does **not** by itself prove a successful production deployment.
