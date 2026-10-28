@@ -1,7 +1,7 @@
 // Dedicated contact API for a static-asset Cloudflare Worker.
 // Customer details are never placed in URLs or logged.
 const DESTINATION = "david@americafirst.co.nz";
-const FROM = "enquiries@kiwigardeners.com";
+const FROM = "dallas@kiwigardeners.com";
 const JSON_HEADERS = {"content-type":"application/json; charset=utf-8","cache-control":"no-store","x-content-type-options":"nosniff"};
 const reply=(status,payload)=>new Response(JSON.stringify(payload),{status,headers:JSON_HEADERS});
 export function ready(env) {
@@ -29,7 +29,7 @@ export async function contactAPI(request,env){
   }
   if(url.pathname!=="/api/contact") return reply(404,{error:"Not found."});
   if(request.method!=="POST")return reply(405,{error:"Method not allowed."});
-  if(!ready(env))return reply(503,{error:"Online enquiries are being configured. Please email david@americafirst.co.nz."});
+  if(!ready(env))return reply(503,{error:"Online enquiries are being configured. Please email dallas@kiwigardeners.com."});
   const origin=request.headers.get("origin");
   if(!origin || origin!==url.origin || !["kiwigardeners.com","www.kiwigardeners.com","kiwigardener.generalflynn17.workers.dev"].includes(url.hostname))return reply(403,{error:"Invalid origin."});
   if(!request.headers.get("content-type")?.toLowerCase().startsWith("application/json"))return reply(415,{error:"Only JSON submissions are accepted."});
@@ -79,7 +79,7 @@ export async function contactAPI(request,env){
     return reply(200,{ok:true,message:"Your enquiry has been submitted. Thank you."});
   }catch{
     // Do not report success if Cloudflare rejected the send.
-    return reply(502,{error:"We couldn't send your enquiry. Please email david@americafirst.co.nz directly."});
+    return reply(502,{error:"We couldn't send your enquiry. Please email dallas@kiwigardeners.com directly."});
   }
 }
 export default {async fetch(request,env){
