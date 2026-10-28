@@ -142,3 +142,11 @@ img { height: auto; }
 /* Footer site-network links are visibly separated from local navigation. */
 .footer-grid .related-heading{margin-top:21px;padding-top:16px;border-top:1px solid rgba(255,255,255,.22)}
 .footer-grid .related-heading + a{margin-top:3px}
+
+/* Phone-first contact pathway, visible on every page and usable on small screens. */
+.contact-strip{background:#e7f2df;color:#18382c;border-bottom:1px solid #bed5b8;padding:9px 0;font-size:.95rem}
+.contact-strip .container{display:flex;justify-content:space-between;align-items:center;gap:8px 22px;flex-wrap:wrap}
+.contact-strip a{color:#164c32;font-weight:800;text-decoration:underline;text-underline-offset:3px}
+.contact-strip span a{font-size:.86rem;font-weight:500}
+.contact-strip strong{font-weight:750}
+@media(max-width:500px){.contact-strip{font-size:.9rem}.contact-strip .container{align-items:flex-start;flex-direction:column;gap:0}.contact-strip span{margin-top:1px}}
