@@ -195,3 +195,11 @@ img { height: auto; }
 .contact-highlight .button{margin:12px 0 4px}
 .contact-highlight p{margin:10px 0}
 @media(max-width:720px){.contact-form-wrap{padding:20px 16px}.contact-highlight{padding:22px 18px}}
+
+/* Compact header phone button, vertically balanced with navigation links. */
+@media(min-width:721px){
+ .header-inner{align-items:center}
+ .main-nav{align-items:center}
+ .main-nav .nav-call{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:5px 11px;font-size:.84rem;line-height:1.2;font-weight:700;border:1px solid #c7dd7c;box-shadow:none}
+}
+@media(min-width:721px) and (max-width:900px){.main-nav .nav-call{padding:5px 8px;font-size:.76rem}}
