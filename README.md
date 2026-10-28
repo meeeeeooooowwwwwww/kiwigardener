@@ -55,3 +55,18 @@ Source: https://developers.cloudflare.com/workers/static-assets/ and https://dev
 
 ### Deployment limitation
 This repository has validation CI and a Worker-compatible `wrangler.jsonc`. Cloudflare Workers Builds must publish it using its own authorised build token; merging or pushing code does **not** by itself prove a successful production deployment.
+
+## Google Search Console: separate property for the new domain
+
+**Important:** Google Search Console ownership of `americafirst.co.nz` does **not** verify `kiwigardeners.com`. Each root domain needs its own property.
+
+1. Visit https://search.google.com/search-console and use the **property selector → Add property**.
+2. Select **Domain**, enter exactly `kiwigardeners.com` (no https, no www, no path).
+3. Use Google's Cloudflare registrar/DNS connection or add Google's verification TXT record to the `kiwigardeners.com` Cloudflare zone. Leave the existing Worker DNS record alone. Click **Verify**.
+4. Select the **kiwigardeners.com** property (not any existing site), go to **Indexing → Sitemaps**, submit `sitemap.xml`. The generator lists only 22 canonical indexable pages. The 404 page is intentionally excluded.
+5. Use URL Inspection on `https://kiwigardeners.com/` and representative service / suburb URLs, inspect Live URL first and request indexing if eligible.
+6. After Google has crawled, review **Indexing → Pages**, **Performance → Search results**, and **Experience → Core Web Vitals**. Search Console verification and sitemap submission do **not** guarantee Google rankings, crawling speed or indexing.
+7. Configure HTTPS and a canonical redirect from `www.kiwigardeners.com` to `https://kiwigardeners.com` once `www` is configured, to prevent separate host variants. Avoid changing DNS or redirect rules without checking the active Worker domain.
+8. Make future significant content changes with accurate sitemap `lastmod` dates. Do not falsify the date on every deployment. For this 28 October 2026 launch, static lastmod dates reflect initial publication.
+
+Google guidance: https://support.google.com/webmasters/answer/34592 and https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap

@@ -138,3 +138,7 @@ img { height: auto; }
 @media (min-width: 1600px) {
   .container { width: min(1240px, calc(100% - 80px)); }
 }
+
+/* Footer site-network links are visibly separated from local navigation. */
+.footer-grid .related-heading{margin-top:21px;padding-top:16px;border-top:1px solid rgba(255,255,255,.22)}
+.footer-grid .related-heading + a{margin-top:3px}
