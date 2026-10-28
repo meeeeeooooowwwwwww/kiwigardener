@@ -16,6 +16,8 @@ jobs:
           node-version: "22"
       - name: Build and validate SEO pages
         run: npm run check
+      - name: Validate secure form API and simulated email delivery
+        run: node --test scripts/check-contact.mjs
       - name: Install browser automation (use runner's Chrome)
         run: npm install --no-save --ignore-scripts playwright-core@1.56.1
       - name: Test mobile, tablet, desktop and ultrawide layouts
