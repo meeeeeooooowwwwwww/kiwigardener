@@ -40,8 +40,24 @@
   },
   "previews": {
     "vars": {
-      "CONTACT_FORM_ENABLED": "false",
-      "TURNSTILE_SITE_KEY": "0x4AAAAAAFp-C1bXQ7sIIZSa"
-    }
+      "TURNSTILE_SITE_KEY": "0x4AAAAAAFp-C1bXQ7sIIZSa",
+      "CONTACT_FORM_ENABLED": "false"
+    },
+    "send_email": [
+      {
+        "name": "EMAIL",
+        "destination_address": "david@americafirst.co.nz"
+      }
+    ],
+    "ratelimits": [
+      {
+        "name": "CONTACT_LIMIT",
+        "namespace_id": "2026102801",
+        "simple": {
+          "limit": 8,
+          "period": 60
+        }
+      }
+    ]
   }
 }
