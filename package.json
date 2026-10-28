@@ -1,0 +1,13 @@
+{
+  "name": "kiwigardener-christchurch",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "node build.mjs && node scripts/check.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
