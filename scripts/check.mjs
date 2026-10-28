@@ -81,9 +81,13 @@ for(const url of urls){
     }
   }
 }
-for(const path of ["dist/robots.txt","dist/_headers","dist/assets/styles.css","dist/assets/favicon.svg"]){
+for(const path of ["dist/robots.txt","dist/_headers","dist/assets/styles.css","dist/assets/favicon.svg","dist/assets/green-waste.svg","dist/assets/cleared-section.svg"]){
   await stat(path);
 }
+const serviceIndex=await readFile("dist/services/index.html","utf8");
+const cardSources=[...serviceIndex.matchAll(/class="card-image" src="([^"]+)"/g)].map(m=>m[1]);
+if(new Set(cardSources).size!==cardSources.length)fail("Duplicate service card image URLs");
+if(!cardSources.includes("/assets/green-waste.svg")||!cardSources.includes("/assets/cleared-section.svg"))fail("Missing local waste and cleared-section image links");
 const robots=await readFile("dist/robots.txt","utf8");
 if(!robots.includes("Sitemap: "+site+"/sitemap.xml"))fail("robots.txt sitemap wrong");
 if(errors.length){console.error(errors.join("\n"));process.exitCode=1;}
