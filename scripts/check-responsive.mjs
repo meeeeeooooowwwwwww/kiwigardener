@@ -55,15 +55,18 @@ try {
           return r.width > 0 && (r.right > viewport + 2 || r.left < -2);
         }).slice(0, 6).map((el) => `${el.tagName.toLowerCase()}.${String(el.className?.baseVal ?? el.className ?? "").trim().replace(/\s+/g, ".").slice(0, 60)} (${Math.round(el.getBoundingClientRect().left)}..${Math.round(el.getBoundingClientRect().right)})`);
         const brand = document.querySelector(".site-header .brand")?.getBoundingClientRect();
-        const menu = document.querySelector(".mobile-nav summary")?.getBoundingClientRect();
-        const desktop = document.querySelector(".main-nav")?.getBoundingClientRect();
+        const mobileElement = document.querySelector(".mobile-nav summary");
+        const menu = mobileElement && visible(mobileElement) ? mobileElement.getBoundingClientRect() : undefined;
+        const desktopElement = document.querySelector(".main-nav");
+        const desktop = desktopElement && visible(desktopElement) ? desktopElement.getBoundingClientRect() : undefined;
         const hero = document.querySelector(".hero-primary")?.getBoundingClientRect();
         const imgMissingAlt = [...document.images].filter((el) => !el.hasAttribute("alt")).length;
         return { viewport, scroll, offenders, brandRight:brand?.right, menuLeft:menu?.left, desktopLeft:desktop?.left, heroWidth:hero?.width, imageCount:document.images.length, imgMissingAlt, h1:document.querySelectorAll("h1").length };
       });
       if (snapshot.scroll > snapshot.viewport + 1) failures.push(`${path} @${width}: horizontal scroll ${snapshot.scroll}px > ${snapshot.viewport}px. Offenders: ${snapshot.offenders.join(", ")}`);
-      if (snapshot.brandRight !== undefined && (width <= 720 ? snapshot.menuLeft : snapshot.desktopLeft) !== undefined) {
-        if (snapshot.brandRight > (width <= 720 ? snapshot.menuLeft : snapshot.desktopLeft) - 1) failures.push(`${path} @${width}: brand overlaps navigation`);
+      if (snapshot.brandRight !== undefined) {
+        const navLeft = snapshot.menuLeft ?? snapshot.desktopLeft;
+        if (navLeft !== undefined && snapshot.brandRight > navLeft - 1) failures.push(`${path} @${width}: brand overlaps navigation`);
       }
       if (snapshot.imgMissingAlt) failures.push(`${path} @${width}: ${snapshot.imgMissingAlt} images missing alt`);
       if (snapshot.h1 !== 1) failures.push(`${path} @${width}: expected one h1`);
