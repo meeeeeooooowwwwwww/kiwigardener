@@ -150,3 +150,9 @@ img { height: auto; }
 .contact-strip span a{font-size:.86rem;font-weight:500}
 .contact-strip strong{font-weight:750}
 @media(max-width:500px){.contact-strip{font-size:.9rem}.contact-strip .container{align-items:flex-start;flex-direction:column;gap:0}.contact-strip span{margin-top:1px}}
+
+/* Put the phone CTA directly inside desktop navigation. */
+.main-nav .nav-call{background:#d6f174;color:#173a2b;border-radius:999px;padding:10px 13px;font-weight:800;white-space:nowrap;text-decoration:none}
+.main-nav .nav-call:hover,.main-nav .nav-call:focus-visible{background:#e5ffa5}
+@media(min-width:721px){.header-cta{display:none!important}.main-nav{gap:clamp(6px,1vw,16px)}.main-nav a{font-size:clamp(.75rem,.95vw,.94rem)}}
+@media(max-width:900px) and (min-width:721px){.main-nav .nav-call{padding:8px 9px}.main-nav a{font-size:.78rem}}
