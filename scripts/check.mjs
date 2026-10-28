@@ -87,7 +87,8 @@ for(const path of ["dist/robots.txt","dist/_headers","dist/assets/styles.css","d
 const serviceIndex=await readFile("dist/services/index.html","utf8");
 const cardSources=[...serviceIndex.matchAll(/class="card-image" src="([^"]+)"/g)].map(m=>m[1]);
 if(new Set(cardSources).size!==cardSources.length)fail("Duplicate service card image URLs");
-if(!cardSources.some(x=>x.includes("pexels-photo-17577525.jpeg"))||!cardSources.some(x=>x.includes("pexels-photo-15199839.jpeg")))fail("Missing real waste and section-clearing photos");
+if(!cardSources.includes("/green-waste-removal.jpg")||!cardSources.includes("/rubbish-removal.jpg"))fail("Missing uploaded waste and section-clearing images");
+for(const path of ["dist/green-waste-removal.jpg","dist/rubbish-removal.jpg"]) await stat(path);
 const robots=await readFile("dist/robots.txt","utf8");
 if(!robots.includes("Sitemap: "+site+"/sitemap.xml"))fail("robots.txt sitemap wrong");
 if(errors.length){console.error(errors.join("\n"));process.exitCode=1;}
