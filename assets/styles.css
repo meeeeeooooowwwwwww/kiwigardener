@@ -204,3 +204,4 @@ img { height: auto; }
 }
 @media(min-width:721px) and (max-width:900px){.main-nav .nav-call{padding:5px 8px;font-size:.76rem}}
 \n/* Flat-green kiwi brand mark replaces the earlier decorative symbol. */\n.brand-emblem{background:#e7f2df;color:#2d7144}\n.brand-emblem img{display:block;width:32px;height:32px;object-fit:contain}\n
+.brand-emblem{background:transparent!important;box-shadow:none!important}
