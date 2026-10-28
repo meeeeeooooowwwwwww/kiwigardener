@@ -25,7 +25,7 @@ export async function contactAPI(request,env){
   const url=new URL(request.url);
   if(url.pathname==="/api/contact/config"){
     if(request.method!=="GET") return reply(405,{error:"Method not allowed."});
-    return reply(200,ready(env)?{enabled:true,siteKey:env.TURNSTILE_SITE_KEY}:{enabled:false});
+    return reply(200,ready(env)?{enabled:true,siteKey:env.TURNSTILE_SITE_KEY}:{enabled:false,checks:{formEnabled:env.CONTACT_FORM_ENABLED==="true",emailBinding:typeof env.EMAIL?.send==="function",turnstileSecret:Boolean(env.TURNSTILE_SECRET),turnstileSiteKey:Boolean(env.TURNSTILE_SITE_KEY),rateLimiter:typeof env.CONTACT_LIMIT?.limit==="function"}});
   }
   if(url.pathname!=="/api/contact") return reply(404,{error:"Not found."});
   if(request.method!=="POST")return reply(405,{error:"Method not allowed."});
