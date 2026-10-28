@@ -8,13 +8,14 @@ const chunk=(name,data)=>{const t=Buffer.from(name);const size=Buffer.alloc(4);s
 const segment=(x,y,x1,y1,x2,y2)=>{const dx=x2-x1,dy=y2-y1,t=Math.max(0,Math.min(1,((x-x1)*dx+(y-y1)*dy)/(dx*dx+dy*dy)));return Math.hypot(x-x1-t*dx,y-y1-t*dy);};
 const polygon=(x,y,p)=>{let inside=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const a=p[i],b=p[j];if(((a[1]>y)!==(b[1]>y))&&(x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0]))inside=!inside;}return inside;};
 function pixel(x,y){
- // Original rounded upright side-profile silhouette, all on transparent alpha.
- const body=((x-46)/41)**2+((y-62)/33)**2<1 && y>29;
- const neck=((x-78)/12)**2+((y-34)/27)**2<1;
- const head=((x-91)/17)**2+((y-23)/15)**2<1;
- const bill=polygon(x,y,[[101,23],[110,24],[127,31],[128,33],[113,31],[103,29]]);
- const legs=[[45,86,46,107],[46,107,38,112],[46,107,54,115],[46,107,58,110],[72,84,75,102],[75,102,67,106],[75,102,83,110],[75,102,87,105]].some(a=>segment(x,y,...a)<3.6);
- return body||neck||head||bill||legs;
+ // Matching original upright kiwi silhouette, with transparent background.
+ const body=((x-45)/39)**2+((y-62)/33)**2<1;
+ const shoulder=((x-67)/20)**2+((y-53)/27)**2<1;
+ const neck=((x-81)/11)**2+((y-31)/23)**2<1;
+ const head=((x-93)/16)**2+((y-21)/14)**2<1;
+ const bill=polygon(x,y,[[100,21],[109,22],[127,30],[118,29],[104,27]]);
+ const feet=[[44,88,47,108],[47,108,39,111],[47,108,54,117],[47,108,61,112],[75,85,79,102],[79,102,72,107],[79,102,88,112],[79,102,94,107]].some(a=>segment(x,y,...a)<3.4);
+ return body||shoulder||neck||head||bill||feet;
 }
 function png(size){
  const pad=Buffer.alloc(size*(size*4+1));
