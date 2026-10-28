@@ -5,8 +5,9 @@ const FROM = "enquiries@kiwigardeners.com";
 const JSON_HEADERS = {"content-type":"application/json; charset=utf-8","cache-control":"no-store","x-content-type-options":"nosniff"};
 const reply=(status,payload)=>new Response(JSON.stringify(payload),{status,headers:JSON_HEADERS});
 export function ready(env) {
-  return Boolean(env.EMAIL?.send && env.TURNSTILE_SECRET && env.TURNSTILE_SITE_KEY && env.CONTACT_LIMIT?.limit);
+  return Boolean(env.CONTACT_FORM_ENABLED === "true" && env.EMAIL?.send && env.TURNSTILE_SECRET && env.TURNSTILE_SITE_KEY && env.CONTACT_LIMIT?.limit);
 }
+const SERVICES=new Set(["Garden maintenance","Lawn mowing","Hedge trimming","Garden tidy-ups","Weeding & garden beds","Green waste removal","Other gardening enquiry"]);
 const validEmail=(v)=>typeof v==="string" && v.length<=254 && /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(v);
 const clean=(v,max)=>typeof v==="string" ? v.trim().slice(0,max+1) : "";
 const rejectIfInvalid=(body)=>{
@@ -14,7 +15,7 @@ const rejectIfInvalid=(body)=>{
   if(clean(body.name,100).length<2 || clean(body.name,100).length>100) return "Please enter your name.";
   if(!validEmail(body.email)) return "Please enter a valid email address.";
   if(clean(body.suburb,90).length<2 || clean(body.suburb,90).length>90) return "Please enter your Christchurch suburb.";
-  if(clean(body.service,90).length<2 || clean(body.service,90).length>90) return "Please select a gardening service.";
+  if(!SERVICES.has(body.service)) return "Please select a gardening service.";
   if(clean(body.message,3000).length<15 || clean(body.message,3000).length>3000) return "Please describe the work (15 to 3000 characters).";
   if(body.consent!==true) return "Please agree to the privacy notice.";
   if(typeof body.token!=="string" || body.token.length<10 || body.token.length>2048) return "Please complete the anti-spam verification.";
