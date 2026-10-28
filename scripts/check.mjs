@@ -42,6 +42,16 @@ for(const url of urls){
       if(!nodes.some(n=>n.url===url))fail(path+" schema URL mismatch");
     }catch{fail(path+" invalid JSON-LD");}
   }
+  // Guard against broken externally hosted stock images being rendered as undefined.
+  if(/(?:src|content)="undefined"/.test(html))fail(path+" unresolved image or metadata URL");
+  if(/href="https?:\/\/[^"]*facebook\.com|href="https?:\/\/[^"]*instagram\.com|href="https?:\/\/[^"]*tiktok\.com/i.test(html))fail(path+" unapproved social media link");
+  if(path.startsWith("/services/")&&path!=="/services/"){
+    if(!html.includes("Other gardening services"))fail(path+" missing contextual service links");
+    if(!html.includes("Areas served"))fail(path+" missing regional cross-links");
+    for(const area of ["/areas/christchurch/","/areas/banks-peninsula/","/areas/selwyn/","/areas/waimakariri/"]){
+      if(!html.includes('href="'+area+'"'))fail(path+" missing region "+area);
+    }
+  }
   // Inspect every internal path, not merely page URLs from the sitemap.
   for(const match of html.matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)){
     const href=match[1].replaceAll("&amp;","&");
