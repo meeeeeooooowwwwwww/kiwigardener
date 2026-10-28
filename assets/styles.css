@@ -3,3 +3,74 @@
 @media(max-width:950px){.hero-grid{gap:25px}.main-nav{gap:14px}.nav-note{display:none}.text-layout{gap:35px;grid-template-columns:1fr 250px}.cards{grid-template-columns:repeat(2,1fr)}.hero-art{min-height:420px}.panel{gap:25px}}
 @media(max-width:720px){.container{width:min(100% - 30px,1160px)}.header-inner{min-height:68px}.main-nav{display:none}.mobile-nav{display:block;margin-left:auto;position:relative}.mobile-nav summary{list-style:none;border:1px solid #aab9a4;border-radius:30px;padding:8px 14px;font-weight:700;cursor:pointer}.mobile-nav summary::-webkit-details-marker{display:none}.mobile-nav[open] .mobile-links{position:absolute;right:0;top:46px;display:grid;gap:8px;min-width:210px;padding:17px;background:white;box-shadow:var(--shadow);border-radius:17px;border:1px solid var(--line)}.mobile-links a{text-decoration:none;font-weight:700;padding:4px}.hero{padding:36px 0 55px}.hero-grid{grid-template-columns:1fr}.hero h1{font-size:clamp(2.7rem,11vw,4.8rem)}.hero-art{min-height:360px}.section-heading{display:block}.section-heading>p{margin-top:15px}.cards,.location-grid{grid-template-columns:1fr}.card{min-height:230px}.panel{grid-template-columns:1fr;padding:33px 24px}.band-inner{display:block}.band p{margin-top:8px}.text-layout{display:block;padding:39px 0}.sidebar{position:static;margin-top:37px}.article-hero{padding:43px 0}.article-hero h1{font-size:clamp(2.6rem,11vw,4.1rem)}section.section{padding:55px 0}.footer-grid{grid-template-columns:1fr 1fr;gap:26px}.footer-grid>div:first-child{grid-column:1/-1}.footer-bottom{display:block}.footer-bottom span{display:block;margin-bottom:7px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important;animation:none!important}}
+
+
+/* October 2026 launch: conversion-led Christchurch editorial direction */
+:root{--forest:#12352b;--ink:#183027;--cream:#f8f7f1;--lime:#d6f279;--line:#d9e1d5;--paper:#fffefa}
+body{background:var(--cream)}
+.site-header{background:rgba(248,247,241,.96)}
+.header-inner{gap:25px}
+.main-nav{gap:19px}
+.main-nav a{font-size:.88rem}
+.header-cta{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;background:var(--forest);color:#fff;border-radius:100px;text-decoration:none;font-size:.86rem;font-weight:800;white-space:nowrap;transition:transform .2s ease}
+.header-cta:hover{color:white;transform:translateY(-2px);background:#275843}
+.hero-photographic{padding:35px 0 67px}
+.hero-photographic .hero-grid{grid-template-columns:1.06fr .94fr;gap:51px}
+.hero-photographic .hero-copy{padding:20px 0}
+.hero-photographic h1{font-size:clamp(3.2rem,6.3vw,6rem);max-width:760px;letter-spacing:-.055em}
+.hero-photographic h1 span{color:#568657}
+.hero-photographic .lead{max-width:600px;font-size:1.1rem;line-height:1.73}
+.hero-primary{background:var(--forest);box-shadow:0 10px 28px rgba(24,58,44,.13)}
+.hero-contact{display:flex;gap:13px;align-items:center;border-top:1px solid var(--line);padding:24px 0 5px;margin-top:12px}
+.hero-contact-icon{height:43px;width:43px;display:grid;place-items:center;background:#e6eddb;color:#315f40;border-radius:50%;font-size:1.2rem}
+.hero-contact small{display:block;color:var(--muted);font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.09em}
+.hero-contact a{display:inline-block;font-size:1rem;font-weight:800;text-decoration-thickness:1.5px;text-underline-offset:3px;overflow-wrap:anywhere}
+.hero-photographic .micro{margin-top:15px;font-size:.79rem}
+.hero-photographic .hero-photo-art{margin:0;min-height:600px;border-radius:28px;position:relative;background:#315a44;overflow:hidden}
+.hero-photographic .hero-photo-art:before{display:none}
+.hero-photo-art>img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:center center;filter:saturate(1.08)}
+.hero-photo-art:after{content:"";position:absolute;inset:35% 0 0;background:linear-gradient(to top,rgba(12,35,27,.72),transparent);pointer-events:none}
+.hero-photo-art figcaption{position:absolute;bottom:18px;left:20px;color:white;font-size:.72rem;z-index:3;text-shadow:0 2px 6px rgba(0,0,0,.5)}
+.hero-photo-art figcaption a{color:white}
+.hero-floating{position:absolute;top:24px;left:23px;z-index:3;border-radius:19px;padding:19px 22px;background:rgba(255,255,250,.96);box-shadow:0 18px 42px rgba(0,0,0,.13)}
+.hero-floating span{display:block;color:#4a7f50;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em}
+.hero-floating strong{display:block;margin-top:8px;font-family:Georgia,serif;font-size:1.35rem;line-height:1.2;font-weight:500}
+.band{background:#173a2e}
+.band strong{color:#d6f279}
+.section-heading h2{letter-spacing:-.047em}
+.card:has(.card-image){padding-top:0;overflow:hidden}
+.card-image{display:block;width:calc(100% + 54px);max-width:none;margin:0 -27px 9px;height:156px;object-fit:cover;object-position:center 50%;border-radius:20px 20px 0 0;background:#d9e8ce}
+.card:has(.card-image) h3{margin-top:17px}
+.card:has(.card-image){min-height:385px}
+.photo-feature{background:#eef2e8}
+.feature-grid{display:grid;grid-template-columns:.93fr 1.07fr;gap:min(8vw,100px);align-items:center}
+.feature-visual{position:relative;overflow:hidden;min-height:530px;border-radius:28px;background:#b1cbaa}
+.feature-visual img{width:100%;height:100%;position:absolute;inset:0;object-fit:cover}
+.feature-visual span{position:absolute;bottom:14px;left:16px;right:16px;background:rgba(255,255,249,.86);padding:9px 12px;border-radius:8px;font-size:.72rem}
+.feature-content h2{margin:16px 0 20px}
+.feature-content p{color:var(--muted);line-height:1.8}
+.steps{list-style:none;counter-reset:steps;padding:0;margin:28px 0}
+.steps li{position:relative;counter-increment:steps;padding:12px 0 15px 51px;border-bottom:1px solid #cad7c6}
+.steps li:before{content:"0" counter(steps);position:absolute;left:0;top:14px;color:#537b4b;font-weight:800}
+.steps li strong,.steps li span{display:block}
+.steps li span{color:var(--muted);font-size:.9rem}
+.enquiry-section{background:var(--cream)}
+.enquiry-panel{text-align:center;background:#173a2d;color:white;padding:72px 38px;border-radius:29px;background-image:radial-gradient(circle at 8% 10%,rgba(195,235,122,.12),transparent 40%),radial-gradient(circle at 100% 100%,rgba(195,235,122,.1),transparent 34%)}
+.enquiry-panel h2{max-width:730px;margin:12px auto 17px}
+.enquiry-panel p{max-width:720px;margin:0 auto;color:#d9e6d9}
+.enquiry-panel .eyebrow{color:#d6f279}
+.enquiry-panel .button-row{justify-content:center;margin:25px 0}
+.enquiry-panel .button{background:#d6f279;border-color:#d6f279;color:#173a2d}
+.enquiry-panel .button.secondary{background:transparent;border-color:#afc3ae;color:white}
+.enquiry-panel small{color:#c8dac7}
+.article-photo{margin:0 0 35px}
+.article-photo img{display:block;width:100%;height:310px;object-fit:cover;border-radius:22px;background:#e1eadc}
+.article-photo figcaption{margin-top:8px;font-size:.75rem;color:var(--muted)}
+.contact-highlight{border-radius:21px;padding:33px;background:#e8efdd}
+.contact-highlight h2{margin-top:13px}
+.contact-email{font-weight:800;font-size:clamp(1rem,2.2vw,1.45rem);overflow-wrap:anywhere}
+.site-footer .footer-bottom a{color:inherit;text-decoration:underline}
+@media(max-width:1090px){.header-cta{display:none}.main-nav{gap:14px}.hero-photographic .hero-grid{gap:27px}.hero-photographic .hero-photo-art{min-height:520px}}
+@media(max-width:950px){.hero-photographic h1{font-size:clamp(3rem,6vw,4.7rem)}.feature-grid{gap:36px}}
+@media(max-width:720px){.hero-photographic{padding:20px 0 48px}.hero-photographic .hero-grid{grid-template-columns:1fr}.hero-photographic h1{font-size:clamp(3rem,10.5vw,4.7rem)}.hero-photographic .hero-photo-art{min-height:470px}.hero-copy{padding:0}.card:has(.card-image){min-height:350px}.feature-grid{grid-template-columns:1fr}.feature-visual{min-height:310px}.enquiry-panel{padding:46px 23px}.photo-feature .feature-content{padding-top:10px}}
+@media(max-width:430px){.hero-photographic .hero-photo-art{min-height:365px}.hero-floating{top:14px;left:13px;padding:13px 15px}.hero-floating strong{font-size:1.06rem}.hero-photographic h1{font-size:3.15rem}.hero-photographic .lead{font-size:1rem}.hero-photographic .button-row .button{width:100%;justify-content:center}.card-image{height:145px}}
