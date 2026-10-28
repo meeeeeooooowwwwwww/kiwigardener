@@ -4,7 +4,11 @@
   "assets": {
     "directory": "./dist",
     "html_handling": "auto-trailing-slash",
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/api/*"
+    ]
   },
   "routes": [
     {
@@ -12,5 +16,22 @@
       "custom_domain": true
     }
   ],
-  "workers_dev": true
+  "workers_dev": true,
+  "main": "./src/worker.js",
+  "send_email": [
+    {
+      "name": "EMAIL",
+      "destination_address": "david@americafirst.co.nz"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "CONTACT_LIMIT",
+      "namespace_id": "2026102801",
+      "simple": {
+        "limit": 8,
+        "period": 60
+      }
+    }
+  ]
 }
