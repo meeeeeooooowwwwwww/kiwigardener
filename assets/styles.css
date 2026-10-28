@@ -183,3 +183,6 @@ img { height: auto; }
 
 /* Tablet-width header: keep navigation within the available viewport. */
 @media (min-width:721px) and (max-width:820px){.header-cta{display:none}.header-inner{gap:12px}.main-nav{gap:10px}.main-nav a{font-size:.82rem}}
+
+/* At compact tablet widths use the verified mobile menu instead of overflowing desktop links. */
+@media (min-width:721px) and (max-width:820px){.main-nav{display:none}.mobile-nav{display:block;margin-left:auto;position:relative}.mobile-nav summary{list-style:none;border:1px solid #aab9a4;border-radius:30px;padding:8px 14px;font-weight:700;cursor:pointer}.mobile-nav summary::-webkit-details-marker{display:none}.mobile-nav[open] .mobile-links{position:absolute;right:0;top:46px;display:grid;gap:8px;min-width:210px;padding:17px;background:white;box-shadow:var(--shadow);border-radius:17px;border:1px solid var(--line)}.mobile-links a{text-decoration:none;font-weight:700;padding:4px}}
