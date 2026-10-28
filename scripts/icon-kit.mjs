@@ -8,11 +8,13 @@ const chunk=(name,data)=>{const t=Buffer.from(name);const size=Buffer.alloc(4);s
 const segment=(x,y,x1,y1,x2,y2)=>{const dx=x2-x1,dy=y2-y1,t=Math.max(0,Math.min(1,((x-x1)*dx+(y-y1)*dy)/(dx*dx+dy*dy)));return Math.hypot(x-x1-t*dx,y-y1-t*dy);};
 const polygon=(x,y,p)=>{let inside=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const a=p[i],b=p[j];if(((a[1]>y)!==(b[1]>y))&&(x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0]))inside=!inside;}return inside;};
 function pixel(x,y){
- const body=((x-55)/43)**2+((y-61)/34)**2<1;
- const head=((x-96)/15)**2+((y-62)/17)**2<1;
- const beak=polygon(x,y,[[104,58],[127,68],[106,66]]);
- const legs=[[49,90,45,108],[45,108,36,112],[45,108,52,113],[77,86,75,104],[75,104,67,110],[75,104,83,109]].some(a=>segment(x,y,...a)<3.5);
- return body||head||beak||legs;
+ // Original rounded upright side-profile silhouette, all on transparent alpha.
+ const body=((x-46)/41)**2+((y-62)/33)**2<1 && y>29;
+ const neck=((x-78)/12)**2+((y-34)/27)**2<1;
+ const head=((x-91)/17)**2+((y-23)/15)**2<1;
+ const bill=polygon(x,y,[[101,23],[110,24],[127,31],[128,33],[113,31],[103,29]]);
+ const legs=[[45,86,46,107],[46,107,38,112],[46,107,54,115],[46,107,58,110],[72,84,75,102],[75,102,67,106],[75,102,83,110],[75,102,87,105]].some(a=>segment(x,y,...a)<3.6);
+ return body||neck||head||bill||legs;
 }
 function png(size){
  const pad=Buffer.alloc(size*(size*4+1));
