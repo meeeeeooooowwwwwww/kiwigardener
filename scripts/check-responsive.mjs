@@ -83,7 +83,7 @@ try {
         await page.locator(".mobile-nav summary").click();
       }
       const mail = await page.locator("a.hero-primary").getAttribute("href");
-      if (!mail?.startsWith("mailto:david@americafirst.co.nz")) failures.push("Homepage email CTA not configured");
+      if (!mail?.startsWith("tel:+64273406581")) failures.push("Homepage click-to-call CTA not configured");
     }
   }
   await page.close();
