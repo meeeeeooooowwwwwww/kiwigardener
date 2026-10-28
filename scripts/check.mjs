@@ -64,7 +64,7 @@ for(const url of urls){
     if(!/\bsrc="[^"]+"/.test(match[1]))fail(path+" image missing src");
   }
   if(path==="/"){
-    if(!html.includes("david@americafirst.co.nz"))fail("Missing homepage enquiry address");
+    if(!html.includes("dallas@kiwigardeners.com"))fail("Missing homepage enquiry address");
     if(!html.includes("https://grideater.com/"))fail("Missing GRID EATER link");
     for(const [url,name] of [["https://davidaruck.com/","David Ruck"],["https://americafirst.nz/","America First NZ"]]){
       if(!html.includes(`href="${url}"`))fail(`Missing footer link: ${name}`);
