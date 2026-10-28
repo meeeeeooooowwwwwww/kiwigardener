@@ -37,5 +37,11 @@
   "vars": {
     "TURNSTILE_SITE_KEY": "0x4AAAAAAFp-C1bXQ7sIIZSa",
     "CONTACT_FORM_ENABLED": "false"
+  },
+  "previews": {
+    "vars": {
+      "CONTACT_FORM_ENABLED": "false",
+      "TURNSTILE_SITE_KEY": "0x4AAAAAAFp-C1bXQ7sIIZSa"
+    }
   }
 }
