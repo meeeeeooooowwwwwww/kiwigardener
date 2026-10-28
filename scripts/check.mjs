@@ -8,7 +8,7 @@ const seenTitles=new Map();
 const seenDescriptions=new Map();
 const pages=new Map();
 const fail=(value)=>errors.push(value);
-assert.equal(urls.length,27,"Expected 27 indexable HTML pages (excluding the custom 404 page)");
+assert.equal(urls.length,34,"Expected 34 indexable HTML pages (excluding the custom 404 page)");
 assert.equal(new Set(urls).size,urls.length,"Duplicate URL in sitemap");
 const readPage=async(path)=>{
   if(pages.has(path))return pages.get(path);
