@@ -1,5 +1,6 @@
 import { mkdir, writeFile, copyFile, rm } from "node:fs/promises";
-import { dirname } from "node:path";\nimport { writeIconSet } from "./scripts/icon-kit.mjs";
+import { dirname } from "node:path";
+import { writeIconSet } from "./scripts/icon-kit.mjs";
 const generateSite = function generateSite(){
   const domain="https://kiwigardeners.com";
   const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
@@ -163,4 +164,5 @@ const files = generateSite();
 await rm("dist",{force:true,recursive:true});
 for (const [path,body] of Object.entries(files)) { await mkdir(dirname("dist/"+path),{recursive:true}); await writeFile("dist/"+path,body,"utf8"); }
 for (const path of ["assets/styles.css","assets/favicon.svg","assets/contact.js","_headers"]) { await mkdir(dirname("dist/"+path),{recursive:true}); await copyFile(path,"dist/"+path); }
-await writeIconSet("dist");\nconsole.log("Built "+Object.keys(files).filter(x=>x.endsWith(".html")).length+" static pages and SEO files into dist/");
+await writeIconSet("dist");
+console.log("Built "+Object.keys(files).filter(x=>x.endsWith(".html")).length+" static pages and SEO files into dist/");
