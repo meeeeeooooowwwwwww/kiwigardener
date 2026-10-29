@@ -307,3 +307,28 @@ img { height: auto; }
 .directory-group .hub-heading h2{max-width:800px}
 .directory-group .cards .card{height:100%}
 @media(max-width:720px){.directory-group{padding:18px 0 28px}}
+
+
+/* October 30 audit: tidy footer credits, clearer article flow and small-screen legibility. */
+.footer-bottom{align-items:flex-start;gap:18px}
+.footer-bottom>span{flex:0 1 315px;line-height:1.55}
+.footer-bottom .footer-credits{display:flex;flex:1;flex-wrap:wrap;justify-content:flex-end;gap:5px 15px;align-items:center;min-width:0;line-height:1.5;text-align:right;font-size:.77rem}
+.footer-bottom .footer-credits>span{color:#aebfaf;white-space:nowrap}
+.footer-bottom .footer-credits a{display:inline-block;margin:0;padding:2px 0;white-space:nowrap;font-size:inherit;text-decoration:underline;text-underline-offset:3px}
+.footer-bottom .footer-credits a:hover{color:#e1f4c0}
+.footer-grid .footer-contact{margin-top:15px}
+.footer-grid .footer-contact a{overflow-wrap:anywhere}
+.prose .next-reading{margin-top:36px}
+.prose .next-reading .button{font-size:.92rem}
+.card-image{background:#d9e8ce}
+@media(max-width:900px){
+  .footer-bottom{flex-direction:column;align-items:flex-start}
+  .footer-bottom>span{flex:0 1 auto}
+  .footer-bottom .footer-credits{justify-content:flex-start;text-align:left}
+}
+@media(max-width:480px){
+  .footer-bottom .footer-credits{gap:3px 11px}
+  .footer-bottom .footer-credits>span{display:block;width:100%;margin:0 0 4px}
+  .footer-grid .footer-contact-phone{white-space:normal}
+  .footer-grid .footer-contact-email{font-size:.88rem}
+}
