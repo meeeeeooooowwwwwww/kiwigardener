@@ -1,9 +1,14 @@
 import {readFile, stat} from "node:fs/promises";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 const site = "https://kiwigardeners.com";
 const xml = await readFile("dist/sitemap.xml","utf8");
 const urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x=>x[1]);
 const errors=[];
+const styles=await readFile("dist/assets/styles.css");
+const expectedStyleHash=createHash("sha256").update(styles).digest("hex").slice(0,12);
+const expectedStyleUrl="/assets/styles."+expectedStyleHash+".css";
+await stat("dist"+expectedStyleUrl);
 const seenTitles=new Map();
 const seenDescriptions=new Map();
 const pages=new Map();
@@ -31,6 +36,7 @@ for(const url of urls){
   if(html.split('https://www.googletagmanager.com/gtag/js?id=G-CVKT89LFE7').length!==2)fail(path+" missing or duplicate Google tag");
   if(html.split('src="/assets/analytics.js"').length!==2)fail(path+" missing or duplicate GA4 initialiser");
   if(!html.includes('<link rel="canonical" href="'+url+'"'))fail(path+" canonical mismatch");
+  if(!html.includes('<link rel="stylesheet" href="'+expectedStyleUrl+'"'))fail(path+" stylesheet URL not fingerprinted to current CSS");
   if((html.match(/<h1(?:\s|>)/g)||[]).length!==1)fail(path+" expected one H1");
   if(!html.includes('<html lang="en-NZ">'))fail(path+" language missing");
   if(!html.includes('name="viewport"'))fail(path+" missing mobile viewport");
@@ -186,5 +192,11 @@ const serviceHtml=await readPage("/services/garden-maintenance/");
 const serviceGraph=JSON.parse(serviceHtml.match(/<script type="application\/ld\+json">(.+?)<\/script>/)?.[1]||"{}")["@graph"]||[];
 if(!serviceGraph.some(x=>x["@type"]==="Service"&&x.provider?.["@id"]===site+"/#gardener"))fail("Service schema lost Dallas provider");
 
+// Ensure the teaching steps render without duplicate hard-coded numbering.
+for(const path of ["/guides/christchurch-garden-soils/","/areas/fendalton/","/guides/caring-for-christchurch-garden-plants/"]){
+ const html=await readPage(path);
+ if(!html.includes('class="path-title"')||!html.includes('class="path-desc"'))fail(path+" missing accessible spaced learning steps");
+ if(html.includes('class="path-index"'))fail(path+" duplicates the native ordered-list numbering");
+}
 if(errors.length){console.error(errors.join("\n"));process.exitCode=1;}
 else console.log("SEO/link audit PASS: "+urls.length+" unique pages, titles, descriptions, canonicals, schema, alt text, robots, sitemap, live destination links.");
