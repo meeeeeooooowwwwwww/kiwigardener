@@ -173,5 +173,18 @@ for(const path of ["/areas/fendalton/","/areas/christchurch/"]){
   if(care<0||next<=care)fail(path+" next-reading box appears before practical gardening advice");
 }
 
+
+// Error pages must not be indexed; informational articles must describe their actual subjects.
+const notFound=await readFile("dist/404.html","utf8");
+if(!notFound.includes('<meta name="robots" content="noindex,follow">'))fail("404 page is indexable");
+const articleHtml=await readPage("/guides/historic-christchurch-gardens/");
+if(!articleHtml.includes('<meta property="og:type" content="article">'))fail("Guide pages missing article share type");
+const articleGraph=JSON.parse(articleHtml.match(/<script type="application\/ld\+json">(.+?)<\/script>/)?.[1]||"{}")["@graph"]||[];
+const articleNode=articleGraph.find(n=>n["@type"]==="Article");
+if(!articleNode?.headline||articleNode?.about?.["@id"]===site+"/#gardener")fail("Article schema incorrectly marked as about the gardener");
+const serviceHtml=await readPage("/services/garden-maintenance/");
+const serviceGraph=JSON.parse(serviceHtml.match(/<script type="application\/ld\+json">(.+?)<\/script>/)?.[1]||"{}")["@graph"]||[];
+if(!serviceGraph.some(x=>x["@type"]==="Service"&&x.provider?.["@id"]===site+"/#gardener"))fail("Service schema lost Dallas provider");
+
 if(errors.length){console.error(errors.join("\n"));process.exitCode=1;}
 else console.log("SEO/link audit PASS: "+urls.length+" unique pages, titles, descriptions, canonicals, schema, alt text, robots, sitemap, live destination links.");
