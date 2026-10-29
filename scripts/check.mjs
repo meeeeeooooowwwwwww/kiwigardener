@@ -198,5 +198,19 @@ for(const path of ["/guides/christchurch-garden-soils/","/areas/fendalton/","/gu
  if(!html.includes('class="path-title"')||!html.includes('class="path-desc"'))fail(path+" missing accessible spaced learning steps");
  if(html.includes('class="path-index"'))fail(path+" duplicates the native ordered-list numbering");
 }
+// The local-area directory must show a photograph on every one of its 22 suburb cards.
+const areaDirectory=await readPage("/areas/");
+const areaCards=[...areaDirectory.matchAll(/<a class="card" href="\/areas\/([^/]+)\/"[^>]*>([\s\S]*?)<h3>/g)];
+if(areaCards.length!==22)fail("Areas hub expected 22 unique location cards, found "+areaCards.length);
+for(const [,slug,opening] of areaCards){
+  if(!opening.includes('class="card-image"'))fail("/areas/"+slug+"/ has no real photo");
+  if(!opening.includes('data-fallback-src="https://images.unsplash.com/'))fail("/areas/"+slug+"/ has no reliable photo fallback");
+  if(opening.includes('class="number"'))fail("/areas/"+slug+"/ still has a number-only placeholder");
+}
+const photoFallback=await readFile("dist/assets/image-fallback.js","utf8");
+if(!photoFallback.includes("data-fallback-src")||!photoFallback.includes("DOMContentLoaded"))fail("Photo fallback recovery is not installed");
+if(!areaDirectory.includes('/assets/image-fallback.js?v=20261030'))fail("Photo recovery script is not loaded");
+if(!areaDirectory.includes("Riccarton_Bush_predator-proof_fence_347.jpg"))fail("Riccarton photo reference missing");
+
 if(errors.length){console.error(errors.join("\n"));process.exitCode=1;}
 else console.log("SEO/link audit PASS: "+urls.length+" unique pages, titles, descriptions, canonicals, schema, alt text, robots, sitemap, live destination links.");

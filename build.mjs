@@ -123,7 +123,7 @@ const generateSite = function generateSite(){
     return JSON.stringify({"@context":"https://schema.org","@graph":graph});
   };
   // Google Analytics 4: inject once in the shared layout for every page.
-  const googleTag = `<script async src="https://www.googletagmanager.com/gtag/js?id=G-CVKT89LFE7"></script><script src="/assets/analytics.js"></script>`;
+  const googleTag = `<script async src="https://www.googletagmanager.com/gtag/js?id=G-CVKT89LFE7"></script><script src="/assets/analytics.js"></script><script src="/assets/image-fallback.js?v=20261030" defer></script>`;
   const layout=({path,title,description,content,trail=[{name:"Home",path:"/"}],type})=>{
     const url=domain+path;
     const slug=path.split("/")[2];
@@ -138,12 +138,42 @@ const generateSite = function generateSite(){
   const articleHero=(kicker,title,lead,trail)=>`<header class="article-hero"><div class="container">${crumbs(trail)}<div style="margin-top:27px">${eyebrow(kicker)}</div><h1>${esc(title)}</h1><p>${esc(lead)}</p></div></header>`;
   const articleBody=(chapters,faqs=[])=>chapters.map(c=>`<section id="${chapterId(c)}"><h2>${esc(c[0])}</h2><p>${esc(c[1])}</p>${c[2]?`<ul>${c[2].map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`:""}</section>`).join("")+(faqs.length?`<section class="faq"><h2>Frequently asked questions</h2>${faqs.map(f=>`<details><summary>${esc(f[0])}</summary><p>${esc(f[1])}</p></details>`).join("")}</section>`:"");
   const side=(title,items)=>`<aside class="sidebar"><h3>${esc(title)}</h3>${items.map(i=>a(i.href,i.name)).join("")}<p>Need garden work? <a href="${TEL_URL}">Call Dallas on ${PHONE} for a quote ↗</a>. You can also <a href="${ENQUIRY_URL}">email an enquiry</a>.</p></aside>`;
-  const cardPhoto=(item,kind)=>kind==="services"?(servicePhotos[item.slug]||GARDEN_PHOTO):(kind==="areas"&&images[localProfiles[item.slug]?.photo]?.src)||((kind==="guides"&&images[{"historic-christchurch-gardens":"mona","coastal-gardening-christchurch":"dunes","native-plants-christchurch":"travis","caring-for-christchurch-garden-plants":"botanic","christchurch-garden-soils":"hills","christchurch-gardening-calendar":"botanic","port-hills-gardens":"hills"}[item.slug]]?.src)||null);
-  const cards=(items,kind)=>`<div class="cards">${items.map((s,i)=>`<a class="card" href="/${kind}/${s.slug}/">${cardPhoto(s,kind)?`<img class="card-image" src="${esc(cardPhoto(s,kind))}" alt="${esc(kind==="services"?"Illustrative image relating to "+s.name:(Object.values(images).find(p=>p.src===cardPhoto(s,kind))?.alt||s.name))}" loading="lazy" width="600" height="400">`:`<span class="number">${String(i+1).padStart(2,"0")}</span>`}<h3>${esc(s.name)}</h3><p>${esc(s.summary||s.lead)}</p><span class="arrow">${kind==="services"?"Explore service details ↗":"Explore local advice ↗"}</span></a>`).join("")}</div>`;
+  // Instant photo coverage without requiring a new image service. These are real
+  // illustrative photographs already used elsewhere on the site, not Dallas work.
+  const areaStockPhotos={
+    linwood:GARDEN_PHOTO,
+    woolston:servicePhotos["hedge-trimming"],
+    phillipstown:servicePhotos["garden-tidy-ups"],
+    bromley:servicePhotos["weeding"],
+    avonside:GARDEN_PHOTO,
+    beckenham:LAWN_PHOTO,
+    "christchurch-central":servicePhotos["landscaping-yard-restoration"],
+    "st-martins":servicePhotos["garden-maintenance"],
+    papanui:images.botanic.src,
+    christchurch:images.botanic.src,
+    "banks-peninsula":images.hills.src,
+    selwyn:LAWN_PHOTO,
+    waimakariri:MOWER_PHOTO
+  };
+  const cardPhoto=(item,kind)=>kind==="services"?(servicePhotos[item.slug]||GARDEN_PHOTO)
+    :kind==="areas"?(images[localProfiles[item.slug]?.photo]?.src||areaStockPhotos[item.slug]||GARDEN_PHOTO)
+    :images[{"historic-christchurch-gardens":"mona","coastal-gardening-christchurch":"dunes","native-plants-christchurch":"travis","caring-for-christchurch-garden-plants":"botanic","christchurch-garden-soils":"hills","christchurch-gardening-calendar":"botanic","port-hills-gardens":"hills"}[item.slug]]?.src||null;
+  const cards=(items,kind)=>'<div class="cards">'+items.map((item,i)=>{
+    const photo=cardPhoto(item,kind);
+    const specific=Object.values(images).find(p=>p.src===photo);
+    const alt=specific?specific.alt:'Illustrative garden photograph for '+item.name+' (not a photograph of Dallas\u2019s work)';
+    const fallback=photo===GARDEN_PHOTO?LAWN_PHOTO:GARDEN_PHOTO;
+    return '<a class="card" href="/'+kind+'/'+item.slug+'/">'+
+      (photo?'<img class="card-image" src="'+esc(photo)+'" alt="'+esc(alt)+
+        '" data-fallback-src="'+esc(fallback)+'" loading="lazy" width="600" height="400">'
+        :'<span class="number">'+String(i+1).padStart(2,"0")+'</span>')+
+      '<h3>'+esc(item.name)+'</h3><p>'+esc(item.summary||item.lead)+'</p>'+
+      '<span class="arrow">'+(kind==="services"?"Explore service details ↗":"Explore local advice ↗")+'</span></a>';
+  }).join('')+'</div>';
   function localPhoto(key){
    const p=images[key];
    if(!p)return "";
-   return '<figure class="local-figure"><img src="'+esc(p.src)+'" alt="'+esc(p.alt)+'" loading="lazy" width="960" height="640"><figcaption>'+esc(p.alt)+'. Photo: <a href="'+esc(p.file)+'" target="_blank" rel="noopener noreferrer">'+esc(p.credit)+'</a>, <a href="'+esc(p.licenceUrl)+'" target="_blank" rel="noopener noreferrer">'+esc(p.licence)+'</a>. Wikimedia Commons.</figcaption></figure>';
+   return '<figure class="local-figure"><img src="'+esc(p.src)+'" alt="'+esc(p.alt)+'" data-fallback-src="'+esc(GARDEN_PHOTO)+'" loading="lazy" width="960" height="640"><figcaption>'+esc(p.alt)+'. Photo: <a href="'+esc(p.file)+'" target="_blank" rel="noopener noreferrer">'+esc(p.credit)+'</a>, <a href="'+esc(p.licenceUrl)+'" target="_blank" rel="noopener noreferrer">'+esc(p.licence)+'</a>. Wikimedia Commons.</figcaption></figure>';
   }
   function sourceLinks(refs){
    if(!refs?.length)return "";
@@ -357,7 +387,7 @@ const generateSite = function generateSite(){
 const files = generateSite();
 await rm("dist",{force:true,recursive:true});
 for (const [path,body] of Object.entries(files)) { await mkdir(dirname("dist/"+path),{recursive:true}); await writeFile("dist/"+path,body,"utf8"); }
-for (const path of ["assets/styles.css","assets/favicon.svg","assets/green-waste.svg","assets/cleared-section.svg","assets/contact.js","assets/analytics.js","_headers"]) { await mkdir(dirname("dist/"+path),{recursive:true}); await copyFile(path,"dist/"+path); }
+for (const path of ["assets/styles.css","assets/favicon.svg","assets/green-waste.svg","assets/cleared-section.svg","assets/contact.js","assets/analytics.js","assets/image-fallback.js","_headers"]) { await mkdir(dirname("dist/"+path),{recursive:true}); await copyFile(path,"dist/"+path); }
 await copyFile("assets/styles.css","dist"+stylesheetUrl);
 for (const path of ["green-waste-removal.jpg","rubbish-removal.jpg"]) await copyFile(path,"dist/"+path);
 await writeIconSet("dist");
