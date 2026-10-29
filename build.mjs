@@ -1,7 +1,11 @@
-import { mkdir, writeFile, copyFile, rm } from "node:fs/promises";
+import { mkdir, writeFile, copyFile, rm, readFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import {newAreas,newGuides,images,localProfiles} from "./src/local-editorial.mjs";
 import { dirname } from "node:path";
 import { writeIconSet } from "./scripts/icon-kit.mjs";
+// A content-addressed stylesheet URL ensures new layouts never use a week-old browser cache.
+const stylesheetBytes = await readFile("assets/styles.css");
+const stylesheetUrl = "/assets/styles."+createHash("sha256").update(stylesheetBytes).digest("hex").slice(0,12)+".css";
 const generateSite = function generateSite(){
   const domain="https://kiwigardeners.com";
   const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
@@ -128,7 +132,7 @@ const generateSite = function generateSite(){
     const shareImageSource=areaImage?.src||guideImage?.src||(path.startsWith("/services/")?servicePhotos[slug]:null)||GARDEN_PHOTO;
     const shareImage=shareImageSource.startsWith("/")?domain+shareImageSource:shareImageSource;
     const shareAlt=areaImage?.alt||guideImage?.alt||(path.startsWith("/services/")?"Illustrative image relating to "+(services.find(x=>x.slug===slug)?.name||"Christchurch gardening"):"Christchurch garden photography");
-    return `<!doctype html><html lang="en-NZ"><head>${googleTag}<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#18382c"><meta name="robots" content="${path==="/404/"?"noindex,follow":"index,follow,max-image-preview:large"}"><title>${esc(title)}</title><meta name="description" content="${esc(description)}"><link rel="canonical" href="${url}"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png"><link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180"><link rel="manifest" href="/site.webmanifest"><link rel="preconnect" href="https://images.unsplash.com"><link rel="preconnect" href="https://thumb.wikimedia.org" crossorigin><link rel="stylesheet" href="/assets/styles.css"><meta property="og:type" content="${type==="Article"?"article":"website"}"><meta property="og:locale:alternate" content="en_AU"><meta property="og:locale" content="en_NZ"><meta property="og:site_name" content="Kiwi Gardeners Christchurch"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${url}"><meta property="og:image" content="${esc(shareImage)}"><meta property="og:image:alt" content="${esc(shareAlt)}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${esc(shareImage)}"><script type="application/ld+json">${schema(path,trail,type)}</script>${path==="/contact/"?`<script src="/assets/contact.js" defer></script>`:""}</head><body><a class="skip" href="#main-content">Skip to main content</a>${nav}<main id="main-content">${content}</main>${footer}</body></html>\n`;
+    return `<!doctype html><html lang="en-NZ"><head>${googleTag}<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#18382c"><meta name="robots" content="${path==="/404/"?"noindex,follow":"index,follow,max-image-preview:large"}"><title>${esc(title)}</title><meta name="description" content="${esc(description)}"><link rel="canonical" href="${url}"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png"><link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180"><link rel="manifest" href="/site.webmanifest"><link rel="preconnect" href="https://images.unsplash.com"><link rel="preconnect" href="https://thumb.wikimedia.org" crossorigin><link rel="stylesheet" href="${stylesheetUrl}"><meta property="og:type" content="${type==="Article"?"article":"website"}"><meta property="og:locale:alternate" content="en_AU"><meta property="og:locale" content="en_NZ"><meta property="og:site_name" content="Kiwi Gardeners Christchurch"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${url}"><meta property="og:image" content="${esc(shareImage)}"><meta property="og:image:alt" content="${esc(shareAlt)}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${esc(shareImage)}"><script type="application/ld+json">${schema(path,trail,type)}</script>${path==="/contact/"?`<script src="/assets/contact.js" defer></script>`:""}</head><body><a class="skip" href="#main-content">Skip to main content</a>${nav}<main id="main-content">${content}</main>${footer}</body></html>\n`;
   };
   const crumbs=(trail)=>`<nav aria-label="Breadcrumb" class="breadcrumbs">${trail.map((t,i)=>i===trail.length-1?`<span aria-current="page">${esc(t.name)}</span>`:a(t.path,t.name)).join(" / ")}</nav>`;
   const articleHero=(kicker,title,lead,trail)=>`<header class="article-hero"><div class="container">${crumbs(trail)}<div style="margin-top:27px">${eyebrow(kicker)}</div><h1>${esc(title)}</h1><p>${esc(lead)}</p></div></header>`;
@@ -191,7 +195,7 @@ const generateSite = function generateSite(){
       {title:"Care for your plants",desc:"Pruning, watering and upkeep",url:"/guides/caring-for-christchurch-garden-plants/"},
       {title:"Get gardening help",desc:"Services, quotes and contact",url:"/contact/"}
     ];
-    return '<nav class="learning-path" aria-label="Garden learning pathway"><div class="learning-path-head"><span class="eyebrow">Explore further</span><h2>From local history to a well-kept garden</h2><p>Follow the topics in order, or jump straight to what you need.</p></div><ol>'+steps.map((x,i)=>'<li><a href="'+x.url+'"'+(i===active?' aria-current="step"':'')+'><span class="path-index">'+(i+1)+'</span><span><strong>'+esc(x.title)+'</strong><small>'+esc(x.desc)+'</small></span><span class="path-arrow" aria-hidden="true">↗</span></a></li>').join('')+'</ol></nav>';
+    return '<nav class="learning-path" aria-label="Garden learning pathway"><div class="learning-path-head"><span class="eyebrow">Explore further</span><h2>From local history to a well-kept garden</h2><p>Follow the topics in order, or jump straight to what you need.</p></div><ol>'+steps.map((x,i)=>'<li><a href="'+x.url+'"'+(i===active?' aria-current="step"':'')+'><span class="path-copy"><strong class="path-title">'+esc(x.title)+'</strong> <small class="path-desc">'+esc(x.desc)+'</small></span> <span class="path-arrow" aria-hidden="true">↗</span></a></li>').join('')+'</ol></nav>';
   }
   function articleToc(chapters){
     if(!chapters?.length)return "";
@@ -354,6 +358,7 @@ const files = generateSite();
 await rm("dist",{force:true,recursive:true});
 for (const [path,body] of Object.entries(files)) { await mkdir(dirname("dist/"+path),{recursive:true}); await writeFile("dist/"+path,body,"utf8"); }
 for (const path of ["assets/styles.css","assets/favicon.svg","assets/green-waste.svg","assets/cleared-section.svg","assets/contact.js","assets/analytics.js","_headers"]) { await mkdir(dirname("dist/"+path),{recursive:true}); await copyFile(path,"dist/"+path); }
+await copyFile("assets/styles.css","dist"+stylesheetUrl);
 for (const path of ["green-waste-removal.jpg","rubbish-removal.jpg"]) await copyFile(path,"dist/"+path);
 await writeIconSet("dist");
 console.log("Built "+Object.keys(files).filter(x=>x.endsWith(".html")).length+" static pages and SEO files into dist/");
