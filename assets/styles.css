@@ -253,3 +253,57 @@ img { height: auto; }
 .conversion-cta .button{font-size:.92rem;margin:4px 12px 4px 0}
 @media(max-width:950px){.gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.editorial-sidebar{top:85px}}
 @media(max-width:720px){.gallery-grid{grid-template-columns:1fr}.gallery-entry .local-figure img{height:210px}.editorial-sidebar{position:static}.local-highlight{padding-left:16px}.conversion-cta .button{width:100%;margin:8px 0}}
+
+
+/* Clear learning pathway: local history > plants and soil > care > gardening help. */
+.learning-path{background:#eff4e8;border:1px solid #d7e2d0;border-radius:20px;padding:24px;margin:0 0 38px}
+.learning-path-head h2{font-size:clamp(1.42rem,2.3vw,2rem);margin:6px 0 8px;line-height:1.22}
+.prose .learning-path-head h2{margin:6px 0 8px;font-size:clamp(1.42rem,2.3vw,2rem)}
+.learning-path-head p{font-size:.9rem;color:#47634e}
+.learning-path ol{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0;margin:20px 0 0}
+.learning-path li{margin:0}
+.learning-path li a{display:flex;align-items:flex-start;gap:10px;text-decoration:none;background:#fffefa;border:1px solid #d7e1d1;border-radius:13px;padding:13px;min-height:85px;line-height:1.4;color:#163d2c}
+.learning-path li a:hover,.learning-path li a:focus-visible{border-color:#53855b;background:#f8fcec}
+.learning-path li a[aria-current="step"]{background:#dcebcf;border:2px solid #4b7950}
+.learning-path li .path-index{flex:0 0 28px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#dfead8;font-size:.88rem;font-weight:850}
+.learning-path li strong{display:block;font-size:.88rem;font-weight:800}
+.learning-path li small{display:block;font-size:.77rem;color:#5a6b60;margin-top:4px}
+.learning-path li .path-arrow{font-size:.8rem;color:#3c7647;margin-left:auto;flex:0 0 auto}
+.article-toc{background:#fffefa;border:1px solid var(--line);border-radius:18px;padding:20px 25px;margin:0 0 30px}
+.prose .article-toc h2{font-size:1.35rem;margin:0 0 10px}
+.article-toc ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 25px;margin:0;padding-left:18px}
+.article-toc li{font-size:.9rem;margin:4px 0;line-height:1.5}
+.article-toc a{color:#285f40;text-underline-offset:3px}
+.prose section[id]{scroll-margin-top:110px}
+.next-reading{display:flex;align-items:center;justify-content:space-between;gap:20px;border-top:1px solid #d7e0d4;border-bottom:1px solid #d7e0d4;padding:25px 2px;margin:30px 0}
+.prose .next-reading h2{font-size:1.6rem;margin:8px 0 10px}
+.next-reading p{font-size:.92rem;color:var(--muted)}
+.next-reading .button{flex:0 0 auto;max-width:100%;text-align:center}
+.plant-gallery{margin:45px 0}
+.prose .plant-gallery h2{font-size:2rem;margin:0 0 12px}
+.plant-gallery>p{font-size:.9rem;color:var(--muted);margin:0 0 18px}
+.plant-gallery-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.plant-gallery-grid .local-figure{margin:0;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fffefa}
+.plant-gallery-grid .local-figure img{width:100%;height:215px;object-fit:cover;border-radius:0}
+.plant-gallery-grid .local-figure figcaption{padding:10px 13px;margin:0}
+.footer-grid{grid-template-columns:minmax(0,1.8fr) minmax(0,1fr) minmax(0,1fr);gap:clamp(20px,4vw,48px)}
+.footer-grid>div{min-width:0}
+.footer-contact{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-top:18px;min-width:0}
+.footer-contact-name{font-size:1rem;color:#f4f8ef;font-weight:800;line-height:1.35}
+.footer-grid .footer-contact a{display:inline-flex;align-items:center;gap:9px;max-width:100%;padding:3px 0;color:#e9f4d9;text-decoration:underline;text-underline-offset:3px;font-weight:720;line-height:1.35}
+.footer-grid .footer-contact-phone{white-space:nowrap;font-size:1.05rem}
+.footer-grid .footer-contact-email{overflow-wrap:anywhere;word-break:break-word;font-size:.93rem}
+.footer-grid .footer-contact-email span{min-width:0}
+.footer-grid .footer-note{font-size:.83rem;color:#b9cdbc;margin-top:12px}
+@media(max-width:950px){.footer-grid{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:30px}.footer-grid>div:last-child{grid-column:2}}
+@media(max-width:720px){.learning-path ol,.plant-gallery-grid,.article-toc ul{grid-template-columns:1fr}.learning-path{padding:18px;margin-bottom:27px}.next-reading{display:block}.next-reading .button{margin-top:16px;width:100%}.footer-grid{grid-template-columns:1fr 1fr;gap:23px}.footer-grid>div:first-child{grid-column:1/-1}.footer-grid>div:last-child{grid-column:auto}.footer-contact{gap:7px}}
+@media(max-width:420px){.footer-grid{grid-template-columns:1fr}.footer-grid>div,.footer-grid>div:first-child,.footer-grid>div:last-child{grid-column:1}.learning-path li a{min-height:auto;padding:12px}}
+
+
+/* Topic and geographical groupings in local area and garden guide hubs. */
+.directory-group{padding:22px 0 32px;border-top:1px solid var(--line)}
+.directory-group:first-of-type{border-top:0}
+.directory-group .hub-heading{margin:6px 0 22px}
+.directory-group .hub-heading h2{max-width:800px}
+.directory-group .cards .card{height:100%}
+@media(max-width:720px){.directory-group{padding:18px 0 28px}}

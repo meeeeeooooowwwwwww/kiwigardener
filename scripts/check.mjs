@@ -8,7 +8,7 @@ const seenTitles=new Map();
 const seenDescriptions=new Map();
 const pages=new Map();
 const fail=(value)=>errors.push(value);
-assert.equal(urls.length,47,"Expected 47 indexable HTML pages (excluding the custom 404 page)");
+assert.equal(urls.length,48,"Expected 48 indexable HTML pages (excluding the custom 404 page)");
 assert.equal(new Set(urls).size,urls.length,"Duplicate URL in sitemap");
 const readPage=async(path)=>{
   if(pages.has(path))return pages.get(path);
@@ -111,6 +111,31 @@ for(const path of ['/guides/christchurch-garden-soils/','/guides/coastal-gardeni
   const html=await readPage(path);
   if(!html.includes('Local references and further reading'))fail(path+' missing evidence');
   if(!html.includes('Dallas Timpson Garden Services'))fail(path+' missing CTA');
+}
+
+
+// Site-wide contact accessibility and directed reading paths.
+for (const url of urls) {
+  const path = new URL(url).pathname;
+  const html = await readPage(path);
+  const withoutLinksOrCode=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"")
+    .replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi,"").replace(/<[^>]*>/g," ");
+  if(/dallas@kiwigardeners\.com|027\s+340\s+6581/i.test(withoutLinksOrCode))fail(path+" has visible unlinked Dallas contact detail");
+  if(!html.includes('class="footer-contact"'))fail(path+" missing footer contact block");
+  if(!html.includes('href="tel:+64273406581"'))fail(path+" missing click-to-call");
+  if(!html.includes('href="mailto:dallas@kiwigardeners.com"'))fail(path+" missing click-to-email");
+}
+for(const path of ['/areas/fendalton/','/areas/new-brighton/','/areas/huntsbury/','/guides/historic-christchurch-gardens/','/guides/native-plants-christchurch/','/guides/caring-for-christchurch-garden-plants/']){
+  const html=await readPage(path);
+  if(!html.includes('aria-label="Garden learning pathway"'))fail(path+" missing history-plants-care navigation");
+  if(!html.includes('/guides/caring-for-christchurch-garden-plants/'))fail(path+" missing plant-care route");
+  if(!html.includes('class="next-reading"'))fail(path+" missing next-topic prompt");
+}
+for(const path of ['/guides/native-plants-christchurch/','/guides/caring-for-christchurch-garden-plants/']){
+  const html=await readPage(path);
+  if(!html.includes('class="plant-gallery-grid"'))fail(path+" missing plant photographs");
+  if(!html.includes('aria-label="On this page"'))fail(path+" missing article table of contents");
+  if(!html.includes('Wikimedia Commons.'))fail(path+" missing image source credits");
 }
 
 if(errors.length){console.error(errors.join("\n"));process.exitCode=1;}
