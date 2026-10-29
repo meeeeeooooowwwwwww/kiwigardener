@@ -298,3 +298,12 @@ img { height: auto; }
 @media(max-width:950px){.footer-grid{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:30px}.footer-grid>div:last-child{grid-column:2}}
 @media(max-width:720px){.learning-path ol,.plant-gallery-grid,.article-toc ul{grid-template-columns:1fr}.learning-path{padding:18px;margin-bottom:27px}.next-reading{display:block}.next-reading .button{margin-top:16px;width:100%}.footer-grid{grid-template-columns:1fr 1fr;gap:23px}.footer-grid>div:first-child{grid-column:1/-1}.footer-grid>div:last-child{grid-column:auto}.footer-contact{gap:7px}}
 @media(max-width:420px){.footer-grid{grid-template-columns:1fr}.footer-grid>div,.footer-grid>div:first-child,.footer-grid>div:last-child{grid-column:1}.learning-path li a{min-height:auto;padding:12px}}
+
+
+/* Topic and geographical groupings in local area and garden guide hubs. */
+.directory-group{padding:22px 0 32px;border-top:1px solid var(--line)}
+.directory-group:first-of-type{border-top:0}
+.directory-group .hub-heading{margin:6px 0 22px}
+.directory-group .hub-heading h2{max-width:800px}
+.directory-group .cards .card{height:100%}
+@media(max-width:720px){.directory-group{padding:18px 0 28px}}
