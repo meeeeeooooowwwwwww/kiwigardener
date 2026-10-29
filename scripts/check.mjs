@@ -28,6 +28,8 @@ for(const url of urls){
   if(seenTitles.has(title))fail(path+" duplicate title with "+seenTitles.get(title));
   if(seenDescriptions.has(description))fail(path+" duplicate description with "+seenDescriptions.get(description));
   seenTitles.set(title,path);seenDescriptions.set(description,path);
+  if((html.match(/googletagmanager\\.com\\/gtag\\/js\\?id=G-CVKT89LFE7/g)||[]).length!==1)fail(path+" missing or duplicate Google tag");
+  if((html.match(/src="\\/assets\\/analytics\\.js"/g)||[]).length!==1)fail(path+" missing or duplicate GA4 initialiser");
   if(!html.includes('<link rel="canonical" href="'+url+'"'))fail(path+" canonical mismatch");
   if((html.match(/<h1(?:\s|>)/g)||[]).length!==1)fail(path+" expected one H1");
   if(!html.includes('<html lang="en-NZ">'))fail(path+" language missing");
@@ -84,6 +86,13 @@ for(const url of urls){
 for(const path of ["dist/robots.txt","dist/_headers","dist/assets/styles.css","dist/assets/favicon.svg","dist/assets/green-waste.svg","dist/assets/cleared-section.svg"]){
   await stat(path);
 }
+const analytics=await readFile("dist/assets/analytics.js","utf8");
+const headers=await readFile("dist/_headers","utf8");
+if(!analytics.includes("gtag('config', 'G-CVKT89LFE7')"))fail("Google Analytics measurement ID mismatch");
+if(!headers.includes("script-src 'self' https://challenges.cloudflare.com https://www.googletagmanager.com"))fail("CSP blocks gtag.js");
+if(!headers.includes("connect-src 'self' https://challenges.cloudflare.com https://www.google-analytics.com https://region1.google-analytics.com"))fail("CSP blocks Analytics events");
+if(!headers.includes("img-src 'self' data: https://images.unsplash.com https://www.google-analytics.com"))fail("CSP blocks Analytics image fallback");
+if(headers.includes("'unsafe-inline'") && !headers.includes("style-src 'self' 'unsafe-inline'"))fail("CSP script policy unexpectedly weakened");
 const serviceIndex=await readFile("dist/services/index.html","utf8");
 const cardSources=[...serviceIndex.matchAll(/class="card-image" src="([^"]+)"/g)].map(m=>m[1]);
 if(new Set(cardSources).size!==cardSources.length)fail("Duplicate service card image URLs");
