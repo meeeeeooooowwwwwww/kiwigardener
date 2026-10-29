@@ -218,6 +218,42 @@ const generateSite = function generateSite(){
     }).join("");
   }
 
+
+  const areaGroups=[
+    {title:"Eastern suburbs and the coast",intro:"From everyday garden tidy-ups to coastal wind and the historic eastern wetlands.",slugs:["linwood","woolston","phillipstown","bromley","avonside","new-brighton","southshore","burwood","parklands"]},
+    {title:"Historic and established gardens",intro:"Local heritage gardens, established neighbourhoods and the city's original forest.",slugs:["fendalton","ilam","riccarton","papanui","beckenham","st-martins","christchurch-central"]},
+    {title:"Port Hills and hillside gardens",intro:"Planting, maintenance and access on slopes with different aspects and soil conditions.",slugs:["cashmere","huntsbury"]},
+    {title:"Greater Christchurch and Canterbury",intro:"Start with the wider region, then confirm the job and property address with Dallas.",slugs:["christchurch","banks-peninsula","selwyn","waimakariri"]}
+  ];
+  function groupedAreas(){
+    const seen=new Set();
+    const sections=areaGroups.map(g=>{
+      const entries=g.slugs.map(slug=>areas.find(a=>a.slug===slug)).filter(Boolean);
+      for(const x of entries){if(seen.has(x.slug))throw Error("Duplicate area in navigation: "+x.slug);seen.add(x.slug);}
+      return '<section class="directory-group"><div class="hub-heading"><h2>'+esc(g.title)+'</h2><p>'+esc(g.intro)+'</p></div>'+cards(entries,"areas")+'</section>';
+    });
+    const missing=areas.filter(x=>!seen.has(x.slug));
+    if(missing.length)throw Error("Missing area navigation: "+missing.map(x=>x.slug).join(", "));
+    return sections.join("");
+  }
+  const guideGroups=[
+    {title:"Discover Christchurch garden history and landscapes",intro:"Learn why gardens differ across the city before choosing plants.",slugs:["historic-christchurch-gardens","christchurch-garden-soils","coastal-gardening-christchurch","port-hills-gardens"]},
+    {title:"Choose suitable plants",intro:"Native species, where they grow naturally, and what to check in your own garden.",slugs:["native-plants-christchurch"]},
+    {title:"Look after your garden",intro:"Plant care, seasonal maintenance and realistic garden clean-up plans.",slugs:["caring-for-christchurch-garden-plants","christchurch-gardening-calendar","garden-clean-up-checklist"]},
+    {title:"Plan professional gardening work",intro:"Make a clearer job brief and understand what to ask a gardener.",slugs:["how-to-choose-a-gardener"]}
+  ];
+  function groupedGuides(){
+    const seen=new Set();
+    const blocks=guideGroups.map(g=>{
+      const entries=g.slugs.map(slug=>guides.find(x=>x.slug===slug)).filter(Boolean);
+      for(const x of entries){if(seen.has(x.slug))throw Error("Duplicate guide in navigation: "+x.slug);seen.add(x.slug);}
+      return '<section class="directory-group"><div class="hub-heading"><h2>'+esc(g.title)+'</h2><p>'+esc(g.intro)+'</p></div>'+cards(entries,"guides")+'</section>';
+    });
+    const missing=guides.filter(x=>!seen.has(x.slug));
+    if(missing.length)throw Error("Missing guide navigation: "+missing.map(x=>x.slug).join(", "));
+    return blocks.join("");
+  }
+
   const files={};
   const home=`<section class="hero hero-photographic"><div class="container hero-grid"><div class="hero-copy">${eyebrow("Eastern & southern Christchurch · Dallas Timpson")}<h1>Dallas Timpson. <span>Your local Christchurch gardener, available now.</span></h1><p class="lead">Need lawn mowing, weeding, garden tidy-ups, landscaping, yard restoration or garden waste removal in Canterbury? Dallas Timpson is available for private gardens and rental property work across Christchurch, Banks Peninsula, Selwyn and Waimakariri. Dallas also removes lawn clippings, pulled weeds, pruned branches and other green waste, so you can ask for the garden to be left cleared and tidy. Call now for a quote.</p><div class="button-row"><a class="button hero-primary" href="${TEL_URL}">Call Dallas for a quote · ${PHONE} <span aria-hidden="true">↗</span></a>${a("/services/","Explore gardening services","button secondary")}</div><div class="hero-contact"><span class="hero-contact-icon" aria-hidden="true">☎</span><div><small>Speak with Dallas Timpson</small><a href="${TEL_URL}">${PHONE}</a><br><small>Or email <a href="${ENQUIRY_URL}">dallas@kiwigardeners.com</a></small></div></div><p class="micro">Dallas Timpson is ready to discuss your next gardening job. Private homeowners and property managers welcome.</p></div><figure class="hero-art hero-photo-art"><img src="${GARDEN_PHOTO}" width="1050" height="1300" alt="Lush garden path and planted beds at an Avonside Christchurch community garden" fetchpriority="high"></figure></div></section>
 <section class="band"><div class="container band-inner"><strong>Made for Christchurch gardens.</strong><p>Locally focused guides · Clear gardening scope · Call Dallas directly · Quotes by phone</p></div></section>
@@ -237,7 +273,7 @@ const generateSite = function generateSite(){
     files[`services/${s.slug}/index.html`]=layout({path,title:`${s.name} Christchurch | Kiwi Gardeners Guide`,description:`${s.intro.slice(0,147).replace(/[.!?]$/,"")}.`,content,trail});
   }
   const areaHubTrail=[...baseTrail,{name:"Local areas",path:"/areas/"}];
-  const areasHub=articleHero("Local gardens and landscapes","Gardening across Christchurch suburbs","Explore real Christchurch garden histories, planting environments and practical advice for individual properties. Call Dallas Timpson to confirm service availability for your address.",areaHubTrail)+`<section class="section"><div class="container">${learningPath("hub","")}${featuredGallery()}<div class="hub-heading"><h2>Browse Christchurch gardening areas</h2><p>Different suburbs have different stories, but your own garden still needs an individual assessment.</p></div>${cards(areas,"areas")}<div class="empty-state" style="margin-top:30px"><strong>Looking for another nearby suburb?</strong><p>Cashmere, Beckenham, St Martins, Sydenham, Somerfield, Huntsbury, Richmond, Waltham, Opawa, Aranui, Wainoni and surrounding neighbourhoods are part of our wider Christchurch editorial focus. We will add detailed pages where we can offer distinct, useful local information.</p></div></div></section>`;
+  const areasHub=articleHero("Local gardens and landscapes","Gardening across Christchurch suburbs","Explore real Christchurch garden histories, planting environments and practical advice for individual properties. Call Dallas Timpson to confirm service availability for your address.",areaHubTrail)+`<section class="section"><div class="container">${learningPath("hub","")}${featuredGallery()}<div class="hub-heading"><h2>Browse Christchurch gardening areas</h2><p>Different suburbs have different stories, but your own garden still needs an individual assessment.</p></div>${groupedAreas()}<div class="empty-state" style="margin-top:30px"><strong>Looking for another nearby suburb?</strong><p>Cashmere, Beckenham, St Martins, Sydenham, Somerfield, Huntsbury, Richmond, Waltham, Opawa, Aranui, Wainoni and surrounding neighbourhoods are part of our wider Christchurch editorial focus. We will add detailed pages where we can offer distinct, useful local information.</p></div></div></section>`;
   files["areas/index.html"]=layout({path:"/areas/",title:"Christchurch Suburb Gardening Guides | Gardens, Soils & Plants",description:"Explore Christchurch suburb gardening guides: local soil, native plants, coastal gardens, heritage landscapes and practical tips. Call Dallas Timpson for garden work.",content:areasHub,trail:areaHubTrail});
   for(const ar of areas){
     const path=`/areas/${ar.slug}/`,trail=[...areaHubTrail,{name:ar.name,path}];
@@ -245,7 +281,7 @@ const generateSite = function generateSite(){
     files[`areas/${ar.slug}/index.html`]=layout({path,title:`Gardening ${ar.name} Christchurch | Lawn & Garden Guide`,description:`Gardening in ${ar.name}, Christchurch: local planting context, garden care, weeding and lawn mowing advice. Contact Dallas Timpson for a gardening quote.`,content,trail});
   }
   const guidesHubTrail=[...baseTrail,{name:"Garden guides",path:"/guides/"}];
-  const guidesHub=articleHero("Gardening knowledge","Christchurch gardening guides","Learn about the city\u0027s soils, coastal planting, Port Hills, native species and garden history alongside seasonal advice and practical job planning.",guidesHubTrail)+`<section class="section"><div class="container">${learningPath("hub","")}<div class="hub-topic-links"><a href="/areas/">Explore suburb garden guides ↗</a><a href="/services/">Find gardening services ↗</a><a href="tel:+64273406581">Call Dallas for a quote ↗</a></div>${featuredGallery()}<div class="hub-heading"><h2>Local growing conditions and practical garden care</h2></div>${cards(guides,"guides")}</div></section>`;
+  const guidesHub=articleHero("Gardening knowledge","Christchurch gardening guides","Learn about the city\u0027s soils, coastal planting, Port Hills, native species and garden history alongside seasonal advice and practical job planning.",guidesHubTrail)+`<section class="section"><div class="container">${learningPath("hub","")}<div class="hub-topic-links"><a href="/areas/">Explore suburb garden guides ↗</a><a href="/services/">Find gardening services ↗</a><a href="tel:+64273406581">Call Dallas for a quote ↗</a></div>${featuredGallery()}<div class="hub-heading"><h2>Local growing conditions and practical garden care</h2></div>${groupedGuides()}<div class="empty-state" style="margin-top:30px"><strong>Need a garden tidy-up or regular gardener?</strong><p>Call Dallas Timpson on <a href="${TEL_URL}">${PHONE}</a> or <a href="${ENQUIRY_URL}">email a garden enquiry</a>. Explain your suburb, access and the work you need.</p></div></div></section>`;
   files["guides/index.html"]=layout({path:"/guides/",title:"Christchurch Gardening Guides & Seasonal Tips | Kiwi Gardeners",description:"Christchurch gardening guides for local soils, coastal gardens, native plants, Port Hills, historic gardens and seasonal maintenance. Call Dallas for a quote.",content:guidesHub,trail:guidesHubTrail});
   for(const g of guides){
     const path=`/guides/${g.slug}/`,trail=[...guidesHubTrail,{name:g.name,path}];
