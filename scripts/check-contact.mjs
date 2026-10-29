@@ -17,7 +17,7 @@ test("config disabled unless Cloudflare email, Turnstile and owner activation ar
   assert.equal(ready({...envBase,TURNSTILE_SECRET:undefined}),false);
   assert.equal(ready(envBase),true);
   const out=await run(new Request(site+"/api/contact/config"),{...envBase,CONTACT_FORM_ENABLED:"false"});
-  assert.equal(out.status,200);assert.deepEqual(out.body,{enabled:false});assert.equal(out.sent.length,0);
+  assert.equal(out.status,200);assert.equal(out.body.enabled,false);assert.equal(out.body.checks.formEnabled,false);assert.equal(out.sent.length,0);
 });
 test("config returns a public site key only when all settings are ready",async()=>{
   const out=await run(new Request(site+"/api/contact/config"));assert.equal(out.status,200);assert.equal(out.body.siteKey,"dummy-public-key");
