@@ -70,6 +70,30 @@ try {
       }
       if (snapshot.imgMissingAlt) failures.push(`${path} @${width}: ${snapshot.imgMissingAlt} images missing alt`);
       if (snapshot.h1 !== 1) failures.push(`${path} @${width}: expected one h1`);
+      // Regression: verify the computed layout, not only horizontal overflow.
+      if ((width === 390 || width === 1440) && await page.locator(".learning-path").count()) {
+        const nav = await page.evaluate(() => {
+          const list = document.querySelector(".learning-path ol");
+          const item = list?.querySelector("li");
+          const link = item?.querySelector("a");
+          const title = item?.querySelector(".path-title");
+          const desc = item?.querySelector(".path-desc");
+          const before = link ? getComputedStyle(link, "::before") : null;
+          const heading = title?.getBoundingClientRect();
+          const detail = desc?.getBoundingClientRect();
+          return { layout: list && getComputedStyle(list).display,
+            marker: list && getComputedStyle(list).listStyleType,
+            linkDisplay: link && getComputedStyle(link).display,
+            number: before?.content, numberWidth: Number.parseFloat(before?.width || "0"),
+            gap: heading && detail ? detail.top - heading.bottom : -1,
+            items: list?.children.length, hardcodedNumbers: !!item?.querySelector(".path-index") };
+        });
+        if (nav.layout !== "grid" || nav.marker !== "none" || nav.linkDisplay !== "flex" ||
+            nav.number === "none" || nav.numberWidth < 20 || nav.gap < 2 ||
+            nav.items !== 4 || nav.hardcodedNumbers) {
+          failures.push(`${path} @${width}: learning steps unstyled or text cramped: ${JSON.stringify(nav)}`);
+        }
+      }
       if (path === "/" && (!snapshot.heroWidth || snapshot.heroWidth < 100)) failures.push(`Homepage @${width}: primary enquiry CTA missing or too narrow`);
       checked++;
     }
