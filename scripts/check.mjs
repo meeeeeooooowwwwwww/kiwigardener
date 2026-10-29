@@ -8,7 +8,7 @@ const seenTitles=new Map();
 const seenDescriptions=new Map();
 const pages=new Map();
 const fail=(value)=>errors.push(value);
-assert.equal(urls.length,34,"Expected 34 indexable HTML pages (excluding the custom 404 page)");
+assert.equal(urls.length,47,"Expected 47 indexable HTML pages (excluding the custom 404 page)");
 assert.equal(new Set(urls).size,urls.length,"Duplicate URL in sitemap");
 const readPage=async(path)=>{
   if(pages.has(path))return pages.get(path);
@@ -100,5 +100,18 @@ if(!cardSources.includes("/green-waste-removal.jpg")||!cardSources.includes("/ru
 for(const path of ["dist/green-waste-removal.jpg","dist/rubbish-removal.jpg"]) await stat(path);
 const robots=await readFile("dist/robots.txt","utf8");
 if(!robots.includes("Sitemap: "+site+"/sitemap.xml"))fail("robots.txt sitemap wrong");
+// Local editorial pages should retain source evidence, navigation and direct enquiry paths.
+for(const path of ['/areas/fendalton/','/areas/ilam/','/areas/riccarton/','/areas/burwood/','/areas/southshore/','/areas/huntsbury/']){
+  const html=await readPage(path);
+  if(!html.includes('Local references and further reading'))fail(path+' missing source references');
+  if(!html.includes('Dallas Timpson Garden Services'))fail(path+' missing garden quote CTA');
+  if(!html.includes('class="sidebar editorial-sidebar"'))fail(path+' missing editorial navigation');
+}
+for(const path of ['/guides/christchurch-garden-soils/','/guides/coastal-gardening-christchurch/','/guides/port-hills-gardens/','/guides/native-plants-christchurch/','/guides/historic-christchurch-gardens/']){
+  const html=await readPage(path);
+  if(!html.includes('Local references and further reading'))fail(path+' missing evidence');
+  if(!html.includes('Dallas Timpson Garden Services'))fail(path+' missing CTA');
+}
+
 if(errors.length){console.error(errors.join("\n"));process.exitCode=1;}
 else console.log("SEO/link audit PASS: "+urls.length+" unique pages, titles, descriptions, canonicals, schema, alt text, robots, sitemap, live destination links.");
