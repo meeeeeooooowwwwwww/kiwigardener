@@ -28,8 +28,8 @@ for(const url of urls){
   if(seenTitles.has(title))fail(path+" duplicate title with "+seenTitles.get(title));
   if(seenDescriptions.has(description))fail(path+" duplicate description with "+seenDescriptions.get(description));
   seenTitles.set(title,path);seenDescriptions.set(description,path);
-  if((html.match(/googletagmanager\\.com\\/gtag\\/js\\?id=G-CVKT89LFE7/g)||[]).length!==1)fail(path+" missing or duplicate Google tag");
-  if((html.match(/src="\\/assets\\/analytics\\.js"/g)||[]).length!==1)fail(path+" missing or duplicate GA4 initialiser");
+  if(html.split('https://www.googletagmanager.com/gtag/js?id=G-CVKT89LFE7').length!==2)fail(path+" missing or duplicate Google tag");
+  if(html.split('src="/assets/analytics.js"').length!==2)fail(path+" missing or duplicate GA4 initialiser");
   if(!html.includes('<link rel="canonical" href="'+url+'"'))fail(path+" canonical mismatch");
   if((html.match(/<h1(?:\s|>)/g)||[]).length!==1)fail(path+" expected one H1");
   if(!html.includes('<html lang="en-NZ">'))fail(path+" language missing");
