@@ -100,9 +100,6 @@ if(!cardSources.includes("/green-waste-removal.jpg")||!cardSources.includes("/ru
 for(const path of ["dist/green-waste-removal.jpg","dist/rubbish-removal.jpg"]) await stat(path);
 const robots=await readFile("dist/robots.txt","utf8");
 if(!robots.includes("Sitemap: "+site+"/sitemap.xml"))fail("robots.txt sitemap wrong");
-if(errors.length){console.error(errors.join("\n"));process.exitCode=1;}
-else console.log("SEO/link audit PASS: "+urls.length+" unique pages, titles, descriptions, canonicals, schema, alt text, robots, sitemap, live destination links.");
-
 // Local editorial pages should retain source evidence, navigation and direct enquiry paths.
 for(const path of ['/areas/fendalton/','/areas/ilam/','/areas/riccarton/','/areas/burwood/','/areas/southshore/','/areas/huntsbury/']){
   const html=await readPage(path);
@@ -115,3 +112,6 @@ for(const path of ['/guides/christchurch-garden-soils/','/guides/coastal-gardeni
   if(!html.includes('Local references and further reading'))fail(path+' missing evidence');
   if(!html.includes('Dallas Timpson Garden Services'))fail(path+' missing CTA');
 }
+
+if(errors.length){console.error(errors.join("\n"));process.exitCode=1;}
+else console.log("SEO/link audit PASS: "+urls.length+" unique pages, titles, descriptions, canonicals, schema, alt text, robots, sitemap, live destination links.");
