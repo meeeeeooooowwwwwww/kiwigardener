@@ -347,3 +347,6 @@ img { height: auto; }
 .learning-path li a[aria-current="step"]{border:2px solid #4b7950;background:#dcebcf}
 .learning-path li a:focus-visible{outline:3px solid #80a65f;outline-offset:3px}
 @media(max-width:720px){.learning-path ol{grid-template-columns:1fr}.learning-path li a{min-height:80px}}
+
+/* A failed third-party photo must not display a broken icon or leave an inaccurate caption. */
+img.card-image[hidden],figure.local-figure[hidden]{display:none!important}
