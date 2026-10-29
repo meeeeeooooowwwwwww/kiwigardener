@@ -138,5 +138,40 @@ for(const path of ['/guides/native-plants-christchurch/','/guides/caring-for-chr
   if(!html.includes('Wikimedia Commons.'))fail(path+" missing image source credits");
 }
 
+
+// October 30 site-wide editorial, location, sharing and footer regression checks.
+const headingCases=[
+  ["/areas/christchurch/","Gardening in Christchurch"],
+  ["/areas/selwyn/","Gardening in Selwyn, Canterbury"],
+  ["/areas/waimakariri/","Gardening in Waimakariri, Canterbury"],
+  ["/areas/banks-peninsula/","Gardening in Banks Peninsula, Canterbury"],
+  ["/areas/cashmere/","Gardening in Cashmere, Christchurch"],
+  ["/areas/fendalton/","Gardening in Fendalton, Christchurch"]
+];
+for(const [path,heading] of headingCases){
+  const html=await readPage(path);
+  if(!html.includes("<h1>"+heading+"</h1>"))fail(path+" incorrect local heading");
+  if(path!=="/areas/christchurch/"&&html.includes("Gardening in "+heading.replace("Gardening in ","")+", Christchurch"))fail(path+" duplicated Christchurch");
+  if(path==="/areas/selwyn/"||path==="/areas/waimakariri/"||path==="/areas/banks-peninsula/"){
+    if(html.includes("Eastern Christchurch"))fail(path+" incorrectly labelled eastern Christchurch");
+  }
+}
+for(const path of ["/","/areas/fendalton/","/guides/native-plants-christchurch/","/services/green-waste-removal/"]){
+  const html=await readPage(path);
+  const image=html.match(/<meta property="og:image" content="([^"]+)"/)?.[1];
+  if(!image||!image.startsWith("https://"))fail(path+" missing absolute Open Graph image");
+  if(!html.includes('<meta name="twitter:image" content="https://'))fail(path+" missing Twitter sharing image");
+}
+const homepage=await readPage("/");
+if(homepage.includes("Gardeners Linwood Christchurch | Kiwi Gardeners"))fail("Homepage title still over-focused on Linwood");
+if(!homepage.includes('aria-label="Website credits and related links"'))fail("Footer credits lack organised navigation");
+const privacy=await readPage("/privacy/");
+if(!privacy.includes("Wikimedia Commons"))fail("Privacy page is missing Wikimedia photo provider");
+for(const path of ["/areas/fendalton/","/areas/christchurch/"]){
+  const html=await readPage(path);
+  const care=html.indexOf('id="garden-care"'), next=html.indexOf('class="next-reading"');
+  if(care<0||next<=care)fail(path+" next-reading box appears before practical gardening advice");
+}
+
 if(errors.length){console.error(errors.join("\n"));process.exitCode=1;}
 else console.log("SEO/link audit PASS: "+urls.length+" unique pages, titles, descriptions, canonicals, schema, alt text, robots, sitemap, live destination links.");
