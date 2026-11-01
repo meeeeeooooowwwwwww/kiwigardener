@@ -354,8 +354,9 @@ img.card-image[hidden],figure.local-figure[hidden]{display:none!important}
 
 /* Christchurch plants: use shared .card, .cards, .tag, .button, sidebar and enquiry panel.
    Directory-specific rules only customise search controls and compact botanical metadata. */
-.plant-intro{max-width:960px;font-size:1.04rem;line-height:1.7;margin-bottom:18px}
-.plant-intro p{margin:0 0 14px}
+/* Directory introduction follows the same full-width container as the links and filters. */
+.plant-intro{width:100%;max-width:none;font-size:1.04rem;line-height:1.7;margin-bottom:18px}
+.plant-intro p{max-width:none;margin:0 0 14px}
 .plant-quick-filters{margin:14px 0 26px}
 .plant-quick-filters .tag{border-radius:100px}
 .plant-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;padding:20px;border:1px solid var(--line);border-radius:var(--r);background:#edf2e8;margin:22px 0}
