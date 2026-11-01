@@ -1,6 +1,7 @@
 import {readFile, stat} from "node:fs/promises";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import {plants} from "../src/plant-catalogue.mjs";
 const site = "https://kiwigardeners.com";
 const xml = await readFile("dist/sitemap.xml","utf8");
 const urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x=>x[1]);
@@ -13,7 +14,8 @@ const seenTitles=new Map();
 const seenDescriptions=new Map();
 const pages=new Map();
 const fail=(value)=>errors.push(value);
-assert.equal(urls.length,48,"Expected 48 indexable HTML pages (excluding the custom 404 page)");
+assert.equal(plants.length,271,"Expected 271 sourced botanical listings");
+assert.equal(urls.length,48+1+plants.length,"Expected original pages plus plant directory and individual plant profiles");
 assert.equal(new Set(urls).size,urls.length,"Duplicate URL in sitemap");
 const readPage=async(path)=>{
   if(pages.has(path))return pages.get(path);
@@ -211,6 +213,26 @@ const photoFallback=await readFile("dist/assets/image-fallback.js","utf8");
 if(!photoFallback.includes("data-fallback-src")||!photoFallback.includes("DOMContentLoaded"))fail("Photo fallback recovery is not installed");
 if(!areaDirectory.includes('/assets/image-fallback.js?v=20261030'))fail("Photo recovery script is not loaded");
 if(!areaDirectory.includes("Riccarton_Bush_predator-proof_fence_347.jpg"))fail("Riccarton photo reference missing");
+
+
+const directory=await readPage("/plants/");
+if(!directory.includes('id="plant-query"')||!directory.includes('id="plant-flower"')||!directory.includes('id="plant-foliage"'))fail("Plant search missing free-text or colour filters");
+if(!directory.includes('src="/assets/plant-search.js"'))fail("Plant search behaviour is not loaded");
+if((directory.match(/class="plant-card"/g)||[]).length!==plants.length)fail("Plant finder does not list all plants");
+const finderJs=await readFile("dist/assets/plant-search.js","utf8");
+if(!finderJs.includes('aria-live')&&!directory.includes('aria-live="polite"'))fail("Plant filtering lacks live result feedback");
+const slugSet=new Set(plants.map(p=>p.slug));
+if(slugSet.size!==plants.length)fail("Duplicate plant slugs");
+for(const p of plants){
+  const url="/plants/"+p.slug+"/";
+  if(!urls.includes(site+url))fail("Plant is missing from sitemap: "+p.slug);
+  const html=await readPage(url);
+  if(!html.includes('href="'+p.source+'"'))fail(url+" missing source link");
+  if(!html.includes('Dallas Timpson Garden Services'))fail(url+" missing real gardening CTA");
+  if(!html.includes('class="plant-facts"'))fail(url+" missing characteristics table");
+  if(!html.includes('rel="noopener noreferrer"'))fail(url+" missing safe source link");
+}
+if(!homepage.includes('href="/plants/"'))fail("Home has no plant directory entry point");
 
 if(errors.length){console.error(errors.join("\n"));process.exitCode=1;}
 else console.log("SEO/link audit PASS: "+urls.length+" unique pages, titles, descriptions, canonicals, schema, alt text, robots, sitemap, live destination links.");
