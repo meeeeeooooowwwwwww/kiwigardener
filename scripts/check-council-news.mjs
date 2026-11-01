@@ -8,12 +8,13 @@ const rss='<?xml version="1.0"?><rss version="2.0"><channel><title>Newsline</tit
   '<item><title><![CDATA[New native planting &amp; gardens in Linwood]]></title>'+
   '<link>https://www.newsline.ccc.govt.nz/news/story/native-gardens-linwood</link><pubDate>'+today+'</pubDate><description>Wetlands and community planting in Linwood.</description></item>'+
   '<item><title>Christchurch road closures on Main Street</title><link>https://www.newsline.ccc.govt.nz/news/story/road-closures</link><pubDate>'+today+'</pubDate></item>'+
+  '<item><title>Latest updates on the Wastewater Treatment Plant</title><link>https://www.newsline.ccc.govt.nz/news/story/wastewater-plant</link><pubDate>'+today+'</pubDate></item>'+
   '<item><title>New flowers at our city gardens</title><link>https://www.example.com/evil</link><pubDate>'+today+'</pubDate></item>'+
   '</channel></rss>';
 const entry={title:"New native planting & gardens in Linwood",url:"https://www.newsline.ccc.govt.nz/news/story/native-gardens-linwood",date};
 test("RSS parsing filters irrelevant headlines and unexpected domains",()=>{
   assert.deepEqual(parseCouncilFeed(rss),[entry]);
-  assert.deepEqual(validateStoredNews([entry,{title:"Road closure",date,url:"https://evil.test/a"}]),[entry]);
+  assert.deepEqual(validateStoredNews([entry,{title:"Road closure",date,url:"https://evil.test/a"},{title:"Latest updates on the Wastewater Treatment Plant",date,url:"https://www.newsline.ccc.govt.nz/news/story/wastewater-plant"}]),[entry]);
 });
 test("Only appropriate pages get small, sourced Council news",()=>{
   const news=[entry];
