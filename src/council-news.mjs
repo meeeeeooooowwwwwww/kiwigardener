@@ -55,19 +55,31 @@ function relevance(path,s){
 const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 const formatted=d=>new Intl.DateTimeFormat("en-NZ",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}).format(new Date(d+"T12:00:00Z"));
 // The photos are deliberately illustrative, not falsely presented as Newsline article photographs.
-function photoFor(s){
+function photoKeyFor(s){
  const title=normal(s.title);
- const key=/\b(?:coast|beach|dune|sea|harbour|bay|shore|estuary)\b/.test(title)?"dunes":
+ return /\b(?:coast|beach|dune|sea|harbour|bay|shore|estuary)\b/.test(title)?"dunes":
   /\b(?:wetland|waterway|stream|river|ecolog|biodivers|restor|habitat)\b/.test(title)?"travis":
   /\b(?:port hills|hill)\b/.test(title)?"hills":
   /\b(?:forest|native bush|reserve|tree)\b/.test(title)?"riccarton":"botanic";
- return images[key]||images.botanic;
 }
-function thumbnail(s){
- const p=photoFor(s);
- return '<figure class="council-news-thumb"><img class="council-news-photo" src="'+esc(p.src)+'" width="116" height="88" alt="Illustrative Christchurch garden or nature photograph" loading="lazy" decoding="async" referrerpolicy="no-referrer"><figcaption>Illustrative photo: <a href="'+esc(p.file)+'" target="_blank" rel="noopener noreferrer">'+esc(p.credit)+'</a> · <a href="'+esc(p.licenceUrl)+'" target="_blank" rel="noopener noreferrer">'+esc(p.licence)+'</a></figcaption></figure>';
+function thumbnail(s,availableImages){
+ const key=photoKeyFor(s);
+ const photo=images[key]||images.botanic;
+ const fallbackPlant={
+  botanic:"agapanthus-orientalis-blue",
+  travis:"acaena-inermis-purpurea",
+  dunes:"acorus-gramineus-ogon",
+  riccarton:"acca-sellowiana",
+  hills:"arthropodium-cirratum"
+ }[key];
+ const isLicensed=availableImages?.has(key);
+ const src=isLicensed?"/assets/council-news/"+key+".jpg":"/assets/plant-photos/"+fallbackPlant+".jpg";
+ const credit=isLicensed
+   ?'Illustrative photo: <a href="'+esc(photo.file)+'" target="_blank" rel="noopener noreferrer">'+esc(photo.credit)+'</a> · <a href="'+esc(photo.licenceUrl)+'" target="_blank" rel="noopener noreferrer">'+esc(photo.licence)+'</a>'
+   :"Illustrative plant photograph";
+ return '<figure class="council-news-thumb"><img class="council-news-photo" src="'+esc(src)+'" width="116" height="88" alt="Illustrative local garden or nature photograph; not supplied by Newsline" loading="lazy" decoding="async"><figcaption>'+credit+'</figcaption></figure>';
 }
-export function councilNewsSection(path,records){
+export function councilNewsSection(path,records,availableImages=new Set()){
  if(path==="/contact/"||path==="/privacy/"||path==="/404/")return "";
  const limit=path==="/plants/"||path==="/guides/"||path==="/areas/"||path==="/services/"?3:2;
  const stories=validateStoredNews(records).filter(recent)
@@ -76,6 +88,6 @@ export function councilNewsSection(path,records){
  if(!stories.length)return "";
  const resources=(path==="/plants/"||path==="/guides/"||/\/guides\/(?:historic-christchurch-gardens|caring-for-christchurch-garden-plants|native-plants-christchurch)\//.test(path))
   ?'<p class="council-news-resource">Official garden information: <a href="https://www.ccc.govt.nz/parks-and-gardens/christchurch-botanic-gardens" target="_blank" rel="noopener noreferrer">Christchurch Botanic Gardens ↗</a></p>':"";
- const rows=stories.map(s=>'<li class="council-news-item">'+thumbnail(s)+'<div class="council-news-copy"><a href="'+esc(s.url)+'" target="_blank" rel="noopener noreferrer">'+esc(s.title)+' <span aria-hidden="true">↗</span></a><time datetime="'+esc(s.date)+'">'+esc(formatted(s.date))+'</time></div></li>').join("");
+ const rows=stories.map(s=>'<li class="council-news-item">'+thumbnail(s,availableImages)+'<div class="council-news-copy"><a href="'+esc(s.url)+'" target="_blank" rel="noopener noreferrer">'+esc(s.title)+' <span aria-hidden="true">↗</span></a><time datetime="'+esc(s.date)+'">'+esc(formatted(s.date))+'</time></div></li>').join("");
  return '<section class="council-updates" aria-label="Christchurch City Council Newsline stories"><div class="container"><div class="council-updates-inner"><div class="council-updates-title"><span class="council-source"><span class="council-source-icon" aria-hidden="true">N</span><span>Christchurch City Council <strong>Newsline</strong></span></span><h2>From around our gardens</h2><p>Local environment, parks and garden news from Council. Photo illustrations are independent of Newsline.</p></div><div><ul class="council-news-links">'+rows+'</ul>'+resources+'</div></div></div></section>';
 }
