@@ -100,7 +100,8 @@ export function addPlantPages(ctx){
       '<!-- Reserved for a future, clearly labelled supplier/affiliate integration. No adverts or tracking are installed. --></article>'+
       '<aside class="sidebar plant-sidebar"><h3>Garden planning</h3><a href="/plants/">Search all plants ↗</a><a href="/guides/christchurch-garden-soils/">Christchurch soils ↗</a><a href="/guides/native-plants-christchurch/">Native plants ↗</a><a href="/guides/coastal-gardening-christchurch/">Coastal gardening ↗</a><a href="/services/">Gardening services ↗</a><p>Call Dallas to discuss <a href="'+TEL_URL+'">garden maintenance in Christchurch on '+PHONE+'</a>, or <a href="'+ENQUIRY_URL+'">email an enquiry</a>.</p></aside></div>';
     const title=(p.common?p.common+" | "+p.name:p.name)+" | Christchurch Plant Guide";
-    const description=[(p.common?p.common+" ("+p.name+")":p.name)+" in Christchurch",p.form.toLowerCase()+" care and planting ideas",p.flowers.length?"flowers: "+p.flowers.join(", "):"",p.uses.length?"garden uses: "+p.uses.slice(0,2).join(", "):"","Find practical growing considerations and gardening services."].filter(Boolean).join(". ").slice(0,199);
+    const descriptionText=[(p.common?p.common+" ("+p.name+")":p.name)+" in Christchurch",p.form.toLowerCase()+" care and planting ideas",p.flowers.length?"flowers: "+p.flowers.join(", "):"",p.uses.length?"garden uses: "+p.uses.slice(0,2).join(", "):"","Find practical growing considerations and gardening services."].filter(Boolean).join(". ");
+    const description=descriptionText.length<=199?descriptionText:descriptionText.slice(0,196).replace(/\s+\S*$/,"").replace(/[.,;: ]+$/,"")+"…";
     files["plants/"+p.slug+"/index.html"]=layout({path,title,description,content,trail,type:"Article",indexable:Boolean(selectedNotes)});
   }
   return plants.length;
