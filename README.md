@@ -3,7 +3,7 @@
 Independent, Christchurch-focused gardening website. Separate from all other repositories and websites.
 
 ## Current site (October 2026)
-- 48 indexable HTML pages plus a custom 404: homepage, 10 service pages, 22 area pages, 9 garden guides, and site information/hub pages.
+- Original 48 indexable site pages plus a 271-entry plant directory: 42 individually enriched plant profiles are initially indexable, while the remaining profiles are accessible from search but intentionally noindex until editorial review. All original service, area and guide pages remain.
 - Local area pages are grouped by geography. Gardening guides follow history → plants/soil → care → gardening help, with context-specific reading links.
 - Dallas Timpson is presented as the independent gardening provider. Phone calls link to `tel:+64273406581`; public email links use `dallas@kiwigardeners.com`.
 - Unique meta titles, descriptions, canonical URLs, accessible navigation, JSON-LD, XML sitemap and robots.txt.
@@ -64,10 +64,19 @@ This repository has validation CI and a Worker-compatible `wrangler.jsonc`. Clou
 1. Visit https://search.google.com/search-console and use the **property selector → Add property**.
 2. Select **Domain**, enter exactly `kiwigardeners.com` (no https, no www, no path).
 3. Use Google's Cloudflare registrar/DNS connection or add Google's verification TXT record to the `kiwigardeners.com` Cloudflare zone. Leave the existing Worker DNS record alone. Click **Verify**.
-4. Select the **kiwigardeners.com** property (not any existing site), go to **Indexing → Sitemaps**, submit `sitemap.xml`. The generator currently lists 48 canonical indexable pages. The 404 page is intentionally excluded.
+4. Select the **kiwigardeners.com** property (not any existing site), go to **Indexing → Sitemaps**, submit `sitemap.xml`. The generator currently lists 91 canonical indexable pages (the original 48 plus the plant directory and 42 enhanced profiles); the remaining 229 plant entries are live HTML but noindex pending detailed editorial review. The 404 page is intentionally excluded.
 5. Use URL Inspection on `https://kiwigardeners.com/` and representative service / suburb URLs, inspect Live URL first and request indexing if eligible.
 6. After Google has crawled, review **Indexing → Pages**, **Performance → Search results**, and **Experience → Core Web Vitals**. Search Console verification and sitemap submission do **not** guarantee Google rankings, crawling speed or indexing.
 7. Configure HTTPS and a canonical redirect from `www.kiwigardeners.com` to `https://kiwigardeners.com` once `www` is configured, to prevent separate host variants. Avoid changing DNS or redirect rules without checking the active Worker domain.
 8. Add sitemap `lastmod` only if reliable per-page modification dates are tracked. The current sitemap intentionally omits `lastmod`; don't invent update dates or reset them on every deployment.
 
 Google guidance: https://support.google.com/webmasters/answer/34592 and https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap
+
+## Christchurch plant directory (November 2026)
+- `/plants/` offers instant, accessible client-side search of 271 entries with filters for plant form, purpose, flower colour, foliage colour, light, flowering season and NZ native status. The page and individual plant URLs render without JavaScript; filtering requires JavaScript.
+- Each `/plants/{slug}/` page is generated from factual botanical attributes only, has a unique canonical URL, descriptive title, breadcrumb, care considerations, links to the relevant gardening services and the original nursery reference. All text is independently composed, with no copied nursery descriptions or photographs.
+- Source listing: Goughs Nurseries public plant catalogue, retrieved 2 November 2026. Listing availability is not mirrored and Kiwi Gardeners does not claim any commercial relationship.
+- `src/plant-catalogue.mjs` stores the imported name index and extracted factual attributes; `src/plant-editorial.mjs` stores 42 individual practical Christchurch notes. The first 42 are indexed. The remaining 229 remain available to site visitors but carry `noindex,follow` and are omitted from the sitemap until sufficiently distinctive content is written and the facts are checked.
+- For plant safety, verify invasive/pest species against Environment Canterbury's current regional plan and the National Pest Plant Accord before making explicit recommendations or accepting supplier offers.
+- Future monetisation: the page renderer contains an intentionally inactive supplier/affiliate insertion point. When an authorised supplier relationship exists, add clearly identified paid links in a separate, reviewed change and label sponsored placements appropriately. No adverts, external plant photos, price or inventory feeds are currently installed.
+- `npm run check` validates original pages, all 271 built profiles, 42 indexable profiles, source links, CTAs, metadata, navigation and sitemap. Also check Cloudflare Workers Builds independently before marking production deployed.
