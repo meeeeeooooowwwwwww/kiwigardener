@@ -470,3 +470,14 @@ img.card-image[hidden],figure.local-figure[hidden]{display:none!important}
  .site-header .brand.brand-logo img{width:88px}
  .site-header .header-inner{min-height:101px}
 }
+
+/* Homepage portrait: bring Dallas up alongside the opening headline on desktop. */
+@media(min-width:721px){
+  .hero-photographic .hero-grid{align-items:start}
+  .hero-photographic .hero-dallas-portrait{align-self:start;margin-top:32px}
+}
+.hero-photographic .hero-dallas-portrait img{object-position:center 18%;filter:none}
+.hero-photographic .hero-dallas-portrait::after{display:none}
+@media(max-width:720px){
+  .hero-photographic .hero-dallas-portrait{margin-top:0}
+}
