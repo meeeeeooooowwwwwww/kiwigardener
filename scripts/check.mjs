@@ -2,6 +2,7 @@ import {readFile, stat} from "node:fs/promises";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import {plants} from "../src/plant-catalogue.mjs";
+import {plantEditorial} from "../src/plant-editorial.mjs";
 const site = "https://kiwigardeners.com";
 const xml = await readFile("dist/sitemap.xml","utf8");
 const urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x=>x[1]);
@@ -15,7 +16,7 @@ const seenDescriptions=new Map();
 const pages=new Map();
 const fail=(value)=>errors.push(value);
 assert.equal(plants.length,271,"Expected 271 sourced botanical listings");
-assert.equal(urls.length,48+1+plants.length,"Expected original pages plus plant directory and individual plant profiles");
+assert.equal(urls.length,48+1+Object.keys(plantEditorial).length,"Expected existing site pages, plant directory and editorially enriched indexed profiles");
 assert.equal(new Set(urls).size,urls.length,"Duplicate URL in sitemap");
 const readPage=async(path)=>{
   if(pages.has(path))return pages.get(path);
@@ -73,7 +74,7 @@ for(const url of urls){
     // Links to HTML URLs are required to be present in the generated file tree.
     if(target.pathname.endsWith(".svg")||target.pathname.endsWith(".css")||target.pathname.endsWith(".js"))continue;
     const normalized=target.pathname.endsWith("/")?target.pathname:target.pathname+"/";
-    if(!urls.includes(site+normalized))fail(path+" broken internal href "+href);
+    try{await stat("dist"+normalized+"index.html");}catch{fail(path+" broken internal href "+href);}
     if(target.hash&&target.pathname===path){
       const anchor=decodeURIComponent(target.hash.slice(1));
       if(!html.includes('id="'+anchor+'"'))fail(path+" missing internal anchor "+target.hash);
@@ -225,11 +226,15 @@ const slugSet=new Set(plants.map(p=>p.slug));
 if(slugSet.size!==plants.length)fail("Duplicate plant slugs");
 for(const p of plants){
   const url="/plants/"+p.slug+"/";
-  if(!urls.includes(site+url))fail("Plant is missing from sitemap: "+p.slug);
+  const featured=Boolean(plantEditorial[p.slug]);
+  if(urls.includes(site+url)!==featured)fail("Plant indexing does not match editorial status: "+p.slug);
   const html=await readPage(url);
   if(!html.includes('href="'+p.source+'"'))fail(url+" missing source link");
   if(!html.includes('Dallas Timpson Garden Services'))fail(url+" missing real gardening CTA");
   if(!html.includes('class="plant-facts"'))fail(url+" missing characteristics table");
+  if(featured&&!html.includes('class="plant-local-notes"'))fail(url+" editorial profile notes missing");
+  if(featured&&html.includes('name="robots" content="noindex,follow"'))fail(url+" editorial page should be indexed");
+  if(!featured&&!html.includes('name="robots" content="noindex,follow"'))fail(url+" unreviewed profile must remain noindex");
   if(!html.includes('rel="noopener noreferrer"'))fail(url+" missing safe source link");
 }
 if(!homepage.includes('href="/plants/"'))fail("Home has no plant directory entry point");
