@@ -14,6 +14,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Validate Council news feed selection and relevance
+        run: node --test scripts/check-council-news.mjs
+      - name: Inspect live Newsline feed for gardening stories
+        continue-on-error: true
+        run: node scripts/refresh-council-news.mjs
       - name: Build and validate SEO pages
         run: npm run check
       - name: Validate secure form API and simulated email delivery
