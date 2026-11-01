@@ -14,25 +14,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Probe nursery image origin before publication
-        continue-on-error: true
-        shell: bash
-        run: |
-          urls=(
-            "https://www.goughsnurseries.co.nz/cache/plant/1/acaena_inermis_purpurea_1_1_150_150_r.jpg"
-            "https://www.goughsnurseries.co.nz/cache/plant/204/acca_sellowiana_1_1_150_150_r.jpg"
-            "https://www.goughsnurseries.co.nz/plant/acca-sellowiana"
-          )
-          for u in "${urls[@]}"; do
-            echo "PHOTO PROBE: $u"
-            for mode in none referer; do
-              args=()
-              if [ "$mode" = referer ]; then args=(-e "https://www.goughsnurseries.co.nz/plants" -A "Mozilla/5.0"); fi
-              curl -L --connect-timeout 5 --max-time 9 -sS -o /tmp/goughs-probe "${args[@]}" -w "PROBE MODE=$mode CODE=%{http_code} TYPE=%{content_type} SIZE=%{size_download} REMOTE=%{remote_ip}\n" "$u" || true
-              file -b /tmp/goughs-probe 2>/dev/null | head -c 180 || true
-              echo
-            done
-          done
       - name: Build and validate SEO pages
         run: npm run check
       - name: Validate secure form API and simulated email delivery
