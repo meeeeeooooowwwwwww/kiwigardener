@@ -2,6 +2,8 @@ import { mkdir, writeFile, copyFile, rm, readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import {newAreas,newGuides,images,localProfiles} from "./src/local-editorial.mjs";
 import {addPlantPages} from "./src/plant-pages.mjs";
+import {plants} from "./src/plant-catalogue.mjs";
+import {plantEditorial} from "./src/plant-editorial.mjs";
 import { dirname } from "node:path";
 import { writeIconSet } from "./scripts/icon-kit.mjs";
 // A content-addressed stylesheet URL ensures new layouts never use a week-old browser cache.
@@ -109,6 +111,11 @@ const generateSite = function generateSite(){
       {"@type":type||"WebPage","@id":pageId,"name":trail.at(-1).name,"url":domain+path,"isPartOf":{"@id":siteId},"inLanguage":"en-NZ"},
       {"@type":"BreadcrumbList","@id":domain+path+"#breadcrumb","itemListElement":trail.map((t,i)=>({"@type":"ListItem","position":i+1,"name":t.name,"item":domain+t.path}))}
     ];
+    if(path==="/plants/"){
+      const reviewed=plants.filter(p=>Object.hasOwn(plantEditorial,p.slug));
+      graph[2].mainEntity={"@type":"ItemList","name":"Christchurch plant guides with locally reviewed care notes","numberOfItems":reviewed.length,"itemListElement":reviewed.map((p,i)=>({"@type":"ListItem","position":i+1,"name":p.common||p.name,"url":domain+"/plants/"+p.slug+"/"}))};
+      graph[2].about={"@type":"Thing","name":"Garden plants for Christchurch and Canterbury"};
+    }
     if(type==="Article"){
       graph[2].headline=trail.at(-1).name;
       graph[2].about={"@type":"Thing","name":trail.at(-1).name};
@@ -132,7 +139,7 @@ const generateSite = function generateSite(){
     const guideImage=path.startsWith("/guides/")?images[{"historic-christchurch-gardens":"mona","native-plants-christchurch":"harakeke","caring-for-christchurch-garden-plants":"botanic","coastal-gardening-christchurch":"dunes","port-hills-gardens":"hills","christchurch-garden-soils":"hills","christchurch-gardening-calendar":"botanic"}[slug]]:null;
     const shareImageSource=areaImage?.src||guideImage?.src||(path.startsWith("/services/")?servicePhotos[slug]:null)||GARDEN_PHOTO;
     const shareImage=shareImageSource.startsWith("/")?domain+shareImageSource:shareImageSource;
-    const shareAlt=areaImage?.alt||guideImage?.alt||(path.startsWith("/services/")?"Illustrative image relating to "+(services.find(x=>x.slug===slug)?.name||"Christchurch gardening"):"Christchurch garden photography");
+    const shareAlt=areaImage?.alt||guideImage?.alt||(path.startsWith("/services/")?"Illustrative image relating to "+(services.find(x=>x.slug===slug)?.name||"Christchurch gardening") :path.startsWith("/plants/")?"Illustrative Christchurch garden photograph; not a species identification photo":"Christchurch garden photography");
     return `<!doctype html><html lang="en-NZ"><head>${googleTag}<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#18382c"><meta name="robots" content="${(path==="/404/"||!indexable)?"noindex,follow":"index,follow,max-image-preview:large"}"><title>${esc(title)}</title><meta name="description" content="${esc(description)}"><link rel="canonical" href="${url}"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png"><link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180"><link rel="manifest" href="/site.webmanifest"><link rel="preconnect" href="https://images.unsplash.com"><link rel="preconnect" href="https://thumb.wikimedia.org" crossorigin><link rel="stylesheet" href="${stylesheetUrl}"><meta property="og:type" content="${type==="Article"?"article":"website"}"><meta property="og:locale:alternate" content="en_AU"><meta property="og:locale" content="en_NZ"><meta property="og:site_name" content="Kiwi Gardeners Christchurch"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${url}"><meta property="og:image" content="${esc(shareImage)}"><meta property="og:image:alt" content="${esc(shareAlt)}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${esc(shareImage)}"><script type="application/ld+json">${schema(path,trail,type)}</script>${path==="/contact/"?`<script src="/assets/contact.js" defer></script>`:""}${path==="/plants/"?'<script src="/assets/plant-search.js" defer></script>':""}</head><body><a class="skip" href="#main-content">Skip to main content</a>${nav}<main id="main-content">${content}</main>${footer}</body></html>\n`;
   };
   const crumbs=(trail)=>`<nav aria-label="Breadcrumb" class="breadcrumbs">${trail.map((t,i)=>i===trail.length-1?`<span aria-current="page">${esc(t.name)}</span>`:a(t.path,t.name)).join(" / ")}</nav>`;
