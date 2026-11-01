@@ -219,7 +219,16 @@ if(!areaDirectory.includes("Riccarton_Bush_predator-proof_fence_347.jpg"))fail("
 const directory=await readPage("/plants/");
 if(!directory.includes('id="plant-query"')||!directory.includes('id="plant-flower"')||!directory.includes('id="plant-foliage"'))fail("Plant search missing free-text or colour filters");
 if(!directory.includes('src="/assets/plant-search.js"'))fail("Plant search behaviour is not loaded");
-if((directory.match(/class="plant-card"/g)||[]).length!==plants.length)fail("Plant finder does not list all plants");
+if((directory.match(/class="card plant-card"/g)||[]).length!==plants.length)fail("Plant finder does not list all 271 cards with the global card class");
+if(!directory.includes('class="cards plant-results"'))fail("Plant finder does not reuse global card grid");
+if(!directory.includes('class="enquiry-panel"'))fail("Plant finder missing site-wide conversion panel");
+if(!directory.includes('id="plant-more"'))fail("Plant finder missing progressive show-more control");
+const plantGraph=JSON.parse(directory.match(/<script type="application\/ld\+json">(.+?)<\/script>/)?.[1]||"{}")["@graph"]||[];
+const plantCollection=plantGraph.find(n=>n["@type"]==="CollectionPage");
+if(!plantCollection?.mainEntity||plantCollection.mainEntity["@type"]!=="ItemList"||plantCollection.mainEntity.numberOfItems!==Object.keys(plantEditorial).length)fail("Plant directory is missing the reviewed-profile ItemList schema");
+if(!plantCollection?.mainEntity?.itemListElement?.every(e=>urls.includes(e.url)))fail("Plant directory schema links to unindexed profiles");
+if(!directory.includes('/services/hedge-trimming/'))fail("Plant finder missing contextual hedge services link");
+if(!directory.includes('class="plant-quick-filters subnav"'))fail("Plant finder does not reuse tag navigation");
 const finderJs=await readFile("dist/assets/plant-search.js","utf8");
 if(!finderJs.includes('aria-live')&&!directory.includes('aria-live="polite"'))fail("Plant filtering lacks live result feedback");
 const slugSet=new Set(plants.map(p=>p.slug));
@@ -231,6 +240,19 @@ for(const p of plants){
   const html=await readPage(url);
   if(!html.includes('href="'+p.source+'"'))fail(url+" missing source link");
   if(!html.includes('Dallas Timpson Garden Services'))fail(url+" missing real gardening CTA");
+  if(!html.includes('class="cards plant-related-cards"'))fail(url+" related cards do not use the shared grid");
+  if(!html.includes('href="/plants/"'))fail(url+" missing plant directory return link");
+  if(!html.includes('href="/services/'))fail(url+" missing contextual service link");
+  if(!html.includes('class="site-footer"'))fail(url+" missing site-wide footer");
+  if(!html.includes('class="site-header"'))fail(url+" missing shared navigation");
+  if(!html.includes('href="mailto:dallas@kiwigardeners.com"'))fail(url+" missing linked contact email");
+  if(!html.includes('href="tel:+64273406581"'))fail(url+" missing linked contact phone");
+  const title=html.match(/<title>(.*?)<\/title>/)?.[1];
+  const description=html.match(/<meta name="description" content="([^"]+)"/)?.[1];
+  if(!title||title.length<20||title.length>90)fail(url+" bad title");
+  if(!description||description.length<60||description.length>210)fail(url+" bad meta description");
+  if(!html.includes('rel="canonical" href="'+site+url+'"'))fail(url+" bad canonical");
+  if((html.match(/<h1(?:\s|>)/g)||[]).length!==1)fail(url+" expected one H1");
   if(!html.includes('class="plant-facts"'))fail(url+" missing characteristics table");
   if(featured&&!html.includes('class="plant-local-notes"'))fail(url+" editorial profile notes missing");
   if(featured&&html.includes('name="robots" content="noindex,follow"'))fail(url+" editorial page should be indexed");
@@ -238,6 +260,17 @@ for(const p of plants){
   if(!html.includes('rel="noopener noreferrer"'))fail(url+" missing safe source link");
 }
 if(!homepage.includes('href="/plants/"'))fail("Home has no plant directory entry point");
+for (const path of ["/", "/services/hedge-trimming/", "/areas/", "/guides/native-plants-christchurch/", "/plants/", "/plants/acca-sellowiana/"]){
+ const html=await readPage(path);
+ if(!html.includes('class="site-header"')||!html.includes('class="site-footer"'))fail(path+" global header/footer missing");
+ if(!html.includes('href="/plants/"'))fail(path+" plant navigation link missing");
+ const foot=html.match(/<footer class="site-footer">([\s\S]*?)<\/footer>/)?.[0];
+ const baseFoot=homepage.match(/<footer class="site-footer">([\s\S]*?)<\/footer>/)?.[0];
+ if(foot!==baseFoot)fail(path+" footer differs from global homepage footer");
+}
+if(!serviceHtml.includes('/plants/'))fail("Maintenance services missing plant-directory crosslink");
+const hedge=await readPage("/services/hedge-trimming/");
+if(!hedge.includes('/plants/?use=Hedging%20%26%20screening'))fail("Hedge service missing context-filtered plant directory link");
 
 if(errors.length){console.error(errors.join("\n"));process.exitCode=1;}
 else console.log("SEO/link audit PASS: "+urls.length+" unique pages, titles, descriptions, canonicals, schema, alt text, robots, sitemap, live destination links.");

@@ -9,7 +9,10 @@ import { chromium } from "playwright-core";
 
 const widths = [320, 360, 375, 390, 430, 600, 720, 768, 820, 1024, 1280, 1440, 1920];
 const xml = await readFile("dist/sitemap.xml", "utf8");
-const paths = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => new URL(match[1]).pathname);
+const paths = [...new Set([
+  ...[...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match=>new URL(match[1]).pathname),
+  "/plants/agapanthus-seafoam/", "/plants/veronica-rakaiensis/", "/plants/phormium-jester/"
+])];
 assert.ok(paths.length >= 20, "Expected the complete static website sitemap");
 const root = resolve("dist");
 const mime = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript", ".svg": "image/svg+xml", ".xml": "application/xml", ".txt": "text/plain" };
@@ -94,6 +97,31 @@ try {
           failures.push(`${path} @${width}: learning steps unstyled or text cramped: ${JSON.stringify(nav)}`);
         }
       }
+      if (path === "/plants/") {
+        const detail=await page.evaluate(()=>{
+          const results=document.querySelector(".plant-results");
+          const card=document.querySelector(".plant-card:not([hidden])");
+          const footer=document.querySelector(".site-footer");
+          const mobile=document.querySelector(".mobile-nav summary");
+          const desktop=document.querySelector(".main-nav");
+          const vis=e=>e&&e.getClientRects().length>0&&getComputedStyle(e).display!=="none";
+          return {
+            columns:getComputedStyle(results).gridTemplateColumns.split(" ").filter(Boolean).length,
+            expectedCard:card?.classList.contains("card"),
+            cardBackground:card&&getComputedStyle(card).backgroundColor,
+            footerPresent:Boolean(footer&&footer.querySelector('.footer-contact')),
+            footerPlantLink:Boolean(footer?.querySelector('a[href="/plants/"]')),
+            filterWidth:document.querySelector(".plant-filters")?.getBoundingClientRect().width,
+            compactNav:vis(mobile),desktopNav:vis(desktop),
+            searchHeight:document.getElementById("plant-query")?.getBoundingClientRect().height
+          };
+        });
+        const expectedCols=width<=520?1:width<=950?2:3;
+        if(detail.columns!==expectedCols)failures.push(`Plant cards @${width}: ${detail.columns} columns, expected ${expectedCols}`);
+        if(!detail.expectedCard||!detail.footerPresent||!detail.footerPlantLink)failures.push(`Plant cards/footer @${width}: shared components missing`);
+        if(!detail.filterWidth||detail.filterWidth>snapshot.viewport||detail.searchHeight<40)failures.push(`Plant search @${width}: control too narrow or overflows`);
+        if(width<=1100?!detail.compactNav||detail.desktopNav:!detail.desktopNav||detail.compactNav)failures.push(`Plant navigation @${width}: wrong menu mode`);
+      }
       if (path === "/" && (!snapshot.heroWidth || snapshot.heroWidth < 100)) failures.push(`Homepage @${width}: primary enquiry CTA missing or too narrow`);
       checked++;
     }
@@ -105,19 +133,32 @@ try {
       if(!page.url().includes("query=feijoa"))failures.push("Plant search does not persist query URL");
       await page.locator("#plant-reset").click();
       visible=await page.locator(".plant-card:visible").count();
-      if(visible!==271)failures.push("Clear filters failed to restore all 271 plants");
+      if(visible!==24)failures.push("Plant finder should show first 24 cards, got "+visible);
+      await page.locator("#plant-more").click();
+      visible=await page.locator(".plant-card:visible").count();
+      if(visible!==48)failures.push("Load-more should show 48 cards, got "+visible);
+      await page.locator("#plant-reset").click();
+      await page.fill("#plant-query","white flowering shrubs");
+      visible=await page.locator(".plant-card:visible").count();
+      if(visible<1)failures.push("Natural language 'white flowering shrubs' did not find plants");
+      await page.locator("#plant-reset").click();
+      await page.fill("#plant-query","native plants");
+      visible=await page.locator(".plant-card:visible").count();
+      if(visible<1)failures.push("Natural language 'native plants' did not find plants");
+      await page.locator("#plant-reset").click();
       await page.selectOption("#plant-form","Shrub");
       await page.selectOption("#plant-flower","white");
       visible=await page.locator(".plant-card:visible").count();
-      if(visible<1||visible>120)failures.push("Combined shrub and white-flower filters failed: "+visible);
+      if(visible<1||visible>24)failures.push("Combined shrub and white-flower filters failed: "+visible);
       await page.locator("#plant-reset").click();
       await page.selectOption("#plant-native","yes");
       visible=await page.locator(".plant-card:visible").count();
-      if(visible<50||visible>=271)failures.push("NZ native filter failed: "+visible);
+      if(visible<1||visible>24)failures.push("Native-only filter failed: "+visible);
       await page.locator("#plant-reset").click();
+      if(!await page.locator("#plant-more").isVisible())failures.push("Show more is not available after reset");
     }
     if (path === "/") {
-      for (const width of [320, 390, 720]) {
+      for (const width of [320, 390, 720, 820, 1024, 1100]) {
         await page.setViewportSize({ width, height: 850 });
         await page.locator(".mobile-nav summary").click();
         const state = await page.evaluate(() => {
