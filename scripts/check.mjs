@@ -44,6 +44,12 @@ for(const url of urls){
   if((html.match(/<h1(?:\s|>)/g)||[]).length!==1)fail(path+" expected one H1");
   if(!html.includes('<html lang="en-NZ">'))fail(path+" language missing");
   if(!html.includes('name="viewport"'))fail(path+" missing mobile viewport");
+  for(const iconUrl of [
+    "/assets/kiwi-favicon-v2.svg","/favicon-32-v2.png",
+    "/apple-touch-icon-v2.png","/site.webmanifest?v=20261102"
+  ]) {
+    if(!html.includes('href="'+iconUrl+'"'))fail(path+" missing branded icon link "+iconUrl);
+  }
   const ld=html.match(/<script type="application\/ld\+json">(.+?)<\/script>/)?.[1];
   if(!ld)fail(path+" missing structured data");
   else {
@@ -93,8 +99,36 @@ for(const url of urls){
     }
   }
 }
-for(const path of ["dist/robots.txt","dist/_headers","dist/assets/styles.css","dist/assets/favicon.svg","dist/assets/green-waste.svg","dist/assets/cleared-section.svg"]){
+for(const path of ["dist/robots.txt","dist/_headers","dist/assets/styles.css","dist/assets/favicon.svg","dist/assets/kiwi-favicon-v2.svg","dist/favicon.ico","dist/favicon-32-v2.png","dist/apple-touch-icon-v2.png","dist/icon-192-v2.png","dist/icon-512-v2.png","dist/icon-maskable-512-v2.png","dist/assets/green-waste.svg","dist/assets/cleared-section.svg"]){
   await stat(path);
+}
+const brandManifest=JSON.parse(await readFile("dist/site.webmanifest","utf8"));
+const expectedIcons=[
+  ["/assets/kiwi-favicon-v2.svg","any"],
+  ["/icon-192-v2.png","any"],
+  ["/icon-512-v2.png","any"],
+  ["/icon-maskable-512-v2.png","maskable"]
+];
+for(const [src,purpose] of expectedIcons){
+  if(!brandManifest.icons.some(icon=>icon.src===src&&icon.purpose===purpose))fail("Web manifest missing brand icon "+src+" ("+purpose+")");
+}
+for(const [path,size] of [
+  ["dist/favicon-32-v2.png",32],
+  ["dist/apple-touch-icon-v2.png",180],
+  ["dist/icon-192-v2.png",192],
+  ["dist/icon-512-v2.png",512],
+  ["dist/icon-maskable-512-v2.png",512]
+]){
+  const img=await readFile(path);
+  if(img.subarray(0,8).toString("hex")!=="89504e470d0a1a0a"||img.readUInt32BE(16)!==size||img.readUInt32BE(20)!==size)fail("Invalid brand PNG "+path);
+}
+for(const [legacy,latest] of [
+  ["dist/favicon-32.png","dist/favicon-32-v2.png"],
+  ["dist/apple-touch-icon.png","dist/apple-touch-icon-v2.png"],
+  ["dist/icon-192.png","dist/icon-192-v2.png"],
+  ["dist/icon-512.png","dist/icon-512-v2.png"]
+]){
+  if(!(await readFile(legacy)).equals(await readFile(latest)))fail("Legacy icon alias is stale: "+legacy);
 }
 const analytics=await readFile("dist/assets/analytics.js","utf8");
 const headers=await readFile("dist/_headers","utf8");
