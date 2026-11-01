@@ -223,6 +223,10 @@ if((directory.match(/class="card plant-card"/g)||[]).length!==plants.length)fail
 if(!directory.includes('class="cards plant-results"'))fail("Plant finder does not reuse global card grid");
 if(!directory.includes('class="enquiry-panel"'))fail("Plant finder missing site-wide conversion panel");
 if(!directory.includes('id="plant-more"'))fail("Plant finder missing progressive show-more control");
+const plantGraph=JSON.parse(directory.match(/<script type="application\/ld\+json">(.+?)<\/script>/)?.[1]||"{}")["@graph"]||[];
+const plantCollection=plantGraph.find(n=>n["@type"]==="CollectionPage");
+if(!plantCollection?.mainEntity||plantCollection.mainEntity["@type"]!=="ItemList"||plantCollection.mainEntity.numberOfItems!==Object.keys(plantEditorial).length)fail("Plant directory is missing the reviewed-profile ItemList schema");
+if(!plantCollection?.mainEntity?.itemListElement?.every(e=>urls.includes(e.url)))fail("Plant directory schema links to unindexed profiles");
 if(!directory.includes('/services/hedge-trimming/'))fail("Plant finder missing contextual hedge services link");
 if(!directory.includes('class="plant-quick-filters subnav"'))fail("Plant finder does not reuse tag navigation");
 const finderJs=await readFile("dist/assets/plant-search.js","utf8");
