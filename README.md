@@ -92,3 +92,9 @@ Google guidance: https://support.google.com/webmasters/answer/34592 and https://
 
 ### Future catalogue categories
 Portstone Christchurch was consulted only for public category structure, not copied descriptions, photographs, products or availability. Populated shortcuts cover shrubs, trees, fruit/edibles, hedges, native plants, foliage/flower colours, groundcovers and perennials. Roses, citrus, deciduous fruit trees and accessory sections (pots, water features, greenhouses, plant supports) require separately verified original content, products and a legitimate supplier arrangement before they are presented as stocked or linked commercially. No current relationship with Portstone is claimed.
+
+### Linked plant photographs (November 2026)
+- All 271 plant records have an exact nursery-hosted thumbnail URL mapped by plant slug in `src/plant-photo-links.mjs`, cross-checked with the 271 source entries.
+- The plant finder renders clickable external image thumbnails and a separate internal guide link on each card; individual profiles include a linked photo above their care notes. All outgoing image clicks open the corresponding source plant listing in a new tab. There are no locally copied nursery photographs, additional on-card credits, stock claims or affiliate links.
+- Original image URLs are 150 × 150 thumbnails. Their appearance is intentionally capped at native dimensions rather than being scaled to full-width low-resolution hero images. The shared image handler hides broken image icons and keeps the source link available if the nursery refuses remote embedding.
+- If the nursery changes URLs, update the exact mapping file; don't derive them from slugs because filenames aren't consistent. Remote photo availability is controlled by the source host.
