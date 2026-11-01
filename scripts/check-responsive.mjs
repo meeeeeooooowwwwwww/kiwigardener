@@ -97,6 +97,25 @@ try {
       if (path === "/" && (!snapshot.heroWidth || snapshot.heroWidth < 100)) failures.push(`Homepage @${width}: primary enquiry CTA missing or too narrow`);
       checked++;
     }
+    if (path === "/plants/") {
+      await page.setViewportSize({width:390,height:850});
+      await page.fill("#plant-query","feijoa");
+      let visible=await page.locator(".plant-card:visible").count();
+      if(visible!==1)failures.push("Plant search for feijoa should return exactly one plant, got "+visible);
+      if(!page.url().includes("query=feijoa"))failures.push("Plant search does not persist query URL");
+      await page.locator("#plant-reset").click();
+      visible=await page.locator(".plant-card:visible").count();
+      if(visible!==271)failures.push("Clear filters failed to restore all 271 plants");
+      await page.selectOption("#plant-form","Shrub");
+      await page.selectOption("#plant-flower","white");
+      visible=await page.locator(".plant-card:visible").count();
+      if(visible<1||visible>120)failures.push("Combined shrub and white-flower filters failed: "+visible);
+      await page.locator("#plant-reset").click();
+      await page.selectOption("#plant-native","yes");
+      visible=await page.locator(".plant-card:visible").count();
+      if(visible<50||visible>=271)failures.push("NZ native filter failed: "+visible);
+      await page.locator("#plant-reset").click();
+    }
     if (path === "/") {
       for (const width of [320, 390, 720]) {
         await page.setViewportSize({ width, height: 850 });
