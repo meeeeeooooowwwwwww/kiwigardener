@@ -19,9 +19,6 @@ jobs:
       - name: Inspect live Newsline feed for gardening stories
         continue-on-error: true
         run: node scripts/refresh-council-news.mjs
-      - name: Inspect official RSS thumbnail metadata
-        continue-on-error: true
-        run: node scripts/inspect-council-rss.mjs
       - name: Build and validate SEO pages
         run: npm run check
       - name: Validate secure form API and simulated email delivery
