@@ -436,3 +436,21 @@ img.card-image[hidden],figure.local-figure[hidden]{display:none!important}
 .council-updates .council-news-resource{margin:12px 0 0}
 .council-news-resource a{font-weight:700;color:var(--forest)}
 @media(max-width:720px){.council-updates{padding:25px 0 30px}.council-updates-inner{grid-template-columns:1fr;gap:9px}.council-news-links li{flex-wrap:wrap;gap:2px 12px}.council-news-links time{font-size:.73rem}}
+
+
+/* Council news previews: licensed independent illustrations, not official CCC branding. */
+.council-source{display:inline-flex;align-items:center;gap:9px;color:#365a43;font-size:.8rem;line-height:1.35;font-weight:670}
+.council-source strong{color:var(--forest);font-weight:850}
+.council-source-icon{display:grid;place-items:center;flex:none;width:31px;height:31px;border-radius:9px;background:#365d42;color:#fff;font-size:.92rem;font-weight:800;font-family:Georgia,serif}
+.council-news-links{gap:7px}
+.council-news-links .council-news-item{display:flex;align-items:center;gap:14px;padding:8px 0;min-width:0}
+.council-news-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.council-news-copy>a{font-size:.91rem;line-height:1.37}
+.council-news-copy time{font-size:.76rem;color:#627465}
+.council-news-thumb{position:relative;flex:0 0 112px;width:112px;margin:0}
+.council-news-thumb>img{display:block;width:112px;height:78px;object-fit:cover;border-radius:10px;border:1px solid #d3dfcd;background:#e5ecdf}
+.council-news-thumb figcaption{margin-top:3px;font-size:.59rem;line-height:1.25;color:#5d6d63;overflow-wrap:anywhere}
+.council-news-thumb figcaption a{font-weight:500;color:#436450;text-decoration:underline}
+.council-news-thumb[hidden]{display:none!important}
+@media(max-width:720px){.council-news-links .council-news-item{align-items:flex-start;flex-wrap:nowrap;gap:11px}.council-news-thumb{flex-basis:91px;width:91px}.council-news-thumb>img{width:91px;height:70px}.council-news-copy time{font-size:.73rem}}
+@media(max-width:360px){.council-news-thumb{flex-basis:76px;width:76px}.council-news-thumb>img{width:76px;height:65px}}
