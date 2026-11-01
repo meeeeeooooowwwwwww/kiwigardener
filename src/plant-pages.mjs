@@ -2,6 +2,7 @@
 // Descriptive copy is original editorial guidance built from compact factual plant attributes.
 // No third-party images, copied nursery descriptions, live stock claims or paid affiliate links.
 import {plants} from "./plant-catalogue.mjs";
+import {plantEditorial} from "./plant-editorial.mjs";
 
 const careByForm={
   "Shrub":"Allow space for mature width, then decide whether the shrub needs occasional shaping or a formal clipping schedule. Avoid hard pruning until you have identified its growth habit and flowering wood.",
@@ -78,10 +79,12 @@ export function addPlantPages(ctx){
     const service=p.uses.includes("Hedging & screening")?["hedge-trimming","hedge trimming"]:p.form==="Tree"?["tree-pruning","tree pruning"]:p.form==="Groundcover"?["weeding","garden-bed weeding"]:["garden-maintenance","garden maintenance"];
     const related=plants.filter(x=>x.slug!==p.slug&&(x.form===p.form||x.uses.some(u=>p.uses.includes(u)))).sort((x,y)=>((x.slug.split("-")[0]===p.slug.split("-")[0])?0:1)-((y.slug.split("-")[0]===p.slug.split("-")[0])?0:1)||x.name.localeCompare(y.name)).slice(0,5);
     const originalIntro="This guide looks at "+headline+" as "+featureText.join(", ")+". Rather than choosing plants by appearance alone, consider where the plant will go, how much room it needs and the maintenance expected after planting.";
+    const selectedNotes=plantEditorial[p.slug];
+    const specialNotes=selectedNotes?'<section class="plant-local-notes"><h2>Christchurch planting and maintenance notes</h2><p>'+esc(selectedNotes[0])+'</p><h3>Practical care detail</h3><p>'+esc(selectedNotes[1])+'</p></section>':'';
     const characteristics='<section><h2>Plant characteristics at a glance</h2><dl class="plant-facts">'+
       [['Plant type',p.form],['Botanical or cultivar name',p.name],['Common name',p.common||"No separate common name listed"],['Flower colours',colourWords(p.flowers)],['Foliage colours',colourWords(p.foliage)],['Light mentioned in source',displayList(p.light,"Not specified")],['Flowering season in source',p.season||"Not recorded"],['Garden use tags',displayList(p.uses,"Site-dependent")],['NZ native',p.native?"Listed here as a NZ native":"Not confirmed in this directory"]].map(x=>'<div><dt>'+esc(x[0])+'</dt><dd>'+esc(x[1])+'</dd></div>').join("")+'</dl><p class="plant-fact-note">Colours, seasons and tolerance descriptions are indicative. Flowering and growth can differ with cultivar, weather, soil and the particular garden site.</p></section>';
     const content=articleHero("Christchurch plant guide",headline,"Plant features, garden uses and care considerations for Christchurch and Canterbury. Use this page to plan your garden and find local maintenance help.",trail)+
-      '<div class="container text-layout plant-profile"><article class="prose"><p class="plant-opening">'+esc(originalIntro)+'</p>'+characteristics+
+      '<div class="container text-layout plant-profile"><article class="prose"><p class="plant-opening">'+esc(originalIntro)+'</p>'+specialNotes+characteristics+
       '<section><h2>Where '+esc(p.common||p.name)+' may fit in a Christchurch garden</h2><p>'+esc(situationByForm[p.form])+'</p>'+uses+
       '<p>Look at existing hedges, paths, lawn edges and neighbouring plants before deciding where to place it. A compact city garden has different needs from an open rural or restoration planting.</p></section>'+
       '<section><h2>Sun, drainage and local conditions</h2>'+light+shadeAdvice+'<p>Before planting, test soil drainage after rain and consider whether winter frosts, easterly winds or summer drying will affect establishment.</p></section>'+
@@ -93,7 +96,7 @@ export function addPlantPages(ctx){
       '<aside class="sidebar plant-sidebar"><h3>Garden planning</h3><a href="/plants/">Search all plants ↗</a><a href="/guides/christchurch-garden-soils/">Christchurch soils ↗</a><a href="/guides/native-plants-christchurch/">Native plants ↗</a><a href="/guides/coastal-gardening-christchurch/">Coastal gardening ↗</a><a href="/services/">Gardening services ↗</a><p>Call Dallas to discuss <a href="'+TEL_URL+'">garden maintenance in Christchurch on '+PHONE+'</a>, or <a href="'+ENQUIRY_URL+'">email an enquiry</a>.</p></aside></div>';
     const title=(p.common?p.common+" | "+p.name:p.name)+" | Christchurch Plant Guide";
     const description=(p.common?p.common+" ("+p.name+")":p.name)+": a "+p.form.toLowerCase()+" in our Christchurch plant directory. Explore colours, growing conditions, care, and local gardening services.";
-    files["plants/"+p.slug+"/index.html"]=layout({path,title,description,content,trail,type:"Article"});
+    files["plants/"+p.slug+"/index.html"]=layout({path,title,description,content,trail,type:"Article",indexable:Boolean(selectedNotes)});
   }
   return plants.length;
 }
