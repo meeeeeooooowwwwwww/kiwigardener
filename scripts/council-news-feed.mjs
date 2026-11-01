@@ -7,6 +7,8 @@ const decode=s=>String(s||"").replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,"$1")
   .replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();
 const field=(xml,key)=>decode(xml.match(new RegExp("<(?:[a-z0-9_-]+:)?"+key+"(?:\\s[^>]*)?>([\\s\\S]*?)<\\/(?:[a-z0-9_-]+:)?"+key+">","i"))?.[1]||"");
 const titleKeywords=/\b(?:garden\w*|botanic\w*|horticultur\w*|plant\w*|flower\w*|bloom\w*|seedling\w*|trees?|vegetation|biodivers\w*|wetlands?|revegetat\w*|compost\w*|weeding|weeds?|native\s+bush|bush\s+restoration|ecological\s+restoration|green\s+waste|leaf\s+fall|forest\s+restoration)\b/i;
+// "Plant" may refer to an industrial facility rather than botany.
+const industrialPlant=/\b(?:wastewater|water|sewage|treatment|power|energy|industrial|processing|manufacturing|chemical|recycling)\s+plant\b/i;
 const allowedHost=h=>h==="newsline.ccc.govt.nz"||h==="www.newsline.ccc.govt.nz";
 export function parseCouncilFeed(xml,{now=Date.now()}={}){
   if(!/<rss\b|<feed\b/i.test(xml))throw new Error("Newsline response was not RSS or Atom XML");
@@ -15,7 +17,7 @@ export function parseCouncilFeed(xml,{now=Date.now()}={}){
   const out=[],seen=new Set();
   for(const [,entry] of items){
     const title=field(entry,"title");
-    if(!title||!titleKeywords.test(title))continue;
+    if(!title||!titleKeywords.test(title)||industrialPlant.test(title))continue;
     const bareLink=field(entry,"link");
     const atomLink=entry.match(/<link\s[^>]*href=["']([^"']+)["'][^>]*\/?\s*>/i)?.[1];
     let link;
@@ -45,6 +47,6 @@ export function validateStoredNews(data,{now=Date.now()}={}){
   if(!Array.isArray(data))return [];
   return data.filter(s=>{
     if(!s||typeof s.title!=="string"||typeof s.url!=="string"||typeof s.date!=="string")return false;
-    try{const u=new URL(s.url);return u.protocol==="https:"&&allowedHost(u.hostname)&&/^\/news\/story\//.test(u.pathname)&&titleKeywords.test(s.title)&&/^\d{4}-\d{2}-\d{2}$/.test(s.date)&&Date.parse(s.date)<=now+86400000&&Date.parse(s.date)>=now-366*86400000}catch{return false}
+    try{const u=new URL(s.url);return u.protocol==="https:"&&allowedHost(u.hostname)&&/^\/news\/story\//.test(u.pathname)&&titleKeywords.test(s.title)&&!industrialPlant.test(s.title)&&/^\d{4}-\d{2}-\d{2}$/.test(s.date)&&Date.parse(s.date)<=now+86400000&&Date.parse(s.date)>=now-366*86400000}catch{return false}
   }).slice(0,30);
 }
