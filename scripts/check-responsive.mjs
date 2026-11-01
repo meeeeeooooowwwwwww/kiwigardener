@@ -15,7 +15,7 @@ const paths = [...new Set([
 ])];
 assert.ok(paths.length >= 20, "Expected the complete static website sitemap");
 const root = resolve("dist");
-const mime = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript", ".svg": "image/svg+xml", ".xml": "application/xml", ".txt": "text/plain" };
+const mime = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript", ".jpg": "image/jpeg", ".svg": "image/svg+xml", ".xml": "application/xml", ".txt": "text/plain" };
 const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url, "http://127.0.0.1");
@@ -42,9 +42,6 @@ try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, reducedMotion: "reduce" });
   // Layout audit does not depend on third-party image-server availability.
   await page.route(/https:\/\/images\.unsplash\.com\//, (route) => route.abort());
-  // Stable pixel-sized nursery photo stand-in for CSS/layout tests: avoid 271 third-party fetches.
-  await page.route(/https:\/\/www\.goughsnurseries\.co\.nz\/cache\/plant\//, (route) =>
-    route.fulfill({status:200, contentType:"image/svg+xml", body:'<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150"><rect width="150" height="150" fill="#a8c697"/></svg>'}));
   for (const path of paths) {
     await page.setViewportSize({ width: 1280, height: 900 });
     const response = await page.goto(`http://127.0.0.1:${port}${path}`, { waitUntil: "load", timeout: 15000 });
@@ -117,7 +114,9 @@ try {
             filterWidth:document.querySelector(".plant-filters")?.getBoundingClientRect().width,
             compactNav:vis(mobile),desktopNav:vis(desktop),
             searchHeight:document.getElementById("plant-query")?.getBoundingClientRect().height,
-            photoLink:card?.querySelector(".plant-photo-link")?.href,
+            photoFrame:!!card?.querySelector(".plant-photo-frame"),
+            localPhoto:card?.querySelector(".plant-photo")?.getAttribute("src"),
+            outgoingPhotoLink:!!card?.querySelector(".plant-photo-link"),
             internalLink:card?.querySelector(".plant-card-body")?.getAttribute("href"),
             imageHeight:card?.querySelector(".plant-photo")?.getBoundingClientRect().height,
             imageAlt:card?.querySelector(".plant-photo")?.alt,
@@ -130,7 +129,7 @@ try {
         if(detail.columns!==expectedCols)failures.push(`Plant cards @${width}: ${detail.columns} columns, expected ${expectedCols}`);
         if(!detail.expectedCard||!detail.footerPresent||!detail.footerPlantLink)failures.push(`Plant cards/footer @${width}: shared components missing`);
         if(!detail.introWidth||!detail.introContainerWidth||Math.abs(detail.introWidth-detail.introContainerWidth)>2||detail.introParagraphWidths.length!==2||detail.introParagraphWidths.some(w=>Math.abs(w-detail.introContainerWidth)>2))failures.push(`Plant introduction @${width}: paragraphs do not fill shared container width`);
-        if(!detail.photoLink?.startsWith("https://www.goughsnurseries.co.nz/plant/")||!detail.internalLink?.startsWith("/plants/")||detail.imageHeight<100||!detail.imageAlt)failures.push(`Plant photo @${width}: missing photo or incorrect links/layout`);
+        if(!detail.photoFrame||!detail.localPhoto?.startsWith("/assets/plant-photos/")||detail.outgoingPhotoLink||!detail.internalLink?.startsWith("/plants/")||detail.imageHeight<100||!detail.imageAlt)failures.push(`Plant photo @${width}: missing local photo or incorrect layout`);
         if(!detail.filterWidth||detail.filterWidth>snapshot.viewport||detail.searchHeight<40)failures.push(`Plant search @${width}: control too narrow or overflows`);
         if(width<=1100?!detail.compactNav||detail.desktopNav:!detail.desktopNav||detail.compactNav)failures.push(`Plant navigation @${width}: wrong menu mode`);
       }
@@ -142,8 +141,15 @@ try {
       const photoCount=await page.locator(".plant-card .plant-photo").count();
       if(photoCount!==271)failures.push("Expected 271 plant thumbnails, got "+photoCount);
       const feijoa=page.locator('a.plant-card-body[href="/plants/acca-sellowiana/"]').locator("..");
-      const out=await feijoa.locator(".plant-photo-link").getAttribute("href");
-      if(out!=="https://www.goughsnurseries.co.nz/plant/acca-sellowiana")failures.push("Feijoa plant photo must link to its exact nursery listing");
+      const feijoaPhoto=feijoa.locator(".plant-photo");
+      if(await feijoaPhoto.getAttribute("src")!=="/assets/plant-photos/acca-sellowiana.jpg")failures.push("Feijoa card must serve its local JPEG");
+      if((await feijoa.locator(".plant-photo-link").count())!==0)failures.push("Plant photo still contains an external supplier link");
+      await feijoaPhoto.scrollIntoViewIfNeeded();
+      try {
+        await feijoaPhoto.evaluate(img=>img.decode());
+        const photoPixels=await feijoaPhoto.evaluate(img=>({width:img.naturalWidth,height:img.naturalHeight,loaded:img.complete}));
+        if(!photoPixels.loaded||photoPixels.width<100||photoPixels.height<100)failures.push("Feijoa photo did not visibly decode from our own origin");
+      } catch (error) {failures.push("Feijoa photo failed to load and decode: "+error.message);}
       await page.fill("#plant-query","feijoa");
       let visible=await page.locator(".plant-card:visible").count();
       if(visible!==1)failures.push("Plant search for feijoa should return exactly one plant, got "+visible);
