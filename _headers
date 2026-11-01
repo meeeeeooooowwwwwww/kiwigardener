@@ -7,3 +7,12 @@
 
 /assets/*
   Cache-Control: public, max-age=604800
+
+/site.webmanifest
+  Cache-Control: no-cache, max-age=0, must-revalidate
+
+/favicon.ico
+  Cache-Control: no-cache, max-age=0, must-revalidate
+
+/apple-touch-icon.png
+  Cache-Control: no-cache, max-age=0, must-revalidate
