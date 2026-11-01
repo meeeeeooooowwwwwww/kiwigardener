@@ -1,0 +1,32 @@
+name: Refresh Christchurch gardening stories
+on:
+  schedule:
+    - cron: "0 18 * * *" # Around 6–7am NZ time
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Refresh local snapshot of relevant Newsline links
+        run: node scripts/refresh-council-news.mjs --write
+      - name: Publish snapshot only when relevant stories changed
+        shell: bash
+        run: |
+          if git diff --quiet -- src/council-news.json; then
+            echo "No new gardening-related Council stories."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/council-news.json
+          git commit -m "Refresh local Christchurch Council gardening news"
+          git push origin HEAD:main

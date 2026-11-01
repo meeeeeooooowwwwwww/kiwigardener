@@ -420,3 +420,19 @@ img.card-image[hidden],figure.local-figure[hidden]{display:none!important}
 .plant-profile-photo{display:block;width:175px;height:175px;object-fit:cover;border-radius:13px}
 @media(max-width:950px){.plant-results .plant-card{min-height:348px}}
 @media(max-width:520px){.plant-results .plant-card{min-height:0}.plant-photo-frame{min-height:195px}.plant-card-body{padding:16px 18px 20px}.plant-figure{padding:15px}.plant-figure-image{min-width:195px;min-height:195px}}
+
+
+/* Contextual Council gardening updates. Secondary editorial strip above the global footer. */
+.council-updates{padding:28px 0 35px;background:#edf1e7;border-top:1px solid #d9e2d0}
+.council-updates-inner{display:grid;grid-template-columns:minmax(180px,.72fr) minmax(0,1.6fr);gap:18px 35px;align-items:start}
+.council-updates .eyebrow{font-size:.67rem;letter-spacing:.105em}
+.council-updates h2{font-size:clamp(1.25rem,2vw,1.75rem);margin:7px 0 5px;letter-spacing:-.02em}
+.council-updates p{font-size:.82rem;color:#566b5c;margin:0}
+.council-news-links{display:grid;gap:0;list-style:none;margin:0;padding:0;min-width:0}
+.council-news-links li{display:flex;align-items:baseline;justify-content:space-between;gap:12px;min-width:0;padding:7px 0;border-bottom:1px solid #d5dfd2;font-size:.91rem}
+.council-news-links a{min-width:0;color:var(--forest);font-weight:730;text-decoration:none;overflow-wrap:anywhere}
+.council-news-links a:hover,.council-news-links a:focus-visible{text-decoration:underline;text-underline-offset:3px}
+.council-news-links time{flex:0 0 auto;white-space:nowrap;color:#5e7165;font-size:.77rem}
+.council-updates .council-news-resource{margin:12px 0 0}
+.council-news-resource a{font-weight:700;color:var(--forest)}
+@media(max-width:720px){.council-updates{padding:25px 0 30px}.council-updates-inner{grid-template-columns:1fr;gap:9px}.council-news-links li{flex-wrap:wrap;gap:2px 12px}.council-news-links time{font-size:.73rem}}

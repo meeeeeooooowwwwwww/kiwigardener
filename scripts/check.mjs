@@ -218,6 +218,16 @@ if(!areaDirectory.includes("Riccarton_Bush_predator-proof_fence_347.jpg"))fail("
 
 
 const directory=await readPage("/plants/");
+const councilStrip=directory.match(/<section class="council-updates"[\s\S]*?<\/section>/)?.[0]||"";
+if(councilStrip){
+  if(!councilStrip.includes("Christchurch City Council")||!councilStrip.includes("Newsline"))fail("Unattributed Council news widget");
+  if(!councilStrip.includes('target="_blank" rel="noopener noreferrer"'))fail("Council news outgoing links not secure");
+  if(!councilStrip.includes("<time datetime="))fail("Council news missing dates");
+  if(!councilStrip.includes("https://www.newsline.ccc.govt.nz/news/story/"))fail("Council headlines lack Newsline source URL");
+  if(!directory.includes("</section></main><footer"))fail("Council news not placed above shared footer");
+}
+if(directory.includes("Latest updates on the Wastewater Treatment Plant"))fail("Wastewater facility news incorrectly classified as gardening");
+
 if(!directory.includes('id="plant-query"')||!directory.includes('id="plant-flower"')||!directory.includes('id="plant-foliage"'))fail("Plant search missing free-text or colour filters");
 if(!directory.includes('src="/assets/plant-search.js"'))fail("Plant search behaviour is not loaded");
 if((directory.match(/class="card plant-card"/g)||[]).length!==plants.length)fail("Plant finder does not list all 271 cards with the global card class");
