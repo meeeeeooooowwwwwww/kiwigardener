@@ -62,7 +62,7 @@ try {
         const menu = mobileElement && visible(mobileElement) ? mobileElement.getBoundingClientRect() : undefined;
         const desktopElement = document.querySelector(".main-nav");
         const desktop = desktopElement && visible(desktopElement) ? desktopElement.getBoundingClientRect() : undefined;
-        const hero = document.querySelector(".hero-primary")?.getBoundingClientRect();
+        const hero = document.querySelector(".hero-action-buttons .button")?.getBoundingClientRect();
         const imgMissingAlt = [...document.images].filter((el) => !el.hasAttribute("alt")).length;
         return { viewport, scroll, offenders, brandRight:brand?.right, menuLeft:menu?.left, desktopLeft:desktop?.left, heroWidth:hero?.width, imageCount:document.images.length, imgMissingAlt, h1:document.querySelectorAll("h1").length };
       });
@@ -208,8 +208,29 @@ try {
         if (!state.visible || state.right > state.vp + 1 || state.left < -1 || state.scroll > state.vp + 1) failures.push(`Mobile menu @${width}: clipped or causes scroll: ${JSON.stringify(state)}`);
         await page.locator(".mobile-nav summary").click();
       }
-      const mail = await page.locator("a.hero-primary").getAttribute("href");
-      if (!mail?.startsWith("tel:+64273406581")) failures.push("Homepage click-to-call CTA not configured");
+      // Homepage has a single clear contact destination, not a redundant call button.
+      const call = await page.locator(".hero-side .hero-contact-method a[href^='tel:']").getAttribute("href");
+      const email = await page.locator(".hero-side .hero-contact-method a[href^='mailto:']").getAttribute("href");
+      if (call !== "tel:+64273406581") failures.push("Homepage contact-card phone link not configured");
+      if (!email?.startsWith("mailto:dallas@kiwigardeners.com")) failures.push("Homepage contact-card email link not configured");
+      if (!(await page.locator('.hero-action-buttons a[href="/services/"]').count())) failures.push("Homepage services button missing");
+      if (await page.locator(".hero-action-buttons a[href^='tel:']").count()) failures.push("Duplicate phone button remains on homepage");
+      for (const width of [390, 1440]) {
+        await page.setViewportSize({ width, height: 900 });
+        const heroPositions = await page.evaluate(() => {
+          const photo = document.querySelector(".hero-side .hero-dallas-portrait")?.getBoundingClientRect();
+          const card = document.querySelector(".hero-side .hero-action-contact")?.getBoundingClientRect();
+          return photo && card ? { photoBottom: photo.bottom, photoLeft: photo.left, cardTop: card.top,
+            cardLeft: card.left, cardWidth: card.width, photoWidth: photo.width } : null;
+        });
+        if (!heroPositions) { failures.push(`Homepage @${width}: missing photo/contact layout`); continue; }
+        const gap = heroPositions.cardTop - heroPositions.photoBottom;
+        if (gap < 4 || gap > 30) failures.push(`Homepage @${width}: contact card not directly below portrait: gap ${gap}px`);
+        if (Math.abs(heroPositions.cardLeft - heroPositions.photoLeft) > 3 ||
+            Math.abs(heroPositions.cardWidth - heroPositions.photoWidth) > 3) {
+          failures.push(`Homepage @${width}: contact card and portrait not aligned`);
+        }
+      }
     }
   }
   await page.close();
