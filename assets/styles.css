@@ -454,3 +454,19 @@ img.card-image[hidden],figure.local-figure[hidden]{display:none!important}
 .council-news-thumb[hidden]{display:none!important}
 @media(max-width:720px){.council-news-links .council-news-item{align-items:flex-start;flex-wrap:nowrap;gap:11px}.council-news-thumb{flex-basis:91px;width:91px}.council-news-thumb>img{width:91px;height:70px}.council-news-copy time{font-size:.73rem}}
 @media(max-width:360px){.council-news-thumb{flex-basis:76px;width:76px}.council-news-thumb>img{width:76px;height:65px}}
+
+/* Kiwi Gardeners official illustrated master logo, November 2026.
+   Preserve full kiwi/mower wordmark on both service-first header and footer. */
+.site-header .brand.brand-logo{display:inline-flex;align-items:center;flex:none;padding:4px 0;line-height:1}
+.site-header .brand.brand-logo img{display:block;width:100px;height:auto;max-width:none}
+.site-header .header-inner{min-height:112px}
+.site-footer .brand.brand-logo{display:inline-flex;padding:7px 9px;border-radius:12px;background:#fff;max-width:max-content}
+.site-footer .brand.brand-logo img{display:block;width:125px;height:auto;max-width:none}
+@media(max-width:1000px) and (min-width:721px){
+ .site-header .brand.brand-logo img{width:82px}
+ .site-header .header-inner{min-height:93px;gap:10px}
+}
+@media(max-width:720px){
+ .site-header .brand.brand-logo img{width:88px}
+ .site-header .header-inner{min-height:101px}
+}
