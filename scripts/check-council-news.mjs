@@ -18,18 +18,34 @@ test("RSS parsing filters irrelevant headlines and unexpected domains",()=>{
 });
 test("Only appropriate pages get small, sourced Council news",()=>{
   const news=[entry];
-  for(const path of ["/plants/","/guides/","/guides/native-plants-christchurch/","/areas/linwood/"]){
+  for(const path of ["/","/plants/","/guides/","/areas/","/services/","/guides/native-plants-christchurch/","/areas/linwood/","/areas/cashmere/","/services/garden-maintenance/"]){
     const html=councilNewsSection(path,news);
     assert.match(html,/council-updates/);
     assert.match(html,/From around our gardens/);
+    assert.match(html,/council-news-photo/);
+    assert.match(html,/Illustrative/);
+    assert.match(html,/Christchurch City Council/);
     assert.match(html,/datetime="/);
     assert.match(html,/rel="noopener noreferrer"/);
   }
-  for(const path of ["/","/contact/","/areas/cashmere/","/plants/acca-sellowiana/"]){
+  for(const path of ["/contact/","/privacy/","/plants/acca-sellowiana/"]){
     assert.equal(councilNewsSection(path,news),"");
   }
 });
 test("Unverified, stale and off-topic feed entries never publish",()=>{
   const old={...entry,date:"2020-01-01"};
   assert.equal(councilNewsSection("/plants/",[old]),"");
+});
+
+test("Cached licensed photographs, never CCC logos or copied Newsline images",()=>{
+  const html=councilNewsSection("/plants/",[entry],new Set(["botanic"]));
+  assert.match(html,/src="\/assets\/council-news\/botanic.jpg"/);
+  assert.match(html,/commons.wikimedia.org/);
+  assert.doesNotMatch(html,/<img[^>]*ccc.govt.nz/);
+  assert.doesNotMatch(html,/Official Council logo|Council approved/);
+});
+test("Broader coverage still excludes industrial plant stories",()=>{
+  const broad={title:"Students help restore Lyttelton Harbour",url:"https://www.newsline.ccc.govt.nz/news/story/students-restore-lyttelton-harbour",date};
+  assert.deepEqual(parseCouncilFeed('<?xml version="1.0"?><rss><channel><item><title>'+broad.title+'</title><link>'+broad.url+'</link><pubDate>'+today+'</pubDate></item></channel></rss>'),[broad]);
+  assert.match(councilNewsSection("/areas/cashmere/",[broad]),/Students help restore Lyttelton Harbour/);
 });
