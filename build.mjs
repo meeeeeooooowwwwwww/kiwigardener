@@ -2,6 +2,7 @@ import { mkdir, writeFile, copyFile, rm, readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import {newAreas,newGuides,images,localProfiles} from "./src/local-editorial.mjs";
 import {addPlantPages} from "./src/plant-pages.mjs";
+import {downloadPlantPhotos} from "./scripts/download-plant-photos.mjs";
 import {plants} from "./src/plant-catalogue.mjs";
 import {plantEditorial} from "./src/plant-editorial.mjs";
 import { dirname } from "node:path";
@@ -401,4 +402,5 @@ for (const path of ["assets/styles.css","assets/favicon.svg","assets/green-waste
 await copyFile("assets/styles.css","dist"+stylesheetUrl);
 for (const path of ["green-waste-removal.jpg","rubbish-removal.jpg"]) await copyFile(path,"dist/"+path);
 await writeIconSet("dist");
+await downloadPlantPhotos({dist:"dist"});
 console.log("Built "+Object.keys(files).filter(x=>x.endsWith(".html")).length+" static pages and SEO files into dist/");

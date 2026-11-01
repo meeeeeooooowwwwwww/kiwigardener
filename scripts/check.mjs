@@ -223,8 +223,9 @@ if(!directory.includes('src="/assets/plant-search.js"'))fail("Plant search behav
 if((directory.match(/class="card plant-card"/g)||[]).length!==plants.length)fail("Plant finder does not list all 271 cards with the global card class");
 if(!directory.includes('class="cards plant-results"'))fail("Plant finder does not reuse global card grid");
 if(Object.keys(plantPhotoLinks).length!==plants.length)fail("Plant photo lookup is not complete");
-if((directory.match(/class="plant-photo-link"/g)||[]).length!==plants.length)fail("All directory cards require clickable nursery image links");
-if((directory.match(/class="plant-photo" src="https:\/\/www\.goughsnurseries\.co\.nz\/cache\/plant\//g)||[]).length!==plants.length)fail("All directory cards require exact nursery image thumbnails");
+if((directory.match(/class="plant-photo-frame"/g)||[]).length!==plants.length)fail("All directory cards require a local photograph frame");
+if((directory.match(/class="plant-photo" src="\/assets\/plant-photos\//g)||[]).length!==plants.length)fail("All directory cards require locally served plant photographs");
+if(directory.includes('class="plant-photo-link"')||directory.includes('class="plant-photo-fallback"'))fail("Nursery photo link placeholders must not appear");
 if((directory.match(/class="plant-card-body" href="\/plants\//g)||[]).length!==plants.length)fail("Every plant card must retain a separate internal guide link");
 if(!directory.includes('class="enquiry-panel"'))fail("Plant finder missing site-wide conversion panel");
 if(!directory.includes('id="plant-more"'))fail("Plant finder missing progressive show-more control");
@@ -246,10 +247,12 @@ for(const p of plants){
   if(!html.includes('href="'+p.source+'"'))fail(url+" missing source link");
   const imageUrl=plantPhotoLinks[p.slug];
   if(!imageUrl?.startsWith("https://www.goughsnurseries.co.nz/cache/plant/"))fail(url+" missing image mapping");
-  if(!html.includes('class="plant-photo plant-profile-photo" src="'+imageUrl+'"'))fail(url+" missing plant photo");
-  if(!html.includes('class="plant-figure-link" href="'+p.source+'"'))fail(url+" plant photo does not link to source listing");
+  if(!html.includes('class="plant-photo plant-profile-photo" src="/assets/plant-photos/'+p.slug+'.jpg"'))fail(url+" missing local plant photo");
+  if(!html.includes('class="plant-figure-image"'))fail(url+" missing profile photo frame");
   const cardChunk=directory.split('data-plant-search="').find(v=>v.includes('href="/plants/'+p.slug+'/"'));
-  if(!directory.includes('src="'+imageUrl+'"'))fail(url+" directory image mismatch");
+  if(!directory.includes('src="/assets/plant-photos/'+p.slug+'.jpg"'))fail(url+" directory image mismatch");
+  const photo=await readFile("dist/assets/plant-photos/"+p.slug+".jpg");
+  if(photo.length<300||photo[0]!==0xff||photo[1]!==0xd8||photo[2]!==0xff)fail(url+" generated photo is missing or not JPEG");
   if(!cardChunk)fail(url+" internal card guide link missing");
   if(!html.includes('Dallas Timpson Garden Services'))fail(url+" missing real gardening CTA");
   if(!html.includes('class="cards plant-related-cards"'))fail(url+" related cards do not use the shared grid");

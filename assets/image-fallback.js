@@ -1,13 +1,7 @@
-// Keep photo cards usable when a third-party image host declines a request.
+// Recover illustrative local-editorial images when an external photo host declines a request.
 // Run before lazy-loaded images and repair images already failed by DOM ready.
 (() => {
   function recover(img) {
-    if (img?.matches('img.plant-photo')) {
-      // Keep its outgoing nursery link usable if the host blocks embedding or a photo disappears.
-      img.hidden = true;
-      img.closest('a')?.classList.add('plant-photo-unavailable');
-      return;
-    }
     if (!img || !img.matches('img[data-fallback-src]')) return;
     if (img.dataset.photoRecovered === 'yes') {
       // If even the second real photo fails, hide the broken image and its
@@ -34,7 +28,7 @@
     if (event.target instanceof HTMLImageElement) recover(event.target);
   }, true);
   function checkAlreadyFailed() {
-    document.querySelectorAll('img[data-fallback-src], img.plant-photo').forEach(img => {
+    document.querySelectorAll('img[data-fallback-src]').forEach(img => {
       if (img.complete && img.naturalWidth === 0) recover(img);
     });
   }

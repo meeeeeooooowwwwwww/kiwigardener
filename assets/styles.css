@@ -406,23 +406,17 @@ img.card-image[hidden],figure.local-figure[hidden]{display:none!important}
 @media(max-width:720px){.plant-card{min-height:215px}.plant-filters{padding:16px}.plant-guide-note{padding:21px}}
 @media(max-width:520px){.plant-results{grid-template-columns:1fr}.plant-filters{grid-template-columns:1fr;gap:12px}.plant-query{grid-column:auto}.plant-facts,.plant-related .plant-related-cards{grid-template-columns:1fr}.plant-facts>div:nth-child(2n){border-left:0}.plant-facts>div{border-bottom:1px solid #e0e8d9}.plant-guide-note{padding:19px}.plant-related .card{min-height:145px}}
 
-/* Plant imagery: separate image links open the nursery listing, while card copy opens our local guide.
-   Both the card and article use the existing site colours, radius and responsive layout. */
+/* Plant photographs are downloaded as verified JPEGs at build time and served locally.
+   Static image frames, not external photo navigation or empty text placeholder buttons. */
 .plant-results .plant-card{padding:0;min-height:365px;gap:0;overflow:hidden}
-.plant-photo-link{position:relative;display:grid;place-items:center;flex:0 0 auto;min-height:172px;padding:12px;border-bottom:1px solid var(--line);border-radius:var(--r) var(--r) 0 0;background:linear-gradient(135deg,#dce8d5,#eff4e9);text-decoration:none}
-.plant-photo-link .plant-photo{width:150px;height:150px;max-width:100%;object-fit:cover;border-radius:13px;box-shadow:0 5px 15px rgba(20,54,34,.11)}
+.plant-photo-frame{display:grid;place-items:center;flex:0 0 auto;min-height:205px;padding:12px;border-bottom:1px solid var(--line);border-radius:var(--r) var(--r) 0 0;background:linear-gradient(135deg,#dce8d5,#eff4e9)}
+.plant-photo-frame .plant-photo{display:block;width:175px;height:175px;max-width:100%;object-fit:cover;border-radius:13px;box-shadow:0 5px 15px rgba(20,54,34,.13)}
 .plant-card-body{display:flex;flex-direction:column;flex:1;min-width:0;padding:19px 22px 22px;text-decoration:none;color:var(--ink)}
 .plant-card-body:hover,.plant-card-body:focus-visible{color:var(--forest);background:#f7faf2;outline-offset:-3px}
 .plant-card-body h3{margin:12px 0 6px}
 .plant-card-body .arrow{margin-top:auto}
-.plant-photo-link:hover,.plant-photo-link:focus-visible{background:#d5e7c9}
-.plant-photo-fallback{display:none;text-align:center;color:var(--forest);font-weight:750;font-size:.9rem}
-.plant-photo-unavailable .plant-photo-fallback{display:block}
-.plant-photo-unavailable img.plant-photo{display:none!important}
 .plant-figure{display:flex;justify-content:center;align-items:center;min-width:0;margin:0 0 30px;padding:22px;background:linear-gradient(135deg,#e2edda,#f0f4eb);border:1px solid var(--line);border-radius:var(--r)}
-.plant-figure-link{display:grid;place-items:center;min-width:185px;min-height:185px;padding:15px;background:rgba(255,255,255,.65);border-radius:18px;text-decoration:none}
-.plant-profile-photo{width:150px;height:150px;object-fit:cover;border-radius:13px}
-.plant-figure-link:hover,.plant-figure-link:focus-visible{background:#fff}
-.plant-figure-link.plant-photo-unavailable{min-height:130px}
+.plant-figure-image{display:grid;place-items:center;min-width:205px;min-height:205px;padding:15px;background:rgba(255,255,255,.65);border-radius:18px}
+.plant-profile-photo{display:block;width:175px;height:175px;object-fit:cover;border-radius:13px}
 @media(max-width:950px){.plant-results .plant-card{min-height:348px}}
-@media(max-width:520px){.plant-results .plant-card{min-height:0}.plant-photo-link{min-height:164px}.plant-card-body{padding:16px 18px 20px}.plant-figure{padding:15px}.plant-figure-link{min-width:160px;min-height:160px}}
+@media(max-width:520px){.plant-results .plant-card{min-height:0}.plant-photo-frame{min-height:195px}.plant-card-body{padding:16px 18px 20px}.plant-figure{padding:15px}.plant-figure-image{min-width:195px;min-height:195px}}
