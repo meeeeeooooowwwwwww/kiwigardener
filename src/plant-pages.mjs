@@ -40,7 +40,22 @@ export function addPlantPages(ctx){
   const uri=p=>"/plants/"+p.slug+"/";
   const opts=(array,first)=>'<option value="">'+esc(first)+'</option>'+unique(array).map(s=>'<option value="'+esc(s)+'">'+esc(s)+'</option>').join("");
   const allForms=plants.map(p=>p.form),allUses=plants.flatMap(p=>p.uses),allFlowers=plants.flatMap(p=>p.flowers),allFoliage=plants.flatMap(p=>p.foliage),allLight=plants.flatMap(p=>p.light),allSeasons=plants.map(p=>p.season).filter(Boolean);
-  const popular=[["Hedging & screening","Hedges"],["Ground cover","Groundcovers"],["Coastal gardens","Coastal planting"],["Bee-friendly","Pollinator-friendly"],["Dry gardens","Drought-aware"],["Borders & edging","Borders"]];
+  // Category-first browsing supports later expansion without pretending supplier stock exists.
+  // Citrus, roses and garden supplies are not shown as populated categories until we have verified entries.
+  const popular=[
+    ["Shrubs","/plants/?form=Shrub"],
+    ["Trees","/plants/?form=Tree"],
+    ["Fruit & edibles","/plants/?use=Edible%20fruit"],
+    ["Hedges","/plants/?use=Hedging%20%26%20screening"],
+    ["Groundcovers","/plants/?form=Groundcover"],
+    ["Flax","/plants/?form=Flax"],
+    ["Perennials & flowers","/plants/?form=Perennial"],
+    ["Native plants","/plants/?native=yes"],
+    ["White flowers","/plants/?flower=white"],
+    ["Coastal planting","/plants/?use=Coastal%20gardens"],
+    ["Drought-aware","/plants/?use=Dry%20gardens"],
+    ["Borders","/plants/?use=Borders%20%26%20edging"]
+  ];
   const featuredSlugs=["griselinia-littoralis","photinia-red-robin","lavandula-angustifolia","sophora-microphylla"];
   const featuredPlants=featuredSlugs.map(slug=>plants.find(p=>p.slug===slug)).filter(Boolean);
   // Reuse the existing site's .cards and .card system instead of creating a competing card design.
@@ -59,7 +74,7 @@ export function addPlantPages(ctx){
     '<div class="plant-filter"><label for="plant-season">Flowering season</label><select id="plant-season">'+opts(allSeasons,"Any flowering season")+'</select></div>'+
     '<div class="plant-filter"><label for="plant-native">NZ native</label><select id="plant-native"><option value="">Native or introduced</option><option value="yes">NZ native only</option></select></div>'+
     '<div class="plant-filter-action"><button id="plant-reset" type="button" class="plant-reset">Clear filters</button></div></div>';
-  const chips='<nav class="plant-quick-filters subnav" aria-label="Popular plant searches">'+popular.map(q=>'<a class="tag" href="/plants/?use='+encodeURIComponent(q[0])+'">'+esc(q[1])+' ↗</a>').join("")+'</nav>';
+  const chips='<nav class="plant-quick-filters subnav" aria-label="Browse plant categories">'+popular.map(q=>'<a class="tag" href="'+q[1]+'">'+esc(q[0])+' ↗</a>').join("")+'</nav>';
   const lead="Search "+plants.length+" plant profiles by name, flowers, foliage colour, type and growing conditions. Practical guidance for Christchurch gardens, from native hedges to coastal borders and flowering shrubs.";
   const hub=articleHero("Find plants for your garden","Christchurch plant directory",lead,dirTrail)+
     '<section class="section"><div class="container"><div class="plant-intro"><p>Compare garden plants before choosing what to grow in Christchurch, Canterbury. Filter shrubs, trees, perennials, hedges, climbers, native plants, grasses, groundcovers and flower colours. The reference catalogue includes restoration plants as well as everyday garden choices: not every entry suits every suburban property.</p><p><strong>Need work done?</strong> Read our <a href="/services/">Christchurch gardening services</a> or <a href="'+TEL_URL+'">call Dallas on '+PHONE+'</a> for maintenance, hedge trimming and tidy-ups. This directory does not sell plants or claim nursery stock availability.</p></div>'+
