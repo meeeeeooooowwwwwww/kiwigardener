@@ -481,3 +481,36 @@ img.card-image[hidden],figure.local-figure[hidden]{display:none!important}
 @media(max-width:720px){
   .hero-photographic .hero-dallas-portrait{margin-top:0}
 }
+
+
+/* Homepage: put contact details beneath the portrait, alongside quote actions. */
+.hero-photographic .hero-grid{row-gap:20px}
+.hero-photographic .hero-action-buttons,
+.hero-photographic .hero-action-contact{min-width:0}
+.hero-photographic .hero-action-buttons .button-row{margin:0;align-items:flex-start}
+.hero-photographic .hero-action-contact{
+  padding:20px 22px;
+  border:1px solid var(--line);
+  background:#eef3e8;
+  border-radius:20px;
+}
+.hero-photographic .hero-action-contact .hero-contact{
+  margin:0;padding:0;border:0;align-items:center;
+}
+.hero-photographic .hero-action-contact .micro{
+  margin-top:12px;color:#506558;line-height:1.55;
+}
+@media(min-width:721px){
+  .hero-photographic .hero-copy{grid-column:1;grid-row:1}
+  .hero-photographic .hero-dallas-portrait{grid-column:2;grid-row:1}
+  .hero-photographic .hero-action-buttons{grid-column:1;grid-row:2}
+  .hero-photographic .hero-action-contact{grid-column:2;grid-row:2}
+}
+@media(max-width:720px){
+  .hero-photographic .hero-grid{row-gap:18px}
+  .hero-photographic .hero-copy{grid-row:1}
+  .hero-photographic .hero-action-buttons{grid-row:2}
+  .hero-photographic .hero-action-contact{grid-row:3}
+  .hero-photographic .hero-dallas-portrait{grid-row:4}
+  .hero-photographic .hero-action-contact{padding:18px}
+}
