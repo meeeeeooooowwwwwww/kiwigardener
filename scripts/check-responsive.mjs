@@ -120,12 +120,16 @@ try {
             photoLink:card?.querySelector(".plant-photo-link")?.href,
             internalLink:card?.querySelector(".plant-card-body")?.getAttribute("href"),
             imageHeight:card?.querySelector(".plant-photo")?.getBoundingClientRect().height,
-            imageAlt:card?.querySelector(".plant-photo")?.alt
+            imageAlt:card?.querySelector(".plant-photo")?.alt,
+            introWidth:document.querySelector(".plant-intro")?.getBoundingClientRect().width,
+            introParagraphWidths:[...document.querySelectorAll(".plant-intro p")].map(p=>p.getBoundingClientRect().width),
+            introContainerWidth:document.querySelector(".plant-intro")?.closest(".container")?.getBoundingClientRect().width
           };
         });
         const expectedCols=width<=520?1:width<=950?2:3;
         if(detail.columns!==expectedCols)failures.push(`Plant cards @${width}: ${detail.columns} columns, expected ${expectedCols}`);
         if(!detail.expectedCard||!detail.footerPresent||!detail.footerPlantLink)failures.push(`Plant cards/footer @${width}: shared components missing`);
+        if(!detail.introWidth||!detail.introContainerWidth||Math.abs(detail.introWidth-detail.introContainerWidth)>2||detail.introParagraphWidths.length!==2||detail.introParagraphWidths.some(w=>Math.abs(w-detail.introContainerWidth)>2))failures.push(`Plant introduction @${width}: paragraphs do not fill shared container width`);
         if(!detail.photoLink?.startsWith("https://www.goughsnurseries.co.nz/plant/")||!detail.internalLink?.startsWith("/plants/")||detail.imageHeight<100||!detail.imageAlt)failures.push(`Plant photo @${width}: missing photo or incorrect links/layout`);
         if(!detail.filterWidth||detail.filterWidth>snapshot.viewport||detail.searchHeight<40)failures.push(`Plant search @${width}: control too narrow or overflows`);
         if(width<=1100?!detail.compactNav||detail.desktopNav:!detail.desktopNav||detail.compactNav)failures.push(`Plant navigation @${width}: wrong menu mode`);
