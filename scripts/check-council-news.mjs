@@ -28,7 +28,7 @@ test("Only appropriate pages get small, sourced Council news",()=>{
     assert.match(html,/datetime="/);
     assert.match(html,/rel="noopener noreferrer"/);
   }
-  for(const path of ["/contact/","/privacy/","/plants/acca-sellowiana/"]){
+  for(const path of ["/contact/","/privacy/","/plants/unknown-plant-slug/"]){
     assert.equal(councilNewsSection(path,news),"");
   }
 });
