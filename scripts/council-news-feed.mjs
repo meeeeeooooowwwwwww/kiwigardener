@@ -1,12 +1,13 @@
 // Read-only Christchurch City Council Newsline RSS source.
-// Only article titles, dates and canonical links are republished; no copied article bodies or photos.
+// Only article titles, dates and canonical links are republished; no copied article bodies, logos or photos.
+// Subject scope includes native habitats, public gardens, parks and green spaces.
 export const COUNCIL_FEED = "https://www.newsline.ccc.govt.nz/news/stories";
 const decode=s=>String(s||"").replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,"$1")
   .replace(/&#(x[0-9a-f]+|\d+);/gi,(_,n)=>{const cp=n[0].toLowerCase()==="x"?parseInt(n.slice(1),16):Number(n);return cp>0&&cp<=0x10ffff?String.fromCodePoint(cp):""})
   .replace(/&(amp|lt|gt|quot|apos|nbsp);/gi,(_,n)=>({amp:"&",lt:"<",gt:">",quot:'"',apos:"'",nbsp:" "}[n.toLowerCase()]))
   .replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();
 const field=(xml,key)=>decode(xml.match(new RegExp("<(?:[a-z0-9_-]+:)?"+key+"(?:\\s[^>]*)?>([\\s\\S]*?)<\\/(?:[a-z0-9_-]+:)?"+key+">","i"))?.[1]||"");
-const titleKeywords=/\b(?:garden\w*|botanic\w*|horticultur\w*|plant\w*|flower\w*|bloom\w*|seedling\w*|trees?|vegetation|biodivers\w*|wetlands?|revegetat\w*|compost\w*|weeding|weeds?|native\s+bush|bush\s+restoration|ecological\s+restoration|green\s+waste|leaf\s+fall|forest\s+restoration)\b/i;
+const titleKeywords=/\b(?:garden\w*|botanic\w*|horticultur\w*|plant\w*|flower\w*|bloom\w*|seedling\w*|trees?|vegetation|biodivers\w*|wetlands?|revegetat\w*|compost\w*|weeding|weeds?|native\s+bush|bush\s+restor\w*|ecolog\w*|green\s+waste|leaf\s+fall|forest\w*|parks?|reserves?|restor\w*|conserv\w*|environment\w*|coast\w*|estuar\w*|harbour|green\s+space\w*|urban\s+forest\w*|waterways?|streams?|rivers?|dunes?|habitats?|nature|landscap\w*|pathways?|recreation\w*|beaches|bay)\b/i;
 // "Plant" may refer to an industrial facility rather than botany.
 const industrialPlant=/\b(?:wastewater|water|sewage|treatment|power|energy|industrial|processing|manufacturing|chemical|recycling)\s+plant\b/i;
 const allowedHost=h=>h==="newsline.ccc.govt.nz"||h==="www.newsline.ccc.govt.nz";

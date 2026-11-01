@@ -150,6 +150,22 @@ try {
         const photoPixels=await feijoaPhoto.evaluate(img=>({width:img.naturalWidth,height:img.naturalHeight,loaded:img.complete}));
         if(!photoPixels.loaded||photoPixels.width<100||photoPixels.height<100)failures.push("Feijoa photo did not visibly decode from our own origin");
       } catch (error) {failures.push("Feijoa photo failed to load and decode: "+error.message);}
+      const councilPhotos=page.locator(".council-news-photo");
+      if((await councilPhotos.count())<1)failures.push("Newsline feed should show at least one illustrative photo in the pre-footer section");
+      else{
+        const newsPhoto=councilPhotos.first();
+        const photoPath=await newsPhoto.getAttribute("src");
+        if(!photoPath?.startsWith("/assets/council-news/")&&!photoPath?.startsWith("/assets/plant-photos/"))
+          failures.push("Council photo must come from our own site assets");
+        try{
+          await newsPhoto.scrollIntoViewIfNeeded();
+          await newsPhoto.evaluate(img=>img.decode());
+          const pixels=await newsPhoto.evaluate(img=>({width:img.naturalWidth,height:img.naturalHeight}));
+          if(pixels.width<100||pixels.height<70)failures.push("Newsline thumbnail did not decode");
+        }catch(error){failures.push("Newsline thumbnail failed to load: "+error.message)}
+      }
+      if(!(await page.locator(".council-source").count()))failures.push("Newsline needs clear Council source label");
+      if((await page.locator(".council-news-links li").count())>3)failures.push("Council news block should stay compact");
       await page.fill("#plant-query","feijoa");
       let visible=await page.locator(".plant-card:visible").count();
       if(visible!==1)failures.push("Plant search for feijoa should return exactly one plant, got "+visible);

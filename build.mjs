@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import {newAreas,newGuides,images,localProfiles} from "./src/local-editorial.mjs";
 import {addPlantPages} from "./src/plant-pages.mjs";
 import {councilNewsSection} from "./src/council-news.mjs";
+import {fetchCouncilImageAssets} from "./scripts/council-news-images.mjs";
 import {fetchCouncilNews,validateStoredNews} from "./scripts/council-news-feed.mjs";
 import {downloadPlantPhotos} from "./scripts/download-plant-photos.mjs";
 import {plants} from "./src/plant-catalogue.mjs";
@@ -23,6 +24,8 @@ try{
   try{councilNews=validateStoredNews(JSON.parse(await readFile("src/council-news.json","utf8")))}
   catch{councilNews=[]}
 }
+const councilImageAssets=await fetchCouncilImageAssets();
+const councilImageKeys=new Set(Object.keys(councilImageAssets));
 const generateSite = function generateSite(){
   const domain="https://kiwigardeners.com";
   const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
@@ -154,7 +157,7 @@ const generateSite = function generateSite(){
     const shareImageSource=areaImage?.src||guideImage?.src||(path.startsWith("/services/")?servicePhotos[slug]:null)||GARDEN_PHOTO;
     const shareImage=shareImageSource.startsWith("/")?domain+shareImageSource:shareImageSource;
     const shareAlt=areaImage?.alt||guideImage?.alt||(path.startsWith("/services/")?"Illustrative image relating to "+(services.find(x=>x.slug===slug)?.name||"Christchurch gardening") :path.startsWith("/plants/")?"Illustrative Christchurch garden photograph; not a species identification photo":"Christchurch garden photography");
-    return `<!doctype html><html lang="en-NZ"><head>${googleTag}<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#18382c"><meta name="robots" content="${(path==="/404/"||!indexable)?"noindex,follow":"index,follow,max-image-preview:large"}"><title>${esc(title)}</title><meta name="description" content="${esc(description)}"><link rel="canonical" href="${url}"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png"><link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180"><link rel="manifest" href="/site.webmanifest"><link rel="preconnect" href="https://images.unsplash.com"><link rel="preconnect" href="https://thumb.wikimedia.org" crossorigin><link rel="stylesheet" href="${stylesheetUrl}"><meta property="og:type" content="${type==="Article"?"article":"website"}"><meta property="og:locale:alternate" content="en_AU"><meta property="og:locale" content="en_NZ"><meta property="og:site_name" content="Kiwi Gardeners Christchurch"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${url}"><meta property="og:image" content="${esc(shareImage)}"><meta property="og:image:alt" content="${esc(shareAlt)}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${esc(shareImage)}"><script type="application/ld+json">${schema(path,trail,type)}</script>${path==="/contact/"?`<script src="/assets/contact.js" defer></script>`:""}${path==="/plants/"?'<script src="/assets/plant-search.js" defer></script>':""}</head><body><a class="skip" href="#main-content">Skip to main content</a>${nav}<main id="main-content">${content}${councilNewsSection(path,councilNews)}</main>${footer}</body></html>\n`;
+    return `<!doctype html><html lang="en-NZ"><head>${googleTag}<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#18382c"><meta name="robots" content="${(path==="/404/"||!indexable)?"noindex,follow":"index,follow,max-image-preview:large"}"><title>${esc(title)}</title><meta name="description" content="${esc(description)}"><link rel="canonical" href="${url}"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png"><link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180"><link rel="manifest" href="/site.webmanifest"><link rel="preconnect" href="https://images.unsplash.com"><link rel="preconnect" href="https://thumb.wikimedia.org" crossorigin><link rel="stylesheet" href="${stylesheetUrl}"><meta property="og:type" content="${type==="Article"?"article":"website"}"><meta property="og:locale:alternate" content="en_AU"><meta property="og:locale" content="en_NZ"><meta property="og:site_name" content="Kiwi Gardeners Christchurch"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${url}"><meta property="og:image" content="${esc(shareImage)}"><meta property="og:image:alt" content="${esc(shareAlt)}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${esc(shareImage)}"><script type="application/ld+json">${schema(path,trail,type)}</script>${path==="/contact/"?`<script src="/assets/contact.js" defer></script>`:""}${path==="/plants/"?'<script src="/assets/plant-search.js" defer></script>':""}</head><body><a class="skip" href="#main-content">Skip to main content</a>${nav}<main id="main-content">${content}${councilNewsSection(path,councilNews,councilImageKeys)}</main>${footer}</body></html>\n`;
   };
   const crumbs=(trail)=>`<nav aria-label="Breadcrumb" class="breadcrumbs">${trail.map((t,i)=>i===trail.length-1?`<span aria-current="page">${esc(t.name)}</span>`:a(t.path,t.name)).join(" / ")}</nav>`;
   const articleHero=(kicker,title,lead,trail)=>`<header class="article-hero"><div class="container">${crumbs(trail)}<div style="margin-top:27px">${eyebrow(kicker)}</div><h1>${esc(title)}</h1><p>${esc(lead)}</p></div></header>`;
@@ -415,5 +418,10 @@ for (const path of ["assets/styles.css","assets/favicon.svg","assets/green-waste
 await copyFile("assets/styles.css","dist"+stylesheetUrl);
 for (const path of ["green-waste-removal.jpg","rubbish-removal.jpg"]) await copyFile(path,"dist/"+path);
 await writeIconSet("dist");
+for(const [key,bytes] of Object.entries(councilImageAssets)){
+  const file="dist/assets/council-news/"+key+".jpg";
+  await mkdir(dirname(file),{recursive:true});
+  await writeFile(file,bytes);
+}
 await downloadPlantPhotos({dist:"dist"});
 console.log("Built "+Object.keys(files).filter(x=>x.endsWith(".html")).length+" static pages and SEO files into dist/");

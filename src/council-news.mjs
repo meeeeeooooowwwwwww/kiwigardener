@@ -1,66 +1,93 @@
-// Quiet, on-topic related-news strip between the article and shared site footer.
-// Don't inject the same generic headlines into all 271 plant profiles.
+// Related Council stories are a supporting news strip, not a Council-branded endorsement.
+// The RSS feed has headlines, not image enclosures. Photos below are pre-credited,
+ // independently licensed illustrations already used elsewhere on Kiwi Gardeners.
 import {plants} from "./plant-catalogue.mjs";
+import {plantEditorial} from "./plant-editorial.mjs";
+import {images} from "./local-editorial.mjs";
 import {validateStoredNews} from "../scripts/council-news-feed.mjs";
-const recent=s=>Date.parse(s.date)>=Date.now()-180*86400000;
-const terms=s=>s.toLowerCase().replace(/[-_]/g," ");
-const has=(s,re)=>re.test(s.toLowerCase());
-const greenery=/\b(?:garden|gardening|plant|native|tree|flower|botanic|ecolog|wetland|seedling|leaf|compost|forest|biodivers)/i;
-const topicPatterns={
-  native:/\b(?:native|restoration|bush|biodivers|forest|wetland|ecolog|revegetat)/i,
-  coastal:/\b(?:coast|beach|shore|wetland|dune|erosion|estuary|sea)/i,
-  flowering:/\b(?:flower|bloom|rose|botanic|garden|blossom)/i,
-  trees:/\b(?:tree|forest|bush|planting|native)/i,
-  maintenance:/\b(?:garden|pruning|weed|hedge|tree|plant|leaf|season|bloom)/i,
-  waste:/\b(?:leaf|compost|green waste|garden waste|weed)/i,
-  soil:/\b(?:soil|compost|wetland|planting|garden|drought)/i,
-  hills:/\b(?:port hills|bush|forest|native|restoration|planting)/i
+
+const recent=s=>Date.parse(s.date)>=Date.now()-270*86400000;
+const normal=s=>String(s||"").toLowerCase().replace(/[-_]/g," ");
+const topic={
+  greenery:/\b(?:garden\w*|botanic\w*|plant\w*|seedling\w*|flora\w*|tree\w*|flower\w*|nature|environment\w*|ecolog\w*|restor\w*|parks?|reserves?|wetland\w*|coast\w*|harbour|bay|pathway\w*|recreation\w*|green\s+space\w*|landscap\w*|forest\w*|biodivers\w*)\b/i,
+  garden:/\b(?:garden|botanic|planting|flower|seedling|bloom|horticultur|vegetation|compost|soil)/i,
+  native:/\b(?:native|restor|bush|biodivers|forest|wetland|ecolog|habitat|revegetat)/i,
+  coastal:/\b(?:coast|beach|shore|wetland|dune|erosion|estuary|harbour|bay|sea)/i,
+  trees:/\b(?:tree|forest|bush|planting|native|canopy|reserve|park)/i,
+  maintenance:/\b(?:garden|prun|weed|hedge|tree|plant|leaf|season|green|park|reserve)/i,
+  waste:/\b(?:leaf|compost|green waste|garden waste|weed|recycl)/i,
+  soil:/\b(?:soil|compost|wetland|planting|garden|drought|landscape)/i,
+  hills:/\b(?:port hills|bush|forest|native|restor|planting|reserve|hill)/i
 };
-const relevant=(path,story)=>{
-  const text=terms(story.title);
-  const slug=path.split("/")[2]||"";
-  if(path==="/plants/"||path==="/guides/")return 5;
+function relevance(path,s){
+  const text=normal(s.title),slug=path.split("/")[2]||"";
+  if(path==="/plants/"||path==="/guides/"||path==="/areas/"||path==="/services/")return topic.greenery.test(text)?6:0;
+  if(path==="/")return topic.greenery.test(text)?2:0;
   if(path.startsWith("/plants/")){
+    if(!plantEditorial[slug])return 0; // Do not repeat generic news across 229 noindex profiles.
     const p=plants.find(x=>x.slug===slug);
     if(!p)return 0;
-    const species=[p.name,p.common].filter(Boolean).map(x=>terms(x)).filter(x=>x.length>=5);
-    return species.some(t=>terms(story.title).includes(t)||terms(story.description||"").includes(t))?12:0;
+    const names=[p.name,p.common].filter(Boolean).map(normal).filter(x=>x.length>=5);
+    if(names.some(name=>text.includes(name)))return 12;
+    return topic.garden.test(text)?2:0;
   }
   if(path.startsWith("/areas/")&&slug){
-    const place=terms(slug);
-    const context=terms(story.title+" "+(story.description||""));
-    const matches=context.includes(place) || (place==="banks peninsula"&&/\b(?:akaroa|lyttelton|banks peninsula)\b/i.test(context));
-    return matches?12:0;
+    const place=normal(slug);
+    const located=text.includes(place)||(place==="banks peninsula"&&/\b(?:akaroa|lyttelton|banks peninsula)\b/i.test(text));
+    return located?12:topic.greenery.test(text)?3:0;
   }
   if(path.startsWith("/guides/")){
-    let pattern=topicPatterns.maintenance;
-    if(/native/.test(slug))pattern=topicPatterns.native;
-    else if(/coastal/.test(slug))pattern=topicPatterns.coastal;
-    else if(/soil/.test(slug))pattern=topicPatterns.soil;
-    else if(/port-hills/.test(slug))pattern=topicPatterns.hills;
-    else if(/historic|flower/.test(slug))pattern=topicPatterns.flowering;
-    else if(/tree/.test(slug))pattern=topicPatterns.trees;
-    return pattern.test(text)?10:0;
+    let matcher=topic.maintenance;
+    if(/native/.test(slug))matcher=topic.native;
+    else if(/coastal/.test(slug))matcher=topic.coastal;
+    else if(/soil/.test(slug))matcher=topic.soil;
+    else if(/port-hills/.test(slug))matcher=topic.hills;
+    else if(/historic|flower/.test(slug))matcher=topic.garden;
+    return matcher.test(text)?10:topic.greenery.test(text)?3:0;
   }
   if(path.startsWith("/services/")){
-    const pattern=/green-waste|waste-removal/.test(slug)?topicPatterns.waste:
-      /hedge|prun/.test(slug)?topicPatterns.trees:
-      /weeding|weed-control/.test(slug)?topicPatterns.maintenance:
-      /garden-maintenance|garden-tidy|garden-clean|garden-bed|planting/.test(slug)?topicPatterns.maintenance:null;
-    return pattern?.test(text)?8:0;
+    const matcher=/green-waste|waste-removal/.test(slug)?topic.waste:
+      /hedge|prun|tree/.test(slug)?topic.trees:topic.maintenance;
+    return matcher.test(text)?8:topic.greenery.test(text)?2:0;
   }
   return 0;
-};
+}
 const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-const formatDate=d=>new Intl.DateTimeFormat("en-NZ",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}).format(new Date(d+"T12:00:00Z"));
-export function councilNewsSection(path,records){
-  if(path==="/"||path==="/contact/"||path==="/privacy/"||path==="/404/")return "";
-  const stories=validateStoredNews(records).filter(recent)
-    .map(s=>({...s,score:relevant(path,s)})).filter(s=>s.score>0)
-    .sort((a,b)=>b.score-a.score||b.date.localeCompare(a.date)).slice(0,2);
-  const resource=(path==="/plants/"||path==="/guides/"||/\/guides\/(?:historic-christchurch-gardens|caring-for-christchurch-garden-plants|native-plants-christchurch)\//.test(path))
-    ?'<p class="council-news-resource">More local plant information: <a href="https://www.ccc.govt.nz/parks-and-gardens/christchurch-botanic-gardens" target="_blank" rel="noopener noreferrer">Christchurch Botanic Gardens ↗</a></p>':"";
-  if(!stories.length)return ""; // No unrelated or stale content just to fill space.
-  const rows=stories.map(s=>'<li><a href="'+esc(s.url)+'" target="_blank" rel="noopener noreferrer">'+esc(s.title)+' <span aria-hidden="true">↗</span></a><time datetime="'+esc(s.date)+'">'+esc(formatDate(s.date))+'</time></li>').join("");
-  return '<section class="council-updates" aria-label="Related Christchurch City Council gardening news"><div class="container"><div class="council-updates-inner"><div class="council-updates-title"><span class="eyebrow">Christchurch City Council · Newsline</span><h2>From around our gardens</h2><p>Related local news, published by the Council.</p></div><div><ul class="council-news-links">'+rows+'</ul>'+resource+'</div></div></div></section>';
+const formatted=d=>new Intl.DateTimeFormat("en-NZ",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}).format(new Date(d+"T12:00:00Z"));
+// The photos are deliberately illustrative, not falsely presented as Newsline article photographs.
+function photoKeyFor(s){
+ const title=normal(s.title);
+ return /\b(?:coast|beach|dune|sea|harbour|bay|shore|estuary)\b/.test(title)?"dunes":
+  /\b(?:wetland|waterway|stream|river|ecolog|biodivers|restor|habitat)\b/.test(title)?"travis":
+  /\b(?:port hills|hill)\b/.test(title)?"hills":
+  /\b(?:forest|native bush|reserve|tree)\b/.test(title)?"riccarton":"botanic";
+}
+function thumbnail(s,availableImages){
+ const key=photoKeyFor(s);
+ const photo=images[key]||images.botanic;
+ const fallbackPlant={
+  botanic:"agapanthus-orientalis-blue",
+  travis:"acaena-inermis-purpurea",
+  dunes:"acorus-gramineus-ogon",
+  riccarton:"acca-sellowiana",
+  hills:"arthropodium-cirratum"
+ }[key];
+ const isLicensed=availableImages?.has(key);
+ const src=isLicensed?"/assets/council-news/"+key+".jpg":"/assets/plant-photos/"+fallbackPlant+".jpg";
+ const credit=isLicensed
+   ?'Illustrative photo: <a href="'+esc(photo.file)+'" target="_blank" rel="noopener noreferrer">'+esc(photo.credit)+'</a> · <a href="'+esc(photo.licenceUrl)+'" target="_blank" rel="noopener noreferrer">'+esc(photo.licence)+'</a>'
+   :"Illustrative plant photograph";
+ return '<figure class="council-news-thumb"><img class="council-news-photo" src="'+esc(src)+'" width="116" height="88" alt="Illustrative local garden or nature photograph; not supplied by Newsline" loading="lazy" decoding="async"><figcaption>'+credit+'</figcaption></figure>';
+}
+export function councilNewsSection(path,records,availableImages=new Set()){
+ if(path==="/contact/"||path==="/privacy/"||path==="/404/")return "";
+ const limit=path==="/plants/"||path==="/guides/"||path==="/areas/"||path==="/services/"?3:2;
+ const stories=validateStoredNews(records).filter(recent)
+  .map(s=>({...s,score:relevance(path,s)})).filter(s=>s.score>0)
+  .sort((a,b)=>b.score-a.score||b.date.localeCompare(a.date)).slice(0,limit);
+ if(!stories.length)return "";
+ const resources=(path==="/plants/"||path==="/guides/"||/\/guides\/(?:historic-christchurch-gardens|caring-for-christchurch-garden-plants|native-plants-christchurch)\//.test(path))
+  ?'<p class="council-news-resource">Official garden information: <a href="https://www.ccc.govt.nz/parks-and-gardens/christchurch-botanic-gardens" target="_blank" rel="noopener noreferrer">Christchurch Botanic Gardens ↗</a></p>':"";
+ const rows=stories.map(s=>'<li class="council-news-item">'+thumbnail(s,availableImages)+'<div class="council-news-copy"><a href="'+esc(s.url)+'" target="_blank" rel="noopener noreferrer">'+esc(s.title)+' <span aria-hidden="true">↗</span></a><time datetime="'+esc(s.date)+'">'+esc(formatted(s.date))+'</time></div></li>').join("");
+ return '<section class="council-updates" aria-label="Christchurch City Council Newsline stories"><div class="container"><div class="council-updates-inner"><div class="council-updates-title"><span class="council-source"><span class="council-source-icon" aria-hidden="true">N</span><span>Christchurch City Council <strong>Newsline</strong></span></span><h2>From around our gardens</h2><p>Local environment, parks and garden news from Council. Photo illustrations are independent of Newsline.</p></div><div><ul class="council-news-links">'+rows+'</ul>'+resources+'</div></div></div></section>';
 }
