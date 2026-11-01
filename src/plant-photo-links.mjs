@@ -1,6 +1,6 @@
 // 271 direct image URLs transcribed from the user-supplied Goughs plant catalogue (2 Nov 2026).
-// These are unlicensed third-party photos. They are LINK DESTINATIONS ONLY; do not embed/rehost
-// them without the copyright owner's permission. Each plant also links its source listing.
+// The remote thumbnails are displayed from the original image URLs (not copied or rehosted).
+// Image clicks lead to their plant pages; there is no supplier/affiliate relationship claimed.
 export const plantPhotoLinks = {
   "acaena-inermis-purpurea": "https://www.goughsnurseries.co.nz/cache/plant/1/acaena_inermis_purpurea_1_1_150_150_r.jpg",
   "acca-sellowiana": "https://www.goughsnurseries.co.nz/cache/plant/204/acca_sellowiana_1_1_150_150_r.jpg",
