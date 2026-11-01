@@ -218,7 +218,7 @@ if(!areaDirectory.includes("Riccarton_Bush_predator-proof_fence_347.jpg"))fail("
 
 
 const directory=await readPage("/plants/");
-const councilStrip=directory.match(/<section class="council-updates"[\\s\\S]*?<\\/section>/)?.[0]||"";
+const councilStrip=directory.match(/<section class="council-updates"[\s\S]*?<\/section>/)?.[0]||"";
 if(councilStrip){
   if(!councilStrip.includes("Christchurch City Council")||!councilStrip.includes("Newsline"))fail("Unattributed Council news widget");
   if(!councilStrip.includes('target="_blank" rel="noopener noreferrer"'))fail("Council news outgoing links not secure");
