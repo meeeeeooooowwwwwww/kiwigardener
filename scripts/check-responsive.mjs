@@ -139,7 +139,7 @@ try {
     if (path === "/plants/") {
       await page.setViewportSize({width:390,height:850});
       const photoCount=await page.locator(".plant-card .plant-photo").count();
-      if(photoCount!==271)failures.push("Expected 271 plant thumbnails, got "+photoCount);
+      if(photoCount!==331)failures.push("Expected 331 plant thumbnails, got "+photoCount);
       const feijoa=page.locator('a.plant-card-body[href="/plants/acca-sellowiana/"]').locator("..");
       const feijoaPhoto=feijoa.locator(".plant-photo");
       if(await feijoaPhoto.getAttribute("src")!=="/assets/plant-photos/acca-sellowiana.jpg")failures.push("Feijoa card must serve its local JPEG");
