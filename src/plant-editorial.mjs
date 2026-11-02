@@ -1,5 +1,6 @@
 // Hand-authored Christchurch-specific notes for the first quality-reviewed plant profiles.
 // Pages without these notes remain searchable but noindex until substantive editorial review.
+import {plantAdditionEditorial} from "./plant-expansion.mjs";
 export const plantEditorial = {
   "acaena-inermis-purpurea": [
     "Purple bidibid is useful where a low mat of coloured foliage is wanted around stones and sunny edging. In Christchurch, drainage is the first check: gravelly gaps can suit a low cover, while a wet clay hollow may not. Leave room for spreading growth and do not confuse this form with barbed-seed acaena species.",
@@ -170,3 +171,5 @@ export const plantEditorial = {
     "A light clip can help maintain density, but check whether the plant has enough drainage and space before installing a long continuous hedge."
   ]
 };
+
+Object.assign(plantEditorial,plantAdditionEditorial);

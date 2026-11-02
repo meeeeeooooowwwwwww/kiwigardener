@@ -1,6 +1,7 @@
 // 271 direct image URLs transcribed from the user-supplied Goughs plant catalogue (2 Nov 2026).
 // The remote thumbnails are displayed from the original image URLs (not copied or rehosted).
 // Image clicks lead to their plant pages; there is no supplier/affiliate relationship claimed.
+import {plantAdditionPhotos} from "./plant-expansion.mjs";
 export const plantPhotoLinks = {
   "acaena-inermis-purpurea": "https://www.goughsnurseries.co.nz/cache/plant/1/acaena_inermis_purpurea_1_1_150_150_r.jpg",
   "acca-sellowiana": "https://www.goughsnurseries.co.nz/cache/plant/204/acca_sellowiana_1_1_150_150_r.jpg",
@@ -274,3 +275,5 @@ export const plantPhotoLinks = {
   "viburnum-tinus-lucidum": "https://www.goughsnurseries.co.nz/cache/plant/145/viburnum_lucidum_1_150_150_r.jpg",
   "westringia-fruticosa": "https://www.goughsnurseries.co.nz/cache/plant/385/westringia_fruticosa_1_1_150_150_r.jpg"
 };
+
+Object.assign(plantPhotoLinks,plantAdditionPhotos);
