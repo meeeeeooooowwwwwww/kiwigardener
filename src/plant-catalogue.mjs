@@ -19,7 +19,7 @@ export const plants = [
     "light": [
       "Full sun"
     ],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Summer",
     "source": "https://www.goughsnurseries.co.nz/plant/acaena-inermis-purpurea"
@@ -254,7 +254,7 @@ export const plants = [
       "green"
     ],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Spring",
     "source": "https://www.goughsnurseries.co.nz/plant/apodasmia-similis"
@@ -280,7 +280,7 @@ export const plants = [
     "light": [
       "Full sun"
     ],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Spring",
     "source": "https://www.goughsnurseries.co.nz/plant/aristotelia-serrata"
@@ -502,7 +502,7 @@ export const plants = [
       "silver"
     ],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Summer",
     "source": "https://www.goughsnurseries.co.nz/plant/brachyglottis-greyi"
@@ -522,7 +522,7 @@ export const plants = [
       "green"
     ],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [
       "Dry spell tolerant"
     ],
@@ -778,7 +778,7 @@ export const plants = [
     "light": [
       "Full sun"
     ],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Spring - Summer",
     "source": "https://www.goughsnurseries.co.nz/plant/carmichaelia-australis"
@@ -796,7 +796,7 @@ export const plants = [
       "silver"
     ],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Summer",
     "source": "https://www.goughsnurseries.co.nz/plant/cassinia-vauvilliersii"
@@ -872,7 +872,7 @@ export const plants = [
       "green"
     ],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Summer",
     "source": "https://www.goughsnurseries.co.nz/plant/chionochloa-flavescens"
@@ -1787,7 +1787,7 @@ export const plants = [
       "green"
     ],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Spring - Summer",
     "source": "https://www.goughsnurseries.co.nz/plant/cyperus-ustulatus"
@@ -1803,12 +1803,10 @@ export const plants = [
       "Restoration planting",
       "Edible fruit"
     ],
-    "flowers": [
-      "white"
-    ],
+    "flowers": [],
     "foliage": [],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [
       "Frost tolerant"
     ],
@@ -1832,7 +1830,7 @@ export const plants = [
     "light": [
       "Part shade"
     ],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Spring",
     "source": "https://www.goughsnurseries.co.nz/plant/dianella-nigra"
@@ -1945,7 +1943,7 @@ export const plants = [
       "green"
     ],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Spring - Summer",
     "source": "https://www.goughsnurseries.co.nz/plant/dodonaea-viscosa"
@@ -1963,7 +1961,7 @@ export const plants = [
       "purple"
     ],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Spring - Summer",
     "source": "https://www.goughsnurseries.co.nz/plant/dodonaea-viscosa-purpurea"
@@ -2000,7 +1998,7 @@ export const plants = [
     "flowers": [],
     "foliage": [],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Spring - Summer",
     "source": "https://www.goughsnurseries.co.nz/plant/eleocharis-acuta"
@@ -2277,17 +2275,14 @@ export const plants = [
       "Coastal gardens",
       "Bird-friendly"
     ],
-    "flowers": [
-      "yellow",
-      "blue"
-    ],
+    "flowers": [],
     "foliage": [
       "blue"
     ],
     "light": [
       "Full sun"
     ],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Spring",
     "source": "https://www.goughsnurseries.co.nz/plant/festuca-actae"
@@ -2305,7 +2300,7 @@ export const plants = [
       "green"
     ],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [
       "Dry spell tolerant"
     ],
@@ -2374,7 +2369,7 @@ export const plants = [
     "flowers": [],
     "foliage": [],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Summer",
     "source": "https://www.goughsnurseries.co.nz/plant/fuscospora-cliffortioides"
@@ -2392,7 +2387,7 @@ export const plants = [
       "red"
     ],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Spring",
     "source": "https://www.goughsnurseries.co.nz/plant/fuscospora-fusca"
@@ -2409,7 +2404,7 @@ export const plants = [
     "flowers": [],
     "foliage": [],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Spring",
     "source": "https://www.goughsnurseries.co.nz/plant/fuscospora-solandri"
@@ -2544,7 +2539,7 @@ export const plants = [
     "flowers": [],
     "foliage": [],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "",
     "source": "https://www.goughsnurseries.co.nz/plant/haloragis-erecta"
@@ -2593,10 +2588,7 @@ export const plants = [
     "common": "Blue Oat Grass",
     "form": "Grass & sedge",
     "uses": [],
-    "flowers": [
-      "red",
-      "blue"
-    ],
+    "flowers": [],
     "foliage": [
       "silver"
     ],
@@ -2763,7 +2755,7 @@ export const plants = [
     "flowers": [],
     "foliage": [],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [
       "Dry spell tolerant"
     ],
@@ -3010,7 +3002,7 @@ export const plants = [
       "white"
     ],
     "light": [],
-    "native": true,
+    "native": false,
     "flags": [],
     "season": "Spring",
     "source": "https://www.goughsnurseries.co.nz/plant/libertia-formosa"
@@ -3090,10 +3082,7 @@ export const plants = [
       "Bird-friendly",
       "Bee-friendly"
     ],
-    "flowers": [
-      "cream",
-      "black"
-    ],
+    "flowers": ["cream"],
     "foliage": [],
     "light": [
       "Full sun",
@@ -3132,10 +3121,7 @@ export const plants = [
       "Borders & edging",
       "Dry gardens"
     ],
-    "flowers": [
-      "red",
-      "white"
-    ],
+    "flowers": ["white"],
     "foliage": [
       "white"
     ],
@@ -3294,7 +3280,7 @@ export const plants = [
     "flowers": [],
     "foliage": [],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Summer",
     "source": "https://www.goughsnurseries.co.nz/plant/lophomyrtus-obcordata"
@@ -3334,7 +3320,7 @@ export const plants = [
     "light": [
       "Full sun"
     ],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Spring",
     "source": "https://www.goughsnurseries.co.nz/plant/machaerina-rubiginosa"
@@ -3500,10 +3486,7 @@ export const plants = [
       "Borders & edging",
       "Coastal gardens"
     ],
-    "flowers": [
-      "cream",
-      "black"
-    ],
+    "flowers": ["cream"],
     "foliage": [
       "red"
     ],
@@ -3886,7 +3869,7 @@ export const plants = [
       "yellow"
     ],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [
       "Frost tolerant"
     ],
@@ -3957,12 +3940,7 @@ export const plants = [
     "uses": [
       "Ground cover"
     ],
-    "flowers": [
-      "pink",
-      "white",
-      "red",
-      "green"
-    ],
+    "flowers": ["pink"],
     "foliage": [
       "green"
     ],
@@ -3980,11 +3958,7 @@ export const plants = [
     "uses": [
       "Ground cover"
     ],
-    "flowers": [
-      "white",
-      "red",
-      "green"
-    ],
+    "flowers": ["white"],
     "foliage": [
       "green"
     ],
@@ -4568,7 +4542,7 @@ export const plants = [
     "light": [
       "Full sun"
     ],
-    "native": false,
+    "native": true,
     "flags": [
       "Coastal exposure"
     ],
@@ -4589,7 +4563,7 @@ export const plants = [
       "red"
     ],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Spring",
     "source": "https://www.goughsnurseries.co.nz/plant/podocarpus-nivalis"
@@ -4704,7 +4678,7 @@ export const plants = [
     "flowers": [],
     "foliage": [],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Summer",
     "source": "https://www.goughsnurseries.co.nz/plant/pseudowintera-colorata"
@@ -4721,7 +4695,7 @@ export const plants = [
     "flowers": [],
     "foliage": [],
     "light": [],
-    "native": false,
+    "native": true,
     "flags": [],
     "season": "Summer",
     "source": "https://www.goughsnurseries.co.nz/plant/raoulia-hookeri"
@@ -5235,9 +5209,7 @@ export const plants = [
     "common": "Hebe rakaiensis",
     "form": "Shrub",
     "uses": [],
-    "flowers": [
-      "green"
-    ],
+    "flowers": [],
     "foliage": [
       "green",
       "white"
