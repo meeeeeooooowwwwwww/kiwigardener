@@ -16,7 +16,7 @@ const seenTitles=new Map();
 const seenDescriptions=new Map();
 const pages=new Map();
 const fail=(value)=>errors.push(value);
-assert.equal(plants.length,271,"Expected 271 sourced botanical listings");
+assert.equal(plants.length,331,"Expected expanded sourced botanical listings");
 assert.equal(urls.length,48+1+Object.keys(plantEditorial).length,"Expected existing site pages, plant directory and editorially enriched indexed profiles");
 assert.equal(new Set(urls).size,urls.length,"Duplicate URL in sitemap");
 const readPage=async(path)=>{
@@ -264,7 +264,7 @@ if(directory.includes("Latest updates on the Wastewater Treatment Plant"))fail("
 
 if(!directory.includes('id="plant-query"')||!directory.includes('id="plant-flower"')||!directory.includes('id="plant-foliage"'))fail("Plant search missing free-text or colour filters");
 if(!directory.includes('src="/assets/plant-search.js"'))fail("Plant search behaviour is not loaded");
-if((directory.match(/class="card plant-card"/g)||[]).length!==plants.length)fail("Plant finder does not list all 271 cards with the global card class");
+if((directory.match(/class="card plant-card"/g)||[]).length!==plants.length)fail("Plant finder does not list all plant cards with the global card class");
 if(!directory.includes('class="cards plant-results"'))fail("Plant finder does not reuse global card grid");
 if(Object.keys(plantPhotoLinks).length!==plants.length)fail("Plant photo lookup is not complete");
 if((directory.match(/class="plant-photo-frame"/g)||[]).length!==plants.length)fail("All directory cards require a local photograph frame");
@@ -290,7 +290,7 @@ for(const p of plants){
   const html=await readPage(url);
   if(!html.includes('href="'+p.source+'"'))fail(url+" missing source link");
   const imageUrl=plantPhotoLinks[p.slug];
-  if(!imageUrl?.startsWith("https://www.goughsnurseries.co.nz/cache/plant/"))fail(url+" missing image mapping");
+  if(!["https://www.goughsnurseries.co.nz/cache/plant/","https://www.cjsplants.co.nz/cdn/shop/files/"].some(prefix=>imageUrl?.startsWith(prefix)))fail(url+" missing image mapping");
   if(!html.includes('class="plant-photo plant-profile-photo" src="/assets/plant-photos/'+p.slug+'.jpg"'))fail(url+" missing local plant photo");
   if(!html.includes('class="plant-figure-image"'))fail(url+" missing profile photo frame");
   const cardChunk=directory.split('data-plant-search="').find(v=>v.includes('href="/plants/'+p.slug+'/"'));

@@ -3,7 +3,7 @@
 Independent, Christchurch-focused gardening website. Separate from all other repositories and websites.
 
 ## Current site (October 2026)
-- Original 48 indexable site pages plus a 271-entry plant directory: 42 individually enriched plant profiles are initially indexable, while the remaining profiles are accessible from search but intentionally noindex until editorial review. All original service, area and guide pages remain.
+- Original 48 indexable site pages plus a 331-entry plant directory: 102 individually enriched plant profiles are now indexable, while 229 earlier profiles remain searchable but noindex pending editorial review. All original service, area and guide pages remain.
 - Local area pages are grouped by geography. Gardening guides follow history → plants/soil → care → gardening help, with context-specific reading links.
 - Dallas Timpson is presented as the independent gardening provider. Phone calls link to `tel:+64273406581`; public email links use `dallas@kiwigardeners.com`.
 - Unique meta titles, descriptions, canonical URLs, accessible navigation, JSON-LD, XML sitemap and robots.txt.
@@ -64,7 +64,7 @@ This repository has validation CI and a Worker-compatible `wrangler.jsonc`. Clou
 1. Visit https://search.google.com/search-console and use the **property selector → Add property**.
 2. Select **Domain**, enter exactly `kiwigardeners.com` (no https, no www, no path).
 3. Use Google's Cloudflare registrar/DNS connection or add Google's verification TXT record to the `kiwigardeners.com` Cloudflare zone. Leave the existing Worker DNS record alone. Click **Verify**.
-4. Select the **kiwigardeners.com** property (not any existing site), go to **Indexing → Sitemaps**, submit `sitemap.xml`. The generator currently lists 91 canonical indexable pages (the original 48 plus the plant directory and 42 enhanced profiles); the remaining 229 plant entries are live HTML but noindex pending detailed editorial review. The 404 page is intentionally excluded.
+4. Select the **kiwigardeners.com** property (not any existing site), go to **Indexing → Sitemaps**, submit `sitemap.xml`. The generator lists 151 canonical indexable pages (the original 48 plus the plant directory and 102 enhanced profiles); the remaining 229 original plant entries are live HTML but noindex pending detailed editorial review. The 404 page is intentionally excluded.
 5. Use URL Inspection on `https://kiwigardeners.com/` and representative service / suburb URLs, inspect Live URL first and request indexing if eligible.
 6. After Google has crawled, review **Indexing → Pages**, **Performance → Search results**, and **Experience → Core Web Vitals**. Search Console verification and sitemap submission do **not** guarantee Google rankings, crawling speed or indexing.
 7. Configure HTTPS and a canonical redirect from `www.kiwigardeners.com` to `https://kiwigardeners.com` once `www` is configured, to prevent separate host variants. Avoid changing DNS or redirect rules without checking the active Worker domain.
@@ -73,7 +73,7 @@ This repository has validation CI and a Worker-compatible `wrangler.jsonc`. Clou
 Google guidance: https://support.google.com/webmasters/answer/34592 and https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap
 
 ## Christchurch plant directory (November 2026)
-- `/plants/` offers instant, accessible client-side search of 271 entries with filters for plant form, purpose, flower colour, foliage colour, light, flowering season and NZ native status. The page and individual plant URLs render without JavaScript; filtering requires JavaScript.
+- `/plants/` offers instant, accessible client-side search of 331 entries with filters for plant form, purpose, flower colour, foliage colour, light, flowering season and NZ native status. The page and individual plant URLs render without JavaScript; filtering requires JavaScript.
 - Each `/plants/{slug}/` page is generated from factual botanical attributes only, has a unique canonical URL, descriptive title, breadcrumb, care considerations, links to the relevant gardening services and the original nursery reference. All text is independently composed, with no copied nursery descriptions or photographs.
 - Source listing: Goughs Nurseries public plant catalogue, retrieved 2 November 2026. Listing availability is not mirrored and Kiwi Gardeners does not claim any commercial relationship.
 - `src/plant-catalogue.mjs` stores the imported name index and extracted factual attributes; `src/plant-editorial.mjs` stores 42 individual practical Christchurch notes. The first 42 are indexed. The remaining 229 remain available to site visitors but carry `noindex,follow` and are omitted from the sitemap until sufficiently distinctive content is written and the facts are checked.
@@ -108,3 +108,8 @@ Portstone Christchurch was consulted only for public category structure, not cop
 - `scripts/council-news-images.mjs` downloads up to 5 licensed Wikimedia photo assets at build time to `/assets/council-news/*.jpg`, eliminating browser hotlinks. If Wikimedia is unavailable, an existing site-hosted botanical photo is substituted, never an empty/broken-image card. Daily RSS availability does not interrupt site builds; `src/council-news.json` holds validated last-good headlines for outages.
 - The scheduled daily GitHub Action `.github/workflows/refresh-council-news.yml` updates the stored snapshot only when relevant headlines change. Cloudflare Worker Builds must be checked independently after the first new release and after the first scheduled update.
 - RSS and responsive regression tests exercise broad topic matching, CCC source text, dates, real image decoding, 271 existing plant photos and contact/SEO/robots preservation. No change is made to the global footer, contact form, Turnstile or site canonical sitemap.
+
+## November 2026 expanded plant catalogue
+- Added 60 individually illustrated, independently worded profiles, researched from CJ's Plant Farm in Amberley, Canterbury. Existing card design, filters, layouts and URL structure remain unchanged.
+- New entries join the current plant sitemap automatically because their individual profiles contain original species-specific care notes. Search engines may still decide independently whether to index a page.
+- The build validates and caches each nursery image as a local static JPEG, avoiding brittle browser hotlinks.

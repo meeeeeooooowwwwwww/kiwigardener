@@ -1,6 +1,7 @@
 // Factual plant index distilled from public botanical listings, not copied descriptions.
 // Original care copy and local context are generated in build.mjs. No third-party images or stock status.
 // Source catalogue retrieved 2 November 2026; each species retains its individual reference URL.
+import {plantAdditions} from "./plant-expansion.mjs";
 export const plants = [
   {
     "slug": "acaena-inermis-purpurea",
@@ -5521,3 +5522,5 @@ export const plants = [
     "source": "https://www.goughsnurseries.co.nz/plant/westringia-fruticosa"
   }
 ];
+
+plants.push(...plantAdditions);

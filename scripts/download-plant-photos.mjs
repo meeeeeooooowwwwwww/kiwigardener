@@ -1,4 +1,4 @@
-// Download the exact 271 catalogue thumbnails into the generated static asset tree.
+// Download every plant thumbnail to the generated static asset tree, including new nursery images.
 // Browsers must not hotlink the nursery host: source-origin remote <img> requests can
 // fail even while fetching the same JPEG over HTTPS from a build runner succeeds.
 // The files live only in dist/ (generated at every build); no running image proxy.
@@ -58,8 +58,8 @@ async function downloadOne(url, slug, destination) {
 
 export async function downloadPlantPhotos({dist="dist",concurrency=14}={}){
   const entries=plants.map(p=>({slug:p.slug,url:plantPhotoLinks[p.slug]}));
-  if(entries.length!==271||Object.keys(plantPhotoLinks).length!==entries.length||
-    entries.some(e=>!e.url||!e.url.startsWith("https://www.goughsnurseries.co.nz/cache/plant/")))
+  if(entries.length<320||Object.keys(plantPhotoLinks).length!==entries.length||
+    entries.some(e=>!e.url||!["https://www.goughsnurseries.co.nz/cache/plant/","https://www.cjsplants.co.nz/cdn/shop/files/"].some(prefix=>e.url.startsWith(prefix))))
     throw new Error("Plant photo map is missing or has incorrect entries");
   const destination=join(dist,"assets","plant-photos");
   await mkdir(destination,{recursive:true});
