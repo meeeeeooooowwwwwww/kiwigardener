@@ -17,6 +17,8 @@ const seenDescriptions=new Map();
 const pages=new Map();
 const fail=(value)=>errors.push(value);
 assert.equal(plants.length,331,"Expected expanded sourced botanical listings");
+assert.equal(Object.keys(plantEditorial).length,plants.length,"Every plant must have a reviewed, indexable profile");
+for (const p of plants){const n=plantEditorial[p.slug];assert.ok(n?.length===2&&n.every(s=>s.length>=100),"Missing substantive care notes: "+p.slug);}
 assert.equal(urls.length,48+1+Object.keys(plantEditorial).length,"Expected existing site pages, plant directory and editorially enriched indexed profiles");
 assert.equal(new Set(urls).size,urls.length,"Duplicate URL in sitemap");
 const readPage=async(path)=>{
