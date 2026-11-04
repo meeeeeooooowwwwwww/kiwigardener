@@ -21,6 +21,8 @@ jobs:
         run: node scripts/refresh-council-news.mjs
       - name: Build and validate SEO pages
         run: npm run check
+      - name: Validate fail-closed GRID EATER public-only feed and gardener directory
+        run: node --test scripts/check-gardener-directory.mjs
       - name: Validate secure form API and simulated email delivery
         run: node --test scripts/check-contact.mjs
       - name: Install browser automation (use runner's Chrome)
