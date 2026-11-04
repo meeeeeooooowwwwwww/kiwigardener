@@ -207,7 +207,7 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
     files["gardeners/"+r.slug+"/index.html"]=layout({
       path:itemPath,title:r.name+" | Verified Canterbury Gardener | Kiwi Gardeners",
       description:r.description.length>190?r.description.slice(0,185).replace(/\s+\S*$/,"")+"…":r.description,
-      content:profile,trail:itemTrail,type:"ProfilePage",indexable:true
+      content:profile,trail:itemTrail,type:"WebPage",indexable:true
     });
   }
 }
