@@ -119,3 +119,11 @@ Portstone Christchurch was consulted only for public category structure, not cop
 - Corrected obvious NZ native-flag errors against Department of Conservation Canterbury species lists, including kahikatea, giant umbrella sedge, akeake, silver tussock and others. Corrected Chilean iris to introduced; removed unreliable flower-colour tags from selected species.
 - Existing card, photo, filters, related links and profile layout are unchanged. The XML sitemap is derived from indexable plant pages and should now include 380 URLs; Google still decides whether to index them.
 - References: https://www.doc.govt.nz/nature/native-plants/canterbury-native-plants/native-plants-natural-to-coastal-areas/ and https://www.doc.govt.nz/nature/native-plants/canterbury-native-plants/wetland-and-river-stream-margin-native-plants/ and https://www.doc.govt.nz/nature/native-plants/canterbury-native-plants/native-plants-natural-to-banks-peninsula/.
+
+## KG-DIR-00: GRID EATER gardener directory consumer (source-only)
+
+The site now has a static `/gardeners/` hub and accessible name, service and independently verified service-area filters. The integration is strictly read-only: an opt-in, build-time public JSON export from `grideater.com` may create approved static profile pages, never an on-visitor D1/CRM/API query.
+
+**Current state:** upstream approved feed not yet available. `src/grid-eater-gardeners-public.json` is deliberately empty/unapproved, so the directory hub stays **noindex** with no false business profiles or sitemap changes. Dallas's own contact panel stays separate from independent directory results. Nothing uses a guessed website, mailing address or suppressed/private contact.
+
+The complete public-feed allowlist, source identity/evidence fields, optional `KG_GRID_EATER_PUBLIC_FEED_URL` build setting, tests, release gates and rollback are in [KG-DIR-00-PUBLIC-FEED.md](docs/KG-DIR-00-PUBLIC-FEED.md). Do not set the URL until GRID EATER actually publishes an authorised versioned export. Every external-feed failure fails the build rather than silently promoting unsafe or stale records.

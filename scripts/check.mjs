@@ -19,7 +19,13 @@ const fail=(value)=>errors.push(value);
 assert.equal(plants.length,331,"Expected expanded sourced botanical listings");
 assert.equal(Object.keys(plantEditorial).length,plants.length,"Every plant must have a reviewed, indexable profile");
 for (const p of plants){const n=plantEditorial[p.slug];assert.ok(n?.length===2&&n.every(s=>s.length>=100),"Missing substantive care notes: "+p.slug);}
-assert.equal(urls.length,48+1+Object.keys(plantEditorial).length,"Expected existing site pages, plant directory and editorially enriched indexed profiles");
+const gardenerStatus=JSON.parse(await readFile("dist/assets/gardener-directory-status.json","utf8"));
+assert.equal(gardenerStatus.schemaVersion,1,"Unexpected gardener status schema");
+assert.equal(gardenerStatus.source,"grideater.com","GRID EATER must remain directory source of truth");
+assert.ok(Number.isSafeInteger(gardenerStatus.publishedListings)&&gardenerStatus.publishedListings>=0&&gardenerStatus.publishedListings<=200,"Invalid bounded gardener count");
+assert.equal(gardenerStatus.approvedForKiwi,gardenerStatus.publishedListings>0,"No unapproved gardener release may be indexed");
+const expectedTotal=48+1+Object.keys(plantEditorial).length+(gardenerStatus.publishedListings?1+gardenerStatus.publishedListings:0);
+assert.equal(urls.length,expectedTotal,"Expected existing site plus only approved directory hub and public profiles");
 assert.equal(new Set(urls).size,urls.length,"Duplicate URL in sitemap");
 const readPage=async(path)=>{
   if(pages.has(path))return pages.get(path);
@@ -28,6 +34,18 @@ const readPage=async(path)=>{
   pages.set(path,html);
   return html;
 };
+// The directory exists for real users before a public-safe export is ready, but
+// empty/unapproved content is intentionally not crawl-indexable or in sitemap.
+const gardenerHub=await readPage("/gardeners/");
+assert.ok(gardenerHub.includes('id="gardener-query"')&&gardenerHub.includes('id="gardener-service"')&&gardenerHub.includes('id="gardener-area"'),"Gardener search controls missing");
+assert.ok(gardenerHub.includes('src="/assets/gardener-search.js"'),"Client-side gardener search missing");
+assert.ok(gardenerHub.includes('href="tel:+64273406581"'),"Dallas independent contact route lost");
+assert.equal(urls.includes(site+"/gardeners/"),gardenerStatus.publishedListings>0,"Empty hub indexing mismatch");
+assert.equal(gardenerHub.includes('name="robots" content="noindex,follow"'),gardenerStatus.publishedListings===0,"Empty directory must be noindex");
+const gardenerProfileUrls=urls.filter(url=>new URL(url).pathname.startsWith("/gardeners/")&&new URL(url).pathname!=="/gardeners/");
+assert.equal(gardenerProfileUrls.length,gardenerStatus.publishedListings,"Unapproved gardener profile in sitemap");
+const gardenerSearchJs=await readFile("dist/assets/gardener-search.js","utf8");
+assert.ok(gardenerSearchJs.includes("URLSearchParams")&&gardenerSearchJs.includes("[data-gardener-card]"),"Offline-friendly search script contract missing");
 for(const url of urls){
   assert.ok(url.startsWith(site+"/"),"Offsite sitemap URL: "+url);
   const path=new URL(url).pathname;

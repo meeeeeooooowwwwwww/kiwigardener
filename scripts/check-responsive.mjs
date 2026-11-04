@@ -11,7 +11,8 @@ const widths = [320, 360, 375, 390, 430, 600, 720, 768, 820, 1024, 1280, 1440, 1
 const xml = await readFile("dist/sitemap.xml", "utf8");
 const paths = [...new Set([
   ...[...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match=>new URL(match[1]).pathname),
-  "/plants/agapanthus-seafoam/", "/plants/veronica-rakaiensis/", "/plants/phormium-jester/"
+  "/plants/agapanthus-seafoam/", "/plants/veronica-rakaiensis/", "/plants/phormium-jester/",
+  "/gardeners/"
 ])];
 assert.ok(paths.length >= 20, "Expected the complete static website sitemap");
 const root = resolve("dist");
@@ -233,6 +234,31 @@ try {
       }
     }
   }
+  // Exercise real browser filtering with SYNTHETIC data without adding any
+  // non-verified businesses to the built site or public snapshot.
+  await page.setContent('<main id="fixture-directory">'+
+    '<input id="gardener-query" type="search">'+
+    '<select id="gardener-service"><option value="">All</option><option value="Hedge trimming">Hedge trimming</option><option value="Lawn mowing">Lawn mowing</option></select>'+
+    '<select id="gardener-area"><option value="">All</option><option value="Christchurch">Christchurch</option><option value="Selwyn">Selwyn</option></select>'+
+    '<button id="gardener-clear" type="button">Clear</button>'+
+    '<p id="gardener-count" role="status" aria-live="polite"></p>'+
+    '<div id="gardener-results">'+
+      '<article id="fixture-one" data-gardener-card data-search="example lawn mowing christchurch" data-services="Lawn mowing" data-areas="Christchurch">One</article>'+
+      '<article id="fixture-two" data-gardener-card data-search="example hedge trimming selwyn" data-services="Hedge trimming" data-areas="Selwyn">Two</article>'+
+    '</div><p id="gardener-empty" hidden>No matches</p></main>');
+  await page.addScriptTag({path:"assets/gardener-search.js"});
+  await page.fill("#gardener-query","hedge");
+  if((await page.locator("[data-gardener-card]:visible").count())!==1||
+      !(await page.locator("#fixture-two").isVisible()))
+    failures.push("Gardener keyword search did not filter synthetic cards correctly");
+  if(!page.url().includes("q=hedge"))failures.push("Gardener keyword search did not persist shareable URL");
+  await page.selectOption("#gardener-area","Christchurch");
+  if((await page.locator("[data-gardener-card]:visible").count())!==0||
+      !(await page.locator("#gardener-empty").isVisible()))
+    failures.push("Gardener exact verified area filter incorrectly matches unrelated provider");
+  await page.locator("#gardener-clear").click();
+  if((await page.locator("[data-gardener-card]:visible").count())!==2)
+    failures.push("Gardener search reset failed to restore visible directory cards");
   await page.close();
 } finally { await browser.close(); await new Promise((resolve) => server.close(resolve)); }
 if (failures.length) {
