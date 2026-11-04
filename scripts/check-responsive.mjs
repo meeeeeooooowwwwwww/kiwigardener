@@ -11,7 +11,8 @@ const widths = [320, 360, 375, 390, 430, 600, 720, 768, 820, 1024, 1280, 1440, 1
 const xml = await readFile("dist/sitemap.xml", "utf8");
 const paths = [...new Set([
   ...[...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match=>new URL(match[1]).pathname),
-  "/plants/agapanthus-seafoam/", "/plants/veronica-rakaiensis/", "/plants/phormium-jester/"
+  "/plants/agapanthus-seafoam/", "/plants/veronica-rakaiensis/", "/plants/phormium-jester/",
+  "/gardeners/"
 ])];
 assert.ok(paths.length >= 20, "Expected the complete static website sitemap");
 const root = resolve("dist");
