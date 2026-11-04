@@ -374,6 +374,9 @@ const generateSite = function generateSite(){
   // Generate the independently authored plant directory and individual species profiles.
   addPlantPages({esc,a,articleHero,layout,files,baseTrail,TEL_URL,PHONE,ENQUIRY_URL});
   addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTrail,TEL_URL,PHONE,ENQUIRY_URL},gardenersSnapshot);
+  files["assets/gardener-directory-status.json"]=JSON.stringify({schemaVersion:1,source:"grideater.com",
+    releaseId:gardenersSnapshot.releaseId,approvedForKiwi:gardenersSnapshot.approvedForKiwi,
+    publishedListings:gardenersSnapshot.records.length},null,2)+"\n";
   const contactPath="/contact/",contactTrail=[{name:"Home",path:"/"},{name:"Contact",path:contactPath}];
   const contactContent=articleHero("Get in touch","Tell us about your Christchurch garden","Need lawn care, hedge trimming or a garden tidy-up in eastern Christchurch, Cashmere or Beckenham? Call Dallas Timpson for a quote.",contactTrail)+`<div class="container text-layout"><article class="prose"><section class="contact-form-wrap" id="enquiry-form" hidden>
 <h2>Send your gardening enquiry</h2>
