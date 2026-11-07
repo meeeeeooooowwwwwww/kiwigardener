@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "source": "grideater.com",
+  "snapshotKind": "first-party-gardening-service-editorial",
+  "reviewedAt": "2026-11-08",
+  "records": [
+    {
+      "id": "afnz-9429052264047",
+      "name": "Wordsworth Gardens",
+      "slug": "wordsworth-gardens",
+      "kind": "gardening_service_editorial_reference",
+      "baseLocality": "New Brighton, Christchurch",
+      "baseLocalityMeaning": "business_declared_base_not_registered_address",
+      "coverageClaim": "Canterbury",
+      "coverageClaimMeaning": "first_party_broad_service_region_unverified_canonical_serves",
+      "summary": "Wordsworth Gardens is a Christchurch gardening and landscaping business whose website describes lawn mowing, hedge care, weeding, garden maintenance, plant care, irrigation, garden renovations and landscaping. It says it is based in New Brighton and provides ordinary services across Canterbury, with larger jobs elsewhere considered individually.",
+      "services": [
+        "Lawn mowing and care",
+        "Hedge trimming and pruning",
+        "Weeding and garden maintenance",
+        "Plant care and irrigation",
+        "Garden makeovers and landscaping"
+      ],
+      "sourceWebsite": "https://www.wordsworthgardens.com/",
+      "sourceServices": "https://www.wordsworthgardens.com/services",
+      "sourceReviewedAt": "2026-11-08",
+      "canonicalCategoryAssignmentVerified": false,
+      "canonicalServiceAreaAssignmentVerified": false,
+      "approvedGardenerFeedMember": false
+    }
+  ]
+}
