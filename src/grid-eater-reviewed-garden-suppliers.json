@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "snapshotKind": "public-source-editorial-projection",
+  "source": "grideater.com",
+  "reviewedAt": "2026-11-08",
+  "approvalScope": "kiwigardeners.com-garden-suppliers-editorial",
+  "records": [
+    {
+      "id": "afnz-9429041785683",
+      "slug": "goughs-nurseries",
+      "name": "Goughs Nurseries Limited",
+      "kind": "garden_supplier",
+      "category": "Plants, nurseries and hedging",
+      "locality": "Swannanoa, Waimakariri",
+      "localityBasis": "first_party_premises_only",
+      "summary": "Goughs Nurseries grows and sells trees, native plants, shrubs, perennials and hedging plants from its nursery near Rangiora. The nursery welcomes retail and wholesale buyers, with plant selection and delivery information available on its website.",
+      "products": [
+        "Trees and shrubs",
+        "Native plants",
+        "Hedging plants",
+        "Perennials"
+      ],
+      "officialWebsite": "https://www.goughsnurseries.co.nz/",
+      "evidenceUrl": "https://www.goughsnurseries.co.nz/",
+      "canonicalPage": "https://grideater.com/business/goughs-nurseries-limited-9429041785683"
+    },
+    {
+      "id": "afnz-9429039092267",
+      "slug": "ashburton-contracting-landscaping-supplies",
+      "name": "Ashburton Contracting Limited",
+      "kind": "garden_supplier",
+      "category": "Soils, compost and landscaping materials",
+      "locality": "Ashburton",
+      "localityBasis": "first_party_premises_only",
+      "summary": "Ashburton Contracting's landscaping supplies division offers garden mix, compost, soil, bark, stone and other landscaping materials through its Ashburton yard. Visitors can check product options, delivery arrangements and the supplier's current details on its website.",
+      "products": [
+        "Garden mix and compost",
+        "Soil and bark",
+        "Stone and aggregates",
+        "Landscaping materials"
+      ],
+      "officialWebsite": "https://ashcon.co.nz/landscaping-supplies/",
+      "evidenceUrl": "https://ashcon.co.nz/landscaping-supplies/",
+      "canonicalPage": "https://grideater.com/business/ashburton-contracting-limited-9429039092267"
+    }
+  ]
+}
