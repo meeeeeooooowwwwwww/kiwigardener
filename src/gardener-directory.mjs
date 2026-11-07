@@ -166,7 +166,7 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
   const body=articleHero("Canterbury gardening directory","Find gardeners across Canterbury",
     "Search by gardening service, verified service area or business name. Only independently approved public GRID EATER records can appear as directory results.",trail)+
     '<section class="section gardener-directory"><div class="container">'+
-    '<p class="gardener-intro">Gardening services and suppliers are different categories. This directory is for verified gardening service providers; a business address alone is not proof that a gardener works in your suburb. Confirm availability and the job details with each provider.</p>'+
+    '<p class="gardener-intro">Gardening services and <a href="/suppliers/">garden suppliers</a> are different categories. This directory is for verified gardening service providers; a business address alone is not proof that a gardener works in your suburb. Confirm availability and the job details with each provider.</p>'+
     '<div class="gardener-search-filters" role="search" aria-label="Search verified gardeners">'+
     '<label class="gardener-query">Search by business or keyword<input id="gardener-query" type="search" autocomplete="off" placeholder="Try lawn mowing, hedges or a business name"></label>'+
     '<label>Gardening service<select id="gardener-service">'+options(services,"All services")+'</select></label>'+

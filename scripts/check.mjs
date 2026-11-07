@@ -24,7 +24,17 @@ assert.equal(gardenerStatus.schemaVersion,1,"Unexpected gardener status schema")
 assert.equal(gardenerStatus.source,"grideater.com","GRID EATER must remain directory source of truth");
 assert.ok(Number.isSafeInteger(gardenerStatus.publishedListings)&&gardenerStatus.publishedListings>=0&&gardenerStatus.publishedListings<=200,"Invalid bounded gardener count");
 assert.equal(gardenerStatus.approvedForKiwi,gardenerStatus.publishedListings>0,"No unapproved gardener release may be indexed");
-const expectedTotal=48+1+Object.keys(plantEditorial).length+(gardenerStatus.publishedListings?1+gardenerStatus.publishedListings:0);
+const supplierStatus=JSON.parse(await readFile("dist/assets/supplier-directory-status.json","utf8"));
+assert.equal(supplierStatus.schemaVersion,1,"Unexpected supplier source schema");
+assert.equal(supplierStatus.source,"grideater.com","GRID EATER must own supplier identities");
+assert.equal(supplierStatus.kind,"public-source-editorial-projection","Supplier cohort must be editorial-only");
+assert.equal(supplierStatus.canonicalCategoryAssignmentsByThisRelease,0,"No canonical category write by a static website");
+assert.equal(supplierStatus.verifiedServiceAreaClaims,0,"No inferred supplier service areas");
+assert.equal(supplierStatus.editorialSupplierListings,2,"Expected exactly the two reviewed Canterbury suppliers");
+assert.deepEqual(supplierStatus.canonicalIds,["afnz-9429041785683","afnz-9429039092267"]);
+const expectedTotal=48+1+Object.keys(plantEditorial).length+
+ (gardenerStatus.publishedListings?1+gardenerStatus.publishedListings:0)+
+ (supplierStatus.editorialSupplierListings?1+supplierStatus.editorialSupplierListings:0);
 assert.equal(urls.length,expectedTotal,"Expected existing site plus only approved directory hub and public profiles");
 assert.equal(new Set(urls).size,urls.length,"Duplicate URL in sitemap");
 const readPage=async(path)=>{
@@ -34,6 +44,17 @@ const readPage=async(path)=>{
   pages.set(path,html);
   return html;
 };
+// Public-source suppliers are a separate editorial static projection, not
+// approved GRID EATER gardener service-area or contact data.
+assert.ok(urls.includes(site+"/suppliers/"),"Supplier hub must be indexable");
+for(const slug of ["goughs-nurseries","ashburton-contracting-landscaping-supplies"]){
+  const path="/suppliers/"+slug+"/";
+  assert.ok(urls.includes(site+path),"Reviewed supplier must be included in sitemap: "+slug);
+  const html=await readPage(path);
+  assert.match(html,/View GRID EATER canonical business record/);
+  assert.match(html,/supplier premises|Supplier premises/i);
+  assert.doesNotMatch(html,/mailto:info@goughsnurseries|mailto:weighbridge@ashcon/);
+}
 // The directory exists for real users before a public-safe export is ready, but
 // empty/unapproved content is intentionally not crawl-indexable or in sitemap.
 const gardenerHub=await readPage("/gardeners/");
