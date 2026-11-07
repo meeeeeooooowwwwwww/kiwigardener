@@ -34,7 +34,7 @@ assert.equal(supplierStatus.editorialSupplierListings,2,"Expected exactly the tw
 assert.deepEqual(supplierStatus.canonicalIds,["afnz-9429041785683","afnz-9429039092267"]);
 const expectedTotal=48+1+Object.keys(plantEditorial).length+
  (gardenerStatus.publishedListings?1+gardenerStatus.publishedListings:0)+
- (supplierStatus.editorialSupplierListings?1+supplierStatus.editorialSupplierListings:0);
+ (supplierStatus.editorialSupplierListings?1+supplierStatus.editorialSupplierListings:0)+2;
 assert.equal(urls.length,expectedTotal,"Expected existing site plus only approved directory hub and public profiles");
 assert.equal(new Set(urls).size,urls.length,"Duplicate URL in sitemap");
 const readPage=async(path)=>{
@@ -44,6 +44,22 @@ const readPage=async(path)=>{
   pages.set(path,html);
   return html;
 };
+// Editorial first-party gardener source references are separate from GRID EATER
+//'s still-unapproved /gardeners/ feed and never reveal protected contacts.
+const sourceServiceStatus=JSON.parse(await readFile("dist/assets/service-editorial-status.json","utf8"));
+assert.equal(sourceServiceStatus.mode,"FIRST_PARTY_EDITORIAL_ONLY");
+assert.equal(sourceServiceStatus.records,1);
+assert.equal(sourceServiceStatus.canonicalCategoryAssignmentsByKiwi,0);
+assert.equal(sourceServiceStatus.verifiedServesMappingsByKiwi,0);
+assert.equal(sourceServiceStatus.approvedPublicGardenerFeedRecordsByKiwi,0);
+assert.equal(sourceServiceStatus.protectedContactValuesCopied,false);
+for(const path of ["/garden-service-providers/","/garden-service-providers/wordsworth-gardens/"]){
+ assert.ok(urls.includes(site+path),"Source-reviewed gardener reference missing from sitemap: "+path);
+ const page=await readPage(path);
+ assert.match(page,/Wordsworth Gardens/);
+ assert.match(page,/first.party|First.party|First-party/i);
+ assert.doesNotMatch(page,/mailto:wordsworthgardensnz@gmail.com|tel:0275918334/);
+}
 // Public-source suppliers are a separate editorial static projection, not
 // approved GRID EATER gardener service-area or contact data.
 assert.ok(urls.includes(site+"/suppliers/"),"Supplier hub must be indexable");
