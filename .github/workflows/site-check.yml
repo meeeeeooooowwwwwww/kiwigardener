@@ -25,6 +25,8 @@ jobs:
         run: node --test scripts/check-gardener-directory.mjs
       - name: Validate source-reviewed public-only supplier pages and correction boundaries
         run: node --test scripts/check-reviewed-supplier-directory.mjs
+      - name: Validate first-party gardener editorial without approving protected GRID EATER feed
+        run: node --test scripts/check-first-party-gardening-services.mjs
       - name: Validate secure form API and simulated email delivery
         run: node --test scripts/check-contact.mjs
       - name: Install browser automation (use runner's Chrome)
