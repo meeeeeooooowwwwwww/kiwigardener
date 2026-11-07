@@ -12,6 +12,12 @@ Independent, Christchurch-focused gardening website. Separate from all other rep
 - Direct email enquiry calls-to-action and a link to https://grideater.com/ (separate website).
 - No fabricated customer work, reviews, opening hours, pricing or live bookings.
 
+## Canterbury garden suppliers (KG-DIR-01A, November 2026)
+- Two source-reviewed public supplier references with matching canonical GRID EATER IDs and first-party evidence: Goughs Nurseries (Swannanoa) and Ashburton Contracting's landscaping supplies division (Ashburton).
+- Pages: `/suppliers/` and two supplier profiles. Exact public-only JSON is a *static editorial projection*, not a separate database or automatic GRID EATER category/service-area assignment. No protected contacts, live stock claims or invented delivery/service areas.
+- The independent gardener directory remains separately gated; zero approved GRID EATER gardening-service feed records currently, with Dallas's own house service kept separate.
+- See `docs/KG-DIR-01A-REVIEWED-SUPPLIER-BOOTSTRAP.md`. Future production-approved source feeds will replace the manual bootstrap.
+
 ## Build
 Node.js 20+ with no third-party dependencies.
 ```bash
