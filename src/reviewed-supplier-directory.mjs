@@ -106,7 +106,7 @@ export function addReviewedSupplierPages({esc,articleHero,layout,files,baseTrail
     const products='<ul>'+r.products.map(p=>'<li>'+esc(p)+'</li>').join("")+'</ul>';
     files["suppliers/"+r.slug+"/index.html"]=layout({
       path,title:r.name+" | Canterbury Garden Supplier | Kiwi Gardeners",
-      description:r.summary,
+      description:r.summary.length>200?r.summary.slice(0,195).replace(/\s+\S*$/,"")+"…":r.summary,
       trail:t,type:"WebPage",indexable:true,
       content:articleHero("Garden supplier · Public source review",r.name,r.summary,t)+
         '<section class="section"><div class="container text-layout"><article class="prose">'+
