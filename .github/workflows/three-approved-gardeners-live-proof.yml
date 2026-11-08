@@ -1,0 +1,57 @@
+name: KG-DIR-03 Three Live Independent Gardeners Verification
+
+on:
+  pull_request:
+    paths:
+      - scripts/verify-live-three-gardeners.mjs
+      - scripts/check-live-three-gardeners.mjs
+      - .github/workflows/three-approved-gardeners-live-proof.yml
+  push:
+    branches: [main]
+    paths:
+      - scripts/verify-live-three-gardeners.mjs
+      - scripts/check-live-three-gardeners.mjs
+      - .github/workflows/three-approved-gardeners-live-proof.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kg-dir-03-live-three-gardeners-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  offline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - run: |
+          set -euo pipefail
+          node --check scripts/verify-live-three-gardeners.mjs
+          node --test scripts/check-live-three-gardeners.mjs
+
+  production-public:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: offline
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Verify provider-native Kiwi deployment with bounded retries (no writes)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Workers Builds can deploy after GitHub push. Retry GET only; never
+          # trigger a second provider deploy or mutate site/GRID records.
+          for i in {1..12}; do
+            if node scripts/verify-live-three-gardeners.mjs; then exit 0; fi
+            if [[ "$i" -eq 12 ]]; then exit 1; fi
+            sleep 10
+          done
