@@ -49,17 +49,25 @@ function proof(value,at,{allowProvisional=false}={}){
     ...(value.basis?{basis:value.basis}:{})
   };
 }
-function contact(value,at){
+function contact(value,at,sourcePage,slug){
   keys(value,CONTACT_KEYS,at);
   if(value.approvedForPublicUse!==true)reject(at+" lacks explicit public contact approval");
   const type=string(value.type,at+".type");
-  // The approved v1 static feed has no verified cross-site protected-action
-  // contract. Fail closed: phone and email must NEVER appear as public values.
-  if(type!=="website")reject(at+" cannot expose protected phone/email in v1");
-  return {type:"website",value:httpsUrl(value.value,at+".value"),
+  // No cross-site protected actions or raw email/phone are exported.
+  // The verified canonical GRID EATER business page is a safe link-only
+  // alternative when the business lacks an approved first-party website.
+  if(type!=="website"&&type!=="grid_profile")
+    reject(at+" cannot expose protected phone/email in v1");
+  const linked=httpsUrl(value.value,at+".value",type==="grid_profile"?"grideater.com":null);
+  const evidence=httpsUrl(value.evidenceUrl,at+".evidenceUrl",type==="grid_profile"?"grideater.com":null);
+  if(type==="grid_profile"&&
+    ((sourcePage!=="https://grideater.com/business/"+slug&&
+      sourcePage!=="https://grideater.com/business/"+slug+"/")||
+      linked!==sourcePage||evidence!==sourcePage))
+    reject(at+" GRID profile contact must match the canonical business page");
+  return {type,value:linked,
     verifiedAt:iso(value.verifiedAt,at+".verifiedAt"),
-    evidenceUrl:httpsUrl(value.evidenceUrl,at+".evidenceUrl"),
-    approvedForPublicUse:true};
+    evidenceUrl:evidence,approvedForPublicUse:true};
 }
 export function validateGridEaterPublicGardeners(value,{now=new Date().toISOString()}={}){
   keys(value,ROOT_KEYS,"feed");
@@ -109,7 +117,7 @@ export function validateGridEaterPublicGardeners(value,{now=new Date().toISOStri
       approvedAt:iso(row.approvedAt,at+".approvedAt"),
       sourcePage:httpsUrl(row.sourcePage,at+".sourcePage","grideater.com"),
       services,serviceAreas,...(supplier?{publicLocations}:{}),
-      publicContact:contact(row.publicContact,at+".publicContact")
+      publicContact:contact(row.publicContact,at+".publicContact",httpsUrl(row.sourcePage,at+".sourcePage","grideater.com"),slug)
     };
   });
   return {schemaVersion:1,source:"grideater.com",releaseId,releasedAt,approvedForKiwi:true,records};
@@ -143,7 +151,7 @@ export async function loadGridEaterPublicGardeners({readFile,fetchImpl=fetch,fee
 const distinct=(items)=>[...new Set(items)].sort((a,b)=>a.localeCompare(b,"en-NZ"));
 const humanDate=(stamp)=>new Date(stamp).toLocaleDateString("en-NZ",{year:"numeric",month:"short",day:"numeric",timeZone:"Pacific/Auckland"});
 const hrefContact=(v)=>v.value;
-const contactLabel=()=>"Visit verified website";
+const contactLabel=(v)=>v.type==="grid_profile"?"View contact options on GRID EATER":"Visit verified website";
 
 export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTrail,TEL_URL,PHONE,ENQUIRY_URL},feed){
   const records=feed.records;
@@ -208,7 +216,7 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
       '<li><strong>'+esc(item.name)+'</strong><small>Evidence checked '+humanDate(item.verifiedAt)+'</small></li>').join("")+'</ul>';
     const contact=r.publicContact;
     const href=hrefContact(contact);
-    const external=contact.type==="website"?' target="_blank" rel="noopener noreferrer"':"";
+    const external=' target="_blank" rel="noopener noreferrer"';
     const supplier=r.kind==="gardening_supplier";
     const profile=articleHero(supplier?"Verified gardening supplier":"Verified gardening service",r.name,r.description,itemTrail)+
       '<section class="section"><div class="container gardener-profile-layout"><article class="prose">'+
@@ -217,7 +225,7 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
       (r.serviceAreas.some(x=>!x.basis)?'<section><h2>'+(supplier?'Verified delivery areas':'Areas this business says it services')+'</h2><p>Confirmed from public business evidence.</p>'+proofList(r.serviceAreas.filter(x=>!x.basis))+'</section>':'')+
       (r.serviceAreas.some(x=>x.basis===PROVISIONAL_AREA_BASIS)?'<section><h2>Likely local area (NZBN registration)</h2><p>This town or city is inferred from the business registration, not confirmed as a service or delivery area. Contact the provider to check coverage.</p>'+proofList(r.serviceAreas.filter(x=>x.basis===PROVISIONAL_AREA_BASIS))+'</section>':'')+
       (supplier&&r.publicLocations.length?'<section><h2>Verified shop or nursery locations</h2><p>These premises locations do not imply any delivery territory or on-site gardening service.</p>'+proofList(r.publicLocations)+'</section>':'')+
-      '<section><h2>Contact this business</h2><p>This website was approved for public use in GRID EATER&#39;s source export.</p>'+
+      '<section><h2>Contact this business</h2><p>'+(contact.type==="grid_profile"?'Open the canonical GRID EATER profile for available contact options. No business phone or email is copied to this site.':'This website was approved for public use in GRID EATER&#39;s source export.')+'</p>'+
       '<a class="button" href="'+esc(href)+'"'+external+'>'+esc(contactLabel(contact))+' ↗</a></section>'+
       '<section class="gardener-source-note"><h2>Source and corrections</h2><p>This directory consumes a versioned, reviewed, public-safe GRID EATER export. Business records are maintained in GRID EATER rather than edited here. Last source release '+esc(humanDate(feed.releasedAt))+'.</p>'+
       '<p><a href="'+esc(r.sourcePage)+'" target="_blank" rel="noopener noreferrer">View canonical GRID EATER business record ↗</a></p>'+
