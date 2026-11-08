@@ -1,3 +1,13 @@
+## CURRENT VERIFIED BOUNDARY | 8 NOVEMBER 2026 NZDT
+
+**Read [authoritative GRID EATER/Kiwi 8 November session close](https://github.com/meeeeeooooowwwwwww/grideater/blob/main/docs/operations/handovers/GE-GARDEN-KIWI-SESSION-CLOSE-2026-11-08.md) before using old “NEXT” notes here.** GRID EATER PR #2426 + Kiwi PR #37 merged **one** services AND suppliers approved public static feed contract, not separate customer search engines or independent editable supplier databases. Kiwi Native GitHub main → Cloudflare Workers Builds → existing Worker `kiwigardener` is the ONLY website deployment route; GRID #2424 removed its mistaken Kiwi cross-site deploy lane. Source code/site CI and a native Cloudflare production build passed, **but GRID approved feed/public business records still ZERO, update notification OFF, independent live-traffic browser acceptance unverified**.
+
+GRID EATER publication requires separate owner/source-reviewed canonical category, actual public GRID search AND GRID business profile evidence within 48 hours of release, correct public-safe offerings/contacts and suppression/withdrawal controls. Supplier shop premises are distinct from verified delivery; *provisional* NZBN office-town inference is labelled `Likely serves [town]` and is NOT silently a verified delivery/service claim. Old supplier-specific service-only/deploy-gateway narratives below are **historical**, not authority to publish/activate. Avoid private phone/email, unapproved business pages or false regional coverage. Preserve useful editorial references pending real official source feed and SEO migration checks. Do not migrate or delete anything under this docs-only checkpoint.
+
+[Current contradiction register](https://github.com/meeeeeooooowwwwwww/grideater/blob/main/docs/operations/registries/GARDEN-DOCS-RECONCILIATION-2026-11-08.md) · [cleanup candidates](https://github.com/meeeeeooooowwwwwww/grideater/blob/main/docs/operations/registries/GARDEN-CLEANUP-CANDIDATES-2026-11-08.md)
+
+---
+
 ## 8 November 2026 NZDT | One search across gardening services, nurseries and supplies (source only)
 
 Owner's highest priority is **population** of ONE `/gardeners/` directory, not a second supplier search or separate public business database. Services, retail plant nurseries, garden centres, soil/compost/bark and landscaping-materials suppliers appear in the SAME cards/keyword/NZ town search once GRID EATER confirms each is finalised, reviewed, assigned an appropriate canonical category, indexed in its public search and present on its public business profile. The separate `/suppliers/` pages remain clearly labelled editorial reference pages but are not independently approved search results.
