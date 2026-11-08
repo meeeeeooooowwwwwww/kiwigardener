@@ -1,3 +1,10 @@
+## 8 November 2026 | P0 shared contract safety patch (SOURCE ONLY)
+
+Until the producer and consumer separately verify protected action-capability refs, v1 intentionally permits **website contact only**. Raw phone/email in `publicContact.value` is rejected even if the source has marked it public. The corresponding GRID EATER producer draft PR must pass before any public-feed origin activation. 'Reveal phone' and 'Email this business' remain blocked on independent listings until server-side GRID EATER relay, Kiwi Turnstile hostname validation, rate limiting, permission/withdrawal and end-to-end production action tests pass.
+
+No GRID EATER canonical data changes, Kiwi feed activation, new independent listings, build/deployment or public status change from this source-only patch. Dallas's existing house contact stays unchanged. This is a strict privacy requirement of KG-DIR-01, not approval of a new business.
+
+---
 # KG-DIR-00: Kiwi Gardeners read-only GRID EATER directory connection
 
 Status: source-only implementation. Not a live data connection or a claim that GRID EATER currently publishes this feed.
@@ -32,7 +39,7 @@ Required top-level fields: schemaVersion=1, source="grideater.com", releaseId (u
 | sourcePage | Public grideater.com canonical record URL |
 | services | 1–16 approved {name, verifiedAt, evidenceUrl} entries |
 | serviceAreas | 1–25 independently evidenced {name, verifiedAt, evidenceUrl}; never inferred from registration/address |
-| publicContact | Exactly one {type:website/phone/email, value, verifiedAt, evidenceUrl, approvedForPublicUse:true} |
+| publicContact | Exactly one {type:website, value:verified official HTTPS URL, verifiedAt, evidenceUrl, approvedForPublicUse:true}. Raw phone/email explicitly rejected. Protected actions require a separately verified cross-site capability contract. |
 
 Every nested object also has a strict field allowlist. An unknown field such as streetAddress, privateContact, sourcePayload or notes fails the whole release. No auto-promoting goughsnurseries.co.nz, ashcon.co.nz, unverified contacts, guessed localities, plant nursery suppliers or tier-C listings.
 
