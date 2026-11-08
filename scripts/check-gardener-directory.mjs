@@ -286,3 +286,41 @@ test("first-party gardening service and supplier phrases have distinct approved 
   assert.equal(finds("Wordsworth Gardens","service").length,0,
     "keyword suggestions must not search business names");
 });
+
+
+test("a registered city is searchable but displayed as an unconfirmed provisional locality",()=>{
+  const fixture=copy();
+  fixture.records[0].serviceAreas=[{
+    name:"Ashburton",verifiedAt,
+    evidenceUrl:"https://www.nzbn.govt.nz/",
+    basis:"nzbn_registered_locality"
+  }];
+  const checked=check(fixture);
+  assert.equal(checked.records[0].serviceAreas[0].basis,"nzbn_registered_locality");
+  const files={},esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  addGardenerDirectoryPages({
+    files,esc,a:(href,label)=>'<a href="'+href+'">'+label+'</a>',
+    articleHero:(_k,t)=>'<h1>'+esc(t)+'</h1>',
+    layout:({content})=>content,baseTrail:[{name:"Home",path:"/"}],
+    TEL_URL:"tel:+64273406581",PHONE:"027 340 6581",
+    ENQUIRY_URL:"mailto:dallas@kiwigardeners.com"
+  },checked);
+  const hub=files["gardeners/index.html"];
+  const profile=files["gardeners/example-gardening-business/index.html"];
+  assert.ok(hub.includes('data-areas="Ashburton"'));
+  assert.ok(hub.includes("Likely local area (NZBN registration)"));
+  assert.ok(hub.includes("Unconfirmed; ask the provider about coverage."));
+  assert.ok(!hub.includes("Verified service areas:"));
+  assert.ok(profile.includes("inferred from the business registration"));
+  assert.ok(!profile.includes("Areas this business says it services"));
+});
+test("provisional basis never permits private fields, unknown basis or claimed supplier premises",()=>{
+ const f=copy();f.records[0].serviceAreas[0].basis="nzbn_registered_locality";
+ assert.equal(check(f).records[0].serviceAreas[0].basis,"nzbn_registered_locality");
+ const bad1=copy();bad1.records[0].serviceAreas[0].basis="verified_delivery";assert.throws(()=>check(bad1),/invalid provisional locality basis/);
+ const bad2=copy();bad2.records[0].services[0].basis="nzbn_registered_locality";assert.throws(()=>check(bad2),/unexpected field/);
+ const bad3=copy();bad3.records[0].serviceAreas[0].streetAddress="1 Private Road";assert.throws(()=>check(bad3),/unexpected field/);
+ const bad4=copy();bad4.records[0].kind="gardening_supplier";bad4.records[0].publicLocations=[{name:"Ashburton",verifiedAt,evidenceUrl:"https://example.nz/premises",basis:"nzbn_registered_locality"}];
+ assert.throws(()=>check(bad4),/unexpected field/);
+});
