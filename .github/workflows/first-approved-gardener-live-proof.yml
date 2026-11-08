@@ -1,0 +1,37 @@
+name: KG-DIR-02 Live First Gardening Directory Proof (READ ONLY)
+
+on:
+  pull_request:
+    paths:
+      - scripts/verify-live-first-gardener.mjs
+      - scripts/check-live-first-gardener.mjs
+      - .github/workflows/first-approved-gardener-live-proof.yml
+  push:
+    branches: [main]
+    paths:
+      - scripts/verify-live-first-gardener.mjs
+      - scripts/check-live-first-gardener.mjs
+      - .github/workflows/first-approved-gardener-live-proof.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kg-dir-02-live-one-approved-gardener-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  read-only-live:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run source-only fail-closed live acceptance cases
+        run: |
+          node --check scripts/verify-live-first-gardener.mjs
+          node --test scripts/check-live-first-gardener.mjs
+      - name: Independently fetch five public Kiwi pages after native provider deployment
+        run: node scripts/verify-live-first-gardener.mjs
