@@ -1,3 +1,15 @@
+## 8 NOVEMBER 2026 | Provisional registered-town service-area matching (population-first)
+
+The owner directs using a current NZBN registered **city/town** as a default *likely* local service area in the initial national gardening population pass, followed by second-pass corrections. Only the town/city, never registered residential or street address, is eligible. The GRID EATER source and its reviewed NZ place identity remain authoritative.
+
+The v1 public release format is extended **additively**: an individual `serviceAreas` evidence item may include `"basis":"nzbn_registered_locality"` to indicate an *unconfirmed* town derived from NZBN registration. Its `verifiedAt` timestamp refers to the source evidence check, not business confirmation. Existing confirmed area items remain exactly backward compatible. `services` and `publicLocations` may **not** include `basis`, and supplier registered towns never masquerade as verified shop premises or delivery commitments.
+
+Search by town may include this provisional item, but the card and profile explicitly say **“Likely local area (NZBN registration)”** and ask the visitor to confirm coverage. Current owner corrections, actual first-party claims, suppression and lifecycle exclusions win over the inferred default. No visitor-time GRID D1 request, direct contact field, external credential, false region-wide expansion or separate Kiwi editable business table is introduced.
+
+This is a **consumer source-code change** only until separately checked Kiwi main/build. It does not publish more businesses, promote a D1 category, run Hetzner, upload an R2 feed or bypass the already existing GRID EATER search/profile and approved snapshot release control. Next: release the backward-compatible Kiwi consumer before sending a new snapshot with `basis` from GRID EATER, then make the existing Hetzner-to-D1 review and publication process produce such records in batches.
+
+---
+
 ## CURRENT VERIFIED BOUNDARY | 8 NOVEMBER 2026 NZDT
 
 **Read [authoritative GRID EATER/Kiwi 8 November session close](https://github.com/meeeeeooooowwwwwww/grideater/blob/main/docs/operations/handovers/GE-GARDEN-KIWI-SESSION-CLOSE-2026-11-08.md) before using old “NEXT” notes here.** GRID EATER PR #2426 + Kiwi PR #37 merged **one** services AND suppliers approved public static feed contract, not separate customer search engines or independent editable supplier databases. Kiwi Native GitHub main → Cloudflare Workers Builds → existing Worker `kiwigardener` is the ONLY website deployment route; GRID #2424 removed its mistaken Kiwi cross-site deploy lane. Source code/site CI and a native Cloudflare production build passed, **but GRID approved feed/public business records still ZERO, update notification OFF, independent live-traffic browser acceptance unverified**.
