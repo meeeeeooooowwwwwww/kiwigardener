@@ -60,7 +60,7 @@ export function verifyThree({hub,profiles,status,sitemap,contact}){
   status:"THREE_APPROVED_GARDENERS_LIVE_KIWI_VERIFIED",
   releaseId:RELEASE,records:3,
   canonicalBusinessIds:LISTINGS.map(x=>x.id),
-  wordworthRetained:true,twoNewBusinesses:2,
+  wordsworthRetained:true,twoNewBusinesses:2,
   townFiltersShown:true,mosgielProvisionalLabel:true,
   sitemapProfiles:3,dallasContactPreserved:true,
   privateDataExposed:false,d1Statements:0,
