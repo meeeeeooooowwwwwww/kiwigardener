@@ -48,16 +48,13 @@ function contact(value,at){
   keys(value,CONTACT_KEYS,at);
   if(value.approvedForPublicUse!==true)reject(at+" lacks explicit public contact approval");
   const type=string(value.type,at+".type");
-  const raw=string(value.value,at+".value",6,255);
-  let v=raw;
-  if(type==="website"){v=httpsUrl(raw,at+".value");}
-  else if(type==="phone"){
-    if(!/^\+64[0-9\s-]{7,15}$/.test(raw))reject(at+" must be a verified NZ phone in international format");
-  } else if(type==="email"){
-    if(!/^[^\s@<>]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(raw))reject(at+" email invalid");
-  } else reject(at+" type unsupported");
-  return {type,value:v,verifiedAt:iso(value.verifiedAt,at+".verifiedAt"),
-    evidenceUrl:httpsUrl(value.evidenceUrl,at+".evidenceUrl"),approvedForPublicUse:true};
+  // The approved v1 static feed has no verified cross-site protected-action
+  // contract. Fail closed: phone and email must NEVER appear as public values.
+  if(type!=="website")reject(at+" cannot expose protected phone/email in v1");
+  return {type:"website",value:httpsUrl(value.value,at+".value"),
+    verifiedAt:iso(value.verifiedAt,at+".verifiedAt"),
+    evidenceUrl:httpsUrl(value.evidenceUrl,at+".evidenceUrl"),
+    approvedForPublicUse:true};
 }
 export function validateGridEaterPublicGardeners(value,{now=new Date().toISOString()}={}){
   keys(value,ROOT_KEYS,"feed");
@@ -133,8 +130,8 @@ export async function loadGridEaterPublicGardeners({readFile,fetchImpl=fetch,fee
 }
 const distinct=(items)=>[...new Set(items)].sort((a,b)=>a.localeCompare(b,"en-NZ"));
 const humanDate=(stamp)=>new Date(stamp).toLocaleDateString("en-NZ",{year:"numeric",month:"short",day:"numeric",timeZone:"Pacific/Auckland"});
-const hrefContact=(v)=>v.type==="phone"?"tel:"+v.value.replace(/[\s-]/g,""):v.type==="email"?"mailto:"+v.value:v.value;
-const contactLabel=(v)=>v.type==="phone"?"Call approved public number":v.type==="email"?"Email this gardener":"Visit verified website";
+const hrefContact=(v)=>v.value;
+const contactLabel=()=>"Visit verified website";
 
 export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTrail,TEL_URL,PHONE,ENQUIRY_URL},feed){
   const records=feed.records;
