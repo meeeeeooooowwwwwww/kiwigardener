@@ -581,3 +581,36 @@ img.card-image[hidden],figure.local-figure[hidden]{display:none!important}
 @media(max-width:1060px){.gardener-search-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.gardener-query{grid-column:1/-1}.gardener-search-filters button{justify-self:start}}
 @media(max-width:720px){.gardener-search-filters{grid-template-columns:1fr;padding:18px}.gardener-query{grid-column:auto}.gardener-search-filters button{width:100%}.gardener-results{grid-template-columns:1fr}.gardener-house,.gardener-profile-layout{grid-template-columns:1fr}.gardener-house .micro{grid-column:auto}}
 @media(max-width:390px){.gardener-directory-card{padding:18px}.gardener-house{padding:20px 16px}.gardener-house .button{width:100%}}
+
+
+/* KG-DIR-01: two JSON-backed autocomplete filters, no service dropdown. */
+.gardener-search-filters{
+  grid-template-columns:minmax(230px,1.35fr) minmax(225px,1fr) auto;
+  gap:16px;align-items:end;overflow:visible;
+}
+.gardener-filter-field{display:grid;gap:8px;min-width:0;position:relative}
+.gardener-filter-field>label{font-size:.86rem;font-weight:760;line-height:1.3}
+.gardener-combobox{position:relative;min-width:0}
+.gardener-combobox input{width:100%;min-width:0;max-width:100%;border-radius:12px}
+.gardener-combobox input[aria-expanded="true"]{border-color:#567f48;box-shadow:0 0 0 2px #c7dab6}
+.gardener-suggestions{display:grid;gap:0;list-style:none;padding:5px;margin:6px 0 0;
+  position:absolute;top:100%;left:0;right:0;max-height:300px;overflow:auto;
+  border:1px solid #b4c7af;border-radius:13px;background:#fffefa;z-index:50;
+  box-shadow:0 16px 30px rgba(19,49,33,.18)}
+.gardener-suggestions[hidden]{display:none!important}
+.gardener-suggestions li{display:flex;justify-content:space-between;align-items:center;
+  gap:12px;padding:11px 13px;cursor:pointer;color:var(--ink);font-size:.94rem}
+.gardener-suggestions li+li{border-top:1px solid #e9eee6}
+.gardener-suggestions li small{font-size:.72rem;color:#516c56;white-space:nowrap}
+.gardener-suggestions li[aria-selected="true"],.gardener-suggestions li:hover{background:#edf3e7}
+.gardener-filter-help{margin:12px 0 0;color:var(--muted)}
+@media(max-width:1060px){
+  .gardener-search-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .gardener-query{grid-column:auto}
+  .gardener-search-filters button{grid-column:1/-1;justify-self:start}
+}
+@media(max-width:720px){
+  .gardener-search-filters{grid-template-columns:minmax(0,1fr);gap:15px;padding:18px}
+  .gardener-search-filters button{grid-column:auto;width:100%}
+  .gardener-suggestions li{min-height:44px}
+}
