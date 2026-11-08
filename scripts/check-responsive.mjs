@@ -271,9 +271,15 @@ try {
   if((await page.locator("[data-gardener-card]:visible").count())!==0)
     failures.push("Business name / unrelated keyword caused a false match");
   await page.locator("#gardener-clear").click();
+  // Reproduce stale-query-blur race: leave the search field and immediately
+  // return. Its previous delayed blur handler must not close new suggestions.
+  await page.focus("#gardener-area");
+  await page.focus("#gardener-query");
   await page.fill("#gardener-query","comp");
-  if(!(await page.locator("#gardener-keyword-options").textContent()).includes("Compost"))
-    failures.push("JSON keyword suggestions missing gardening supplies");
+  await page.waitForTimeout(180);
+  if(await page.locator("#gardener-keyword-options").isHidden()||
+     !(await page.locator("#gardener-keyword-options").textContent()).includes("Compost"))
+    failures.push("JSON supplies suggestions disappeared after rapid refocus");
   await page.fill("#gardener-area","Ashb");
   if(!(await page.locator("#gardener-area-options").textContent()).includes("Ashburton"))
     failures.push("Nationwide official town suggestion missing Ashburton");

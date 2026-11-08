@@ -1,5 +1,18 @@
 # KiwiGardeners.com | Christchurch local SEO
 
+## Production deployment contract (8 November 2026)
+
+**One normal production pipeline:** Cloudflare Workers Builds connected to the EXISTING Worker `kiwigardener`, GitHub repository `meeeeeooooowwwwwww/kiwigardener`, production branch `main`, root `/`, build command `npm run build`, deploy command `npx wrangler deploy`. `npm run build` is now fail-closed: it generates the site, runs SEO and publication/JSON/noindex checks, gardener/supplier/contact tests, and validates the Worker syntax before returning success. GitHub PR CI additionally runs mobile/tablet/desktop browser tests. Merge only after the required `Verify Kiwi Gardeners static website` GitHub check succeeds. Cloudflare's integrated build token must have rights to the EXISTING Worker and account; do not put API tokens into source or logs.
+
+**Releases and proof:** a GitHub merge is not a Cloudflare deployment receipt. For each merged `main` revision, inspect Workers & Pages → `kiwigardener` → Settings → Builds (correct repo/branch/commands/build-token), then Deployments (new active version). Verify the live `/gardeners/` UI (two autocomplete fields, no legacy service dropdown), `/assets/garden-directory-filter-data.json` (597 places and approved keyword vocabulary), `/contact/` protected form, Dallas's house phone, no raw protected contact values, and exact feed privacy/noindex behaviour. The approved GRID EATER independent `/gardeners/` feed remains disabled until the original owner/source/publication gates pass.
+
+**Recovery-only:** GRID EATER's existing protected, manually armed `.github/workflows/external-static-site-deploy.yml` may deploy a single exact Kiwi SHA when native Workers Builds fails. It is not a second automatic publisher and must be disarmed immediately after use. Never set both workflows to automatically deploy the same `main` changes. If the native integration is broken, first examine Build settings, latest failed build logs and the build-token scope; only then use the one-shot recovery lane.
+
+**Rollback:** use Cloudflare Deployments to restore the previous known-good `kiwigardener` version and check the same live pages. Preserve existing Worker name, custom domain, contact email binding, Turnstile and rate limits; no new database, paid service or live D1 dependency is introduced by deployment.
+
+---
+
+
 Independent, Christchurch-focused gardening website. Separate from all other repositories and websites.
 
 ## Current site (October 2026)

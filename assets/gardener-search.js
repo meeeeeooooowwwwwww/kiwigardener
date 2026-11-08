@@ -192,7 +192,13 @@
         e.preventDefault();choose(c,c.values[c.active]);
       }
     });
-    c.input.addEventListener("blur",()=>setTimeout(()=>close(c),120));
+    c.input.addEventListener("blur",()=>{
+      // The user may immediately focus the same combobox again (for example
+      // after Clear). An older blur timer must not erase the NEW suggestions.
+      setTimeout(()=>{
+        if(document.activeElement!==c.input)close(c);
+      },120);
+    });
   });
   document.addEventListener("click",e=>{
     for(const c of controls)if(!c.input.parentElement.contains(e.target))close(c);
