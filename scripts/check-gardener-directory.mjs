@@ -163,6 +163,39 @@ test("P0 public contact privacy: valid phone/email fail closed, website remains 
   assert.ok(!JSON.stringify(good).includes("+64275918334"));
 });
 
+test("canonical GRID profile contact fallback excludes unverified websites and protected contact data",()=>{
+  const fixture=copy(),record=fixture.records[0];
+  const sourcePage="https://grideater.com/business/"+record.slug+"/";
+  record.sourcePage=sourcePage;
+  record.publicContact={type:"grid_profile",value:sourcePage,verifiedAt,
+    evidenceUrl:sourcePage,approvedForPublicUse:true};
+  const checked=check(fixture);
+  assert.equal(checked.records[0].publicContact.type,"grid_profile");
+  const files={},esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  addGardenerDirectoryPages({
+    files,esc,a:(href,text)=>'<a href="'+href+'">'+esc(text)+'</a>',
+    articleHero:(_k,t)=>'<h1>'+esc(t)+'</h1>',
+    layout:({content})=>content,baseTrail:[],
+    TEL_URL:"tel:+64273406581",PHONE:"027 340 6581",
+    ENQUIRY_URL:"mailto:dallas@kiwigardeners.com"
+  },checked);
+  const html=files["gardeners/"+record.slug+"/index.html"];
+  assert.match(html,/View contact options on GRID EATER/);
+  assert.match(html,/No business phone or email is copied/);
+  assert.ok(!html.includes("example.nz/contact"));
+  for(const wrong of [
+    {...record.publicContact,type:"phone",value:"+64271234567"},
+    {...record.publicContact,value:"https://grideater.com/business/another-business/"},
+    {...record.publicContact,evidenceUrl:"https://grideater.com/business/another-business/"},
+    {...record.publicContact,value:"https://grideater.com/admin"},
+    {...record.publicContact,approvedForPublicUse:false}
+  ]){
+    const invalid=structuredClone(fixture);
+    invalid.records[0].publicContact=wrong;
+    assert.throws(()=>check(invalid),/public feed rejected/);
+  }
+});
+
 test("official NZ 2026 static lookup includes 597 populated towns/cities and rural settlements",()=>{
   const data=buildGardenDirectoryFilterData();
   assert.equal(data.version,1);
