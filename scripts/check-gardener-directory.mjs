@@ -137,3 +137,18 @@ test("one approved record creates searchable server-rendered hub and canonical-I
   assert.ok(!/ratingValue|aggregateRating|customer review/i.test(profile));
   assert.ok(!profile.includes("dallas@kiwigardeners.com")||profile.includes("mailto:dallas@kiwigardeners.com"));
 });
+
+test("P0 public contact privacy: valid phone/email fail closed, website remains approved",()=>{
+  for(const [type,value] of [
+    ["phone","+64275918334"],["email","business@example.co.nz"]
+  ]){
+    const v=copy();
+    v.records[0].publicContact={...v.records[0].publicContact,type,value};
+    assert.throws(()=>check(v),/cannot expose protected phone\/email in v1/);
+  }
+  const good=check(copy());
+  assert.equal(good.records[0].publicContact.type,"website");
+  assert.equal(good.records[0].publicContact.value,"https://example.nz/");
+  assert.ok(!JSON.stringify(good).includes("business@example.co.nz"));
+  assert.ok(!JSON.stringify(good).includes("+64275918334"));
+});
