@@ -4,6 +4,7 @@ import {readFile} from "node:fs/promises";
 import {
   validateGridEaterPublicGardeners,loadGridEaterPublicGardeners,addGardenerDirectoryPages
 } from "../src/gardener-directory.mjs";
+import {buildGardenDirectoryFilterData,placeMatchesApprovedArea} from "../src/directory-filter-data.mjs";
 
 const releasedAt="2026-11-04T02:00:00Z";
 const verifiedAt="2026-11-03T05:00:00Z";
@@ -112,6 +113,11 @@ test("static renderer has an empty noindex directory, with independent Dallas co
   assert.deepEqual(Object.keys(files),["gardeners/index.html"]);
   assert.ok(files["gardeners/index.html"].includes('"indexable":false'));
   assert.ok(files["gardeners/index.html"].includes('id="gardener-query"'));
+  assert.ok(files["gardeners/index.html"].includes('id="gardener-area"'));
+  assert.ok(files["gardeners/index.html"].includes('id="gardener-keyword-options"'));
+  assert.ok(files["gardeners/index.html"].includes('id="gardener-area-options"'));
+  assert.ok(!files["gardeners/index.html"].includes('id="gardener-service"'));
+
   assert.ok(files["gardeners/index.html"].includes('tel:+64273406581'));
   assert.ok(!files["gardeners/index.html"].includes('data-gardener-card'));
   assert.ok(files["gardeners/index.html"].includes("No independent directory listings"));
@@ -130,6 +136,10 @@ test("one approved record creates searchable server-rendered hub and canonical-I
   const hub=files["gardeners/index.html"],profile=files["gardeners/example-gardening-business/index.html"];
   assert.ok(hub.includes('data-gardener-card'));
   assert.ok(hub.includes("Verified service areas"));
+  assert.ok(hub.includes('data-keywords="Garden maintenance"'),"Only approved services are searchable");
+  assert.ok(!hub.includes('data-search='),"Legacy company/description search attribute must be absent");
+  assert.ok(hub.includes('data-areas="Christchurch"'));
+
   assert.ok(hub.includes('<meta data-indexable="true">'));
   assert.ok(profile.includes("afnz-9429039092267"));
   assert.ok(profile.includes("Areas this business says it services"));
@@ -151,4 +161,38 @@ test("P0 public contact privacy: valid phone/email fail closed, website remains 
   assert.equal(good.records[0].publicContact.value,"https://example.nz/");
   assert.ok(!JSON.stringify(good).includes("business@example.co.nz"));
   assert.ok(!JSON.stringify(good).includes("+64275918334"));
+});
+
+test("official NZ 2026 static lookup includes 597 populated towns/cities and rural settlements",()=>{
+  const data=buildGardenDirectoryFilterData();
+  assert.equal(data.version,1);
+  assert.equal(data.sourceSha256,"89bb35e1ab3dc42ae5db6d47990299a74c75caecec28c18387fffe19171a161a");
+  assert.equal(data.places.length,597);
+  assert.equal(data.regions.length,17);
+  assert.equal(data.places.filter(x=>x[2]==="urban").length,195);
+  assert.equal(data.places.filter(x=>x[2]==="rural").length,402);
+  const byName=name=>data.places.find(x=>x[0]===name);
+  assert.equal(byName("Christchurch")[1],"13");
+  assert.equal(byName("Ashburton")[1],"13");
+  assert.equal(byName("Lyttelton")[1],"13");
+  assert.equal(byName("Dunedin")[1],"14");
+  assert.equal(byName("Richmond")[1],"1617","Cross-region Richmond must not be assigned arbitrarily");
+  assert.ok(data.keywords.some(x=>x.kind==="supplier"&&x.label==="Compost"));
+  assert.ok(data.keywords.some(x=>x.kind==="service"&&x.label==="Hedge trimming"));
+});
+
+test("Canterbury approved service-area claim matches regional towns, but never registered premises",()=>{
+  const data=buildGardenDirectoryFilterData();
+  assert.equal(placeMatchesApprovedArea(["Canterbury"],"Christchurch",data),true);
+  assert.equal(placeMatchesApprovedArea(["Canterbury"],"Ashburton",data),true);
+  assert.equal(placeMatchesApprovedArea(["Canterbury Region"],"Lyttelton",data),true);
+  assert.equal(placeMatchesApprovedArea(["Canterbury"],"Dunedin",data),false);
+  assert.equal(placeMatchesApprovedArea(["Ashburton"],"Christchurch",data),false,
+    "One business premises/town does not imply all regional service coverage");
+  assert.equal(placeMatchesApprovedArea(["Christchurch"],"Christchurch",data),true);
+  assert.equal(placeMatchesApprovedArea(["Nelson"],"Richmond",data),true);
+  assert.equal(placeMatchesApprovedArea(["Tasman"],"Richmond",data),true);
+  assert.equal(placeMatchesApprovedArea(["Canterbury"],"Christchurch suburb",data),false,
+    "No suburb lookup or invented coverage");
+  assert.equal(placeMatchesApprovedArea([],"Christchurch",data),false);
 });
