@@ -70,10 +70,13 @@
   };
   const matchesPlace=(card,place)=>{
     const verified=new Set(words(card.dataset.areas));
+    // Supplier physical shops and nurseries match EXACT official town only.
+    // They cannot imply delivery or contractor service coverage.
+    const premises=new Set(words(card.dataset.locations));
+    if(premises.has(normal(place[0])))return true;
     if(verified.has(normal(place[0])))return true;
-    // A region-level claim from the APPROVED service-area feed covers each
-    // Stats NZ town in that region for search only. Registered address is
-    // NEVER read or treated as evidence of a coverage relationship.
+    // Only independently approved service/delivery AREA claims expand from
+    // region to official towns. The premises dataset never expands coverage.
     return pairs(place[1]).some(code=>{
       const region=regionNames.get(code);
       if(!region||code==="99")return false;
