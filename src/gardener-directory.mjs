@@ -137,14 +137,12 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
   const records=feed.records;
   const path="/gardeners/";
   const trail=[...baseTrail,{name:"Find gardeners",path}];
-  const services=distinct(records.flatMap(r=>r.services.map(x=>x.name)));
-  const areas=distinct(records.flatMap(r=>r.serviceAreas.map(x=>x.name)));
-  const options=(items,placeholder)=>'<option value="">'+esc(placeholder)+'</option>'+
-    items.map(name=>'<option value="'+esc(name)+'">'+esc(name)+'</option>').join("");
   const cards=records.map(r=>{
-    const terms=[r.name,r.description,...r.services.map(x=>x.name),...r.serviceAreas.map(x=>x.name)].join(" ").toLowerCase();
-    return '<article class="card gardener-directory-card" data-gardener-card data-search="'+esc(terms)+
-      '" data-services="'+esc(r.services.map(x=>x.name).join("|"))+'" data-areas="'+esc(r.serviceAreas.map(x=>x.name).join("|"))+'">'+
+    // Searchable terms are approved commercial service/product facts ONLY,
+    // not business names, addresses, generic descriptions or SEO metadata.
+    const facts=r.services.map(x=>x.name).join("|");
+    return '<article class="card gardener-directory-card" data-gardener-card data-keywords="'+esc(facts)+
+      '" data-areas="'+esc(r.serviceAreas.map(x=>x.name).join("|"))+'">'+
       '<div class="gardener-card-meta"><span class="tag">Verified public listing</span><span>GRID EATER ID: '+esc(r.id)+'</span></div>'+
       '<h3><a href="/gardeners/'+r.slug+'/">'+esc(r.name)+'</a></h3>'+
       '<p>'+esc(r.description)+'</p>'+
@@ -160,15 +158,19 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
     '<p class="micro">This is our own service, shown separately from independent GRID EATER directory results. It is not an organic directory listing.</p></aside>';
   const emptyMessage=records.length?'<p id="gardener-empty" class="gardener-empty" hidden>No verified gardeners match these filters. Try fewer filters or confirm the area directly with a provider.</p>':
     '<div class="gardener-empty"><strong>No independent directory listings are published yet.</strong><p>We are preparing a versioned public-only connection to GRID EATER. Businesses will appear when their identity, gardening services, actual service areas and public contact permission have been reviewed. Our Christchurch gardening guides and Dallas enquiry service remain available.</p></div>';
-  const body=articleHero("Canterbury gardening directory","Find gardeners across Canterbury",
-    "Search by gardening service, verified service area or business name. Only independently approved public GRID EATER records can appear as directory results.",trail)+
+  const body=articleHero("New Zealand gardening directory","Find gardening services and supplies",
+    "Search gardening keywords and towns across New Zealand. Only independently approved GRID EATER records appear in directory results.",trail)+
     '<section class="section gardener-directory"><div class="container">'+
-    '<p class="gardener-intro">Gardening services and <a href="/suppliers/">garden suppliers</a> are different categories. This directory is for verified gardening service providers; a business address alone is not proof that a gardener works in your suburb. Confirm availability and the job details with each provider.</p>'+
-    '<div class="gardener-search-filters" role="search" aria-label="Search verified gardeners">'+
-    '<label class="gardener-query">Search by business or keyword<input id="gardener-query" type="search" autocomplete="off" placeholder="Try lawn mowing, hedges or a business name"></label>'+
-    '<label>Gardening service<select id="gardener-service">'+options(services,"All services")+'</select></label>'+
-    '<label>Verified service area<select id="gardener-area">'+options(areas,"All areas")+'</select></label>'+
+    '<p class="gardener-intro">Search by gardening service or supplies keyword and an NZ town or city. A region-wide service claim can match the towns inside that region, but an office or yard address alone does not mean a business works or delivers there. Explore the separate <a href="/suppliers/">reviewed garden supplier reference pages</a> while independent supplier feed approval is pending.</p>'+
+    '<div class="gardener-search-filters" role="search" aria-label="Search approved gardening businesses">'+
+    '<div class="gardener-filter-field gardener-query"><label for="gardener-query">Gardening service or supplies</label>'+
+      '<div class="gardener-combobox"><input id="gardener-query" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="gardener-keyword-options" aria-expanded="false" autocomplete="off" spellcheck="false" placeholder="Try lawn mowing, native plants or compost">'+
+      '<ul id="gardener-keyword-options" class="gardener-suggestions" role="listbox" hidden></ul></div></div>'+
+    '<div class="gardener-filter-field gardener-place"><label for="gardener-area">Town or city (New Zealand)</label>'+
+      '<div class="gardener-combobox"><input id="gardener-area" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="gardener-area-options" aria-expanded="false" autocomplete="off" spellcheck="false" placeholder="Start typing a town or city">'+
+      '<ul id="gardener-area-options" class="gardener-suggestions" role="listbox" hidden></ul></div></div>'+
     '<button type="button" class="button secondary" id="gardener-clear">Clear filters</button></div>'+
+    '<p id="gardener-filter-help" class="micro gardener-filter-help">Type to see JSON-backed keyword and NZ town suggestions. Results use approved services and service areas, never company-name search.</p>'+
     '<p class="gardener-result-count" id="gardener-count" role="status" aria-live="polite">'+(records.length?records.length+" verified public listings":"No verified independent listings yet")+'</p>'+
     '<div class="cards gardener-results" id="gardener-results">'+cards+'</div>'+emptyMessage+
     house+
@@ -178,8 +180,8 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
     a("/services/lawn-mowing/","Lawn mowing","tag")+a("/services/hedge-trimming/","Hedge trimming","tag")+
     a("/guides/how-to-choose-a-gardener/","How to choose a gardener","tag")+'</div></div></div></section>';
   files["gardeners/index.html"]=layout({
-    path,title:"Find Canterbury Gardeners by Service & Area | Kiwi Gardeners",
-    description:"Find independent gardeners across Canterbury by verified services and actual service areas. Discover approved directory profiles and local Christchurch gardening advice.",
+    path,title:"Find NZ Gardening Services & Supplies by Town | Kiwi Gardeners",
+    description:"Search approved gardening services and supplies by keyword and New Zealand town or city. Region-wide coverage only follows independently evidenced business claims.",
     content:body,trail,type:"CollectionPage",indexable:records.length>0
   });
   for(const r of records){
