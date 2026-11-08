@@ -6,7 +6,7 @@
 
 **Releases and proof:** a GitHub merge is not a Cloudflare deployment receipt. For each merged `main` revision, inspect Workers & Pages → `kiwigardener` → Settings → Builds (correct repo/branch/commands/build-token), then Deployments (new active version). Verify the live `/gardeners/` UI (two autocomplete fields, no legacy service dropdown), `/assets/garden-directory-filter-data.json` (597 places and approved keyword vocabulary), `/contact/` protected form, Dallas's house phone, no raw protected contact values, and exact feed privacy/noindex behaviour. The approved GRID EATER independent `/gardeners/` feed remains disabled until the original owner/source/publication gates pass.
 
-**Recovery-only:** GRID EATER's existing protected, manually armed `.github/workflows/external-static-site-deploy.yml` may deploy a single exact Kiwi SHA when native Workers Builds fails. It is not a second automatic publisher and must be disarmed immediately after use. Never set both workflows to automatically deploy the same `main` changes. If the native integration is broken, first examine Build settings, latest failed build logs and the build-token scope; only then use the one-shot recovery lane.
+**Independent recovery ONLY:** GRID EATER's cross-site Kiwi deployment path was **removed in merged GRID EATER PR #2424**. Do **not** call or revive GRID EATER's `.github/workflows/external-static-site-deploy.yml` to deploy Kiwi. If Kiwi native Cloudflare Workers Builds fails, inspect Kiwi's own Cloudflare Build settings/token/logs and use the existing `kiwigardener` Worker deployment rollback to the prior verified version. Any future standalone emergency deploy mechanism must be separately designed and owned by the Kiwi repository/account, not GRID EATER.
 
 **Rollback:** use Cloudflare Deployments to restore the previous known-good `kiwigardener` version and check the same live pages. Preserve existing Worker name, custom domain, contact email binding, Turnstile and rate limits; no new database, paid service or live D1 dependency is introduced by deployment.
 
@@ -14,6 +14,20 @@
 
 
 Independent, Christchurch-focused gardening website. Separate from all other repositories and websites.
+
+## 8 November 2026 verified source/deployment and approved-data status
+
+**Current authoritative handover:** [GRID EATER and Kiwi Gardeners 8 November session close](https://github.com/meeeeeooooowwwwwww/grideater/blob/main/docs/operations/handovers/GE-GARDEN-KIWI-SESSION-CLOSE-2026-11-08.md). This supersedes historical “next” instructions below that assumed separate supplier/search feeds, old deployment fallbacks or a completed GRID-to-Kiwi synchronisation.
+
+- **One searchable directory:** merged Kiwi PR #37 and GRID #2426 enable one static `/gardeners/` two-autocomplete keyword/town search for correctly approved gardening services **and suppliers**. Supplier shop/nursery `publicLocations[]` are distinct from reviewed actual `serviceAreas[]` for delivery; mere premises must not expand to whole Canterbury. Around 597 official NZ place suggestions are an input vocabulary, **not proof that GRID businesses have these areas mapped**.
+- **Verified CI/provider deployment:** Kiwi main `6e5b84f61e6c841e09e9e754218994e181a4717e`, GitHub website/browser CI green and Cloudflare Workers Builds provider SUCCESS `2995f1ff-bd2e-4163-a598-9a7f034a6bb1` with Worker version `a879a811-874d-4b39-80f1-ed6d5dd0a02c`. Independent live HTTP/browser traffic acceptance remains a separate check; never claim provider build proves a particular HTML/business result.
+- **Business data release NOT LIVE:** GRID EATER D1 has candidate businesses but first 3 audited IDs lacked correct accepted category/public locality. GRID's approved public feed publisher/notification is not active, and the independent Kiwi directory still uses zero-approved/noindex holding data. Historical `/suppliers/` and `/garden-service-providers/` are first-party **editorial reference pages**, not approved independent GRID feed listings.
+- **Future producer boundary:** only final owner-reviewed businesses **already live in both GRID EATER public search and public profile** enter the site feed; approved category-specific snapshot digest changes will eventually trigger only Kiwi-owned independent build, **after the first cohort**. No raw protected phone/email, no visitor-time GRID API/D1 calls or second editable database.
+- **Owner-approved provisional geography:** NZBN office **city or town** can be labelled `Likely serves [town] (based on NZBN registered office)` as a provisional local source inference in future GRID mapping. This is merged GRID source logic (#2431) **not yet a deployed indexed public area** and not verified business service/delivery coverage. Source-approved first-party/owner evidence overrides.
+
+**Correction / cleanup:** see [the documentation ambiguities register](https://github.com/meeeeeooooowwwwwww/grideater/blob/main/docs/operations/registries/GARDEN-DOCS-RECONCILIATION-2026-11-08.md) and [review-only archive candidate register](https://github.com/meeeeeooooowwwwwww/grideater/blob/main/docs/operations/registries/GARDEN-CLEANUP-CANDIDATES-2026-11-08.md). Do not delete editorial page URLs, source JSON or tests until proven migrated/retired in a separate checked milestone.
+
+---
 
 ## Current site (October 2026)
 - Original 48 indexable site pages plus a 331-entry plant directory: all 331 plant profiles have unique planting and maintenance notes and are indexable. All original service, area and guide pages remain.
@@ -139,9 +153,9 @@ Portstone Christchurch was consulted only for public category structure, not cop
 - Existing card, photo, filters, related links and profile layout are unchanged. The XML sitemap is derived from indexable plant pages and should now include 380 URLs; Google still decides whether to index them.
 - References: https://www.doc.govt.nz/nature/native-plants/canterbury-native-plants/native-plants-natural-to-coastal-areas/ and https://www.doc.govt.nz/nature/native-plants/canterbury-native-plants/wetland-and-river-stream-margin-native-plants/ and https://www.doc.govt.nz/nature/native-plants/canterbury-native-plants/native-plants-natural-to-banks-peninsula/.
 
-## KG-DIR-00: GRID EATER gardener directory consumer (source-only)
+## KG-DIR-00: GRID EATER combined gardening directory consumer (legacy heading/source history)
 
-The site now has a static `/gardeners/` hub and accessible name, service and independently verified service-area filters. The integration is strictly read-only: an opt-in, build-time public JSON export from `grideater.com` may create approved static profile pages, never an on-visitor D1/CRM/API query.
+The site now has one static `/gardeners/` hub with approved gardening service and supplier cards, keyword autocomplete and NZ town/city autocomplete. The optional approved public feed remains empty; old name/service/area-filter descriptions below the current handover are historical. The integration is strictly read-only: an opt-in, build-time public JSON export from `grideater.com` may create approved static profile pages, never an on-visitor D1/CRM/API query.
 
 **Current state:** upstream approved feed not yet available. `src/grid-eater-gardeners-public.json` is deliberately empty/unapproved, so the directory hub stays **noindex** with no false business profiles or sitemap changes. Dallas's own contact panel stays separate from independent directory results. Nothing uses a guessed website, mailing address or suppressed/private contact.
 
