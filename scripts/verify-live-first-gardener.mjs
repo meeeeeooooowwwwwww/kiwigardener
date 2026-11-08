@@ -9,7 +9,7 @@ export const ORIGIN="https://kiwigardeners.com";
 const fail=x=>{throw Error("KG_DIR_02_LIVE_"+x+"_HOLD");};
 
 export function validateLive({hub,profile,sitemap,status,contact}){
- if(![hub,profile,sitemap,contact].every(x=>typeof x==="string"&&x.length>200))
+ if(![hub,profile,sitemap,contact].every(x=>typeof x==="string"&&x.length>60))
    fail("EMPTY_OR_BLOCKED");
  if(!status||status.schemaVersion!==1||status.source!=="grideater.com"||
     status.releaseId!==RELEASE||status.approvedForKiwi!==true||
