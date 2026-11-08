@@ -269,3 +269,20 @@ test("supplier location cannot become implied delivery coverage or unsupported p
   assert.throws(()=>check(invalid),/public feed rejected/,
     "Contractors must not add supplier premises to expand their search coverage");
 });
+
+
+test("first-party gardening service and supplier phrases have distinct approved keyword suggestions",()=>{
+  const data=buildGardenDirectoryFilterData();
+  const normalized=v=>v.toLowerCase().trim();
+  const finds=(phrase,kind)=>data.keywords.filter(x=>x.kind===kind&&
+    [x.label,...x.aliases].some(y=>normalized(y)===normalized(phrase)));
+  for(const phrase of ["Hedge trimming","Lawn mowing","Weeding","Garden makeovers","Garden edging"])
+    assert.ok(finds(phrase,"service").length,phrase+" should find the service");
+  for(const phrase of ["Plant nursery","Hedging plants","Native plants","Compost","Bark nuggets",
+    "Screened soil","Garden mix","Landscape supplies","Bedding sand","Crusher dust"])
+    assert.ok(finds(phrase,"supplier").length,phrase+" should find supplies");
+  assert.equal(finds("Compost","service").length,0,"supplier products are not contractor promises");
+  assert.equal(finds("Lawn mowing","supplier").length,0,"service facts are not retail products");
+  assert.equal(finds("Wordsworth Gardens","service").length,0,
+    "keyword suggestions must not search business names");
+});
