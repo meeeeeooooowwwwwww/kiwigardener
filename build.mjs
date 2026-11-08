@@ -35,7 +35,7 @@ const councilImageKeys=new Set(Object.keys(councilImageAssets));
  // This default is an explicit site-owned build policy, not a per-visitor API.
  // An explicitly configured KG_GRID_EATER_PUBLIC_FEED_URL can override it.
  const GRID_APPROVED_GARDENERS_FEED_URL="https://grideater.com/feeds/gardeners/v1.json";
- const gardenersFeedUrl=process.env.KG_GRID_EATER_PUBLIC_FEED_URL??GRID_APPROVED_GARDENERS_FEED_URL;
+ const gardenersFeedUrl=process.env.KG_GRID_EATER_PUBLIC_FEED_URL || GRID_APPROVED_GARDENERS_FEED_URL;
  const gardenersSnapshot=await loadGridEaterPublicGardeners({readFile,feedUrl:gardenersFeedUrl});
  if(gardenersFeedUrl && (gardenersSnapshot.approvedForKiwi!==true ||
     gardenersSnapshot.records.length===0))
