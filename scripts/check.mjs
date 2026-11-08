@@ -74,7 +74,17 @@ for(const slug of ["goughs-nurseries","ashburton-contracting-landscaping-supplie
 // The directory exists for real users before a public-safe export is ready, but
 // empty/unapproved content is intentionally not crawl-indexable or in sitemap.
 const gardenerHub=await readPage("/gardeners/");
-assert.ok(gardenerHub.includes('id="gardener-query"')&&gardenerHub.includes('id="gardener-service"')&&gardenerHub.includes('id="gardener-area"'),"Gardener search controls missing");
+assert.ok(gardenerHub.includes('id="gardener-query"')&&gardenerHub.includes('id="gardener-area"')&&
+  gardenerHub.includes('id="gardener-keyword-options"')&&gardenerHub.includes('id="gardener-area-options"'),"JSON autocomplete controls missing");
+assert.ok(!gardenerHub.includes('id="gardener-service"'),"Retired gardening service dropdown unexpectedly present");
+const filterData=JSON.parse(await readFile("dist/assets/garden-directory-filter-data.json","utf8"));
+assert.equal(filterData.version,1,"Directory index version mismatch");
+assert.equal(filterData.places.length,597,"Official 2026 town/city list incomplete");
+assert.equal(filterData.regions.length,17,"Hidden official place-to-region lookup incomplete");
+assert.ok(filterData.keywords.some(x=>x.kind==="service"&&x.label==="Lawn mowing"),"Lawn keywords absent");
+assert.ok(filterData.keywords.some(x=>x.kind==="supplier"&&x.label==="Compost"),"Gardening supplies vocabulary absent");
+assert.ok(filterData.places.some(x=>x[0]==="Ashburton"&&x[1]==="13"),"Ashburton region missing");
+assert.ok(filterData.places.some(x=>x[0]==="Christchurch"&&x[1]==="13"),"Christchurch region missing");
 assert.ok(gardenerHub.includes('src="/assets/gardener-search.js"'),"Client-side gardener search missing");
 assert.ok(gardenerHub.includes('href="tel:+64273406581"'),"Dallas independent contact route lost");
 assert.equal(urls.includes(site+"/gardeners/"),gardenerStatus.publishedListings>0,"Empty hub indexing mismatch");

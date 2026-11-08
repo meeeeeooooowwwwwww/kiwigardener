@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import {newAreas,newGuides,images,localProfiles} from "./src/local-editorial.mjs";
 import {addPlantPages} from "./src/plant-pages.mjs";
 import {addGardenerDirectoryPages,loadGridEaterPublicGardeners} from "./src/gardener-directory.mjs";
+import {buildGardenDirectoryFilterData} from "./src/directory-filter-data.mjs";
 import {loadReviewedSuppliers,addReviewedSupplierPages} from "./src/reviewed-supplier-directory.mjs";
 import {loadFirstPartyServices,addFirstPartyServiceReferencePages} from "./src/reviewed-gardening-service-directory.mjs";
 import {councilNewsSection} from "./src/council-news.mjs";
@@ -31,6 +32,8 @@ const councilImageAssets=await fetchCouncilImageAssets();
 const councilImageKeys=new Set(Object.keys(councilImageAssets));
 // One gated, read-only GRID EATER public feed load at build time, never per visitor.
 const gardenersSnapshot=await loadGridEaterPublicGardeners({readFile,feedUrl:process.env.KG_GRID_EATER_PUBLIC_FEED_URL||""});
+// Stats NZ 2026 places and gardening vocabulary compiled ONCE at build time.
+const gardenerFilterData=buildGardenDirectoryFilterData();
 // Finite first-party supplier references; never infer contractor service areas.
 const supplierSnapshot=await loadReviewedSuppliers({readFile});
 const serviceEditorialSnapshot=await loadFirstPartyServices({readFile});
@@ -379,6 +382,7 @@ const generateSite = function generateSite(){
   // Generate the independently authored plant directory and individual species profiles.
   addPlantPages({esc,a,articleHero,layout,files,baseTrail,TEL_URL,PHONE,ENQUIRY_URL});
   addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTrail,TEL_URL,PHONE,ENQUIRY_URL},gardenersSnapshot);
+  files["assets/garden-directory-filter-data.json"]=JSON.stringify(gardenerFilterData);
   addReviewedSupplierPages({esc,articleHero,layout,files,baseTrail},supplierSnapshot);
   addFirstPartyServiceReferencePages({esc,articleHero,layout,files,baseTrail},serviceEditorialSnapshot);
   files["assets/gardener-directory-status.json"]=JSON.stringify({schemaVersion:1,source:"grideater.com",
