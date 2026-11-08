@@ -196,3 +196,93 @@ test("Canterbury approved service-area claim matches regional towns, but never r
     "No suburb lookup or invented coverage");
   assert.equal(placeMatchesApprovedArea([],"Christchurch",data),false);
 });
+
+
+test("one approved GRID EATER release holds contractor and supplier in the SAME keyword/town search",()=>{
+  const mixed=copy();
+  mixed.records.push({
+    id:"afnz-9429041785683",slug:"fictional-supplier-reviewed",
+    name:"Fictional Reviewed Plant Supplier",
+    description:"A fictional source-approved plant nursery providing seedlings and compost for sale from its verified Swannanoa nursery premises, without offering gardening contracting.",
+    kind:"gardening_supplier",status:"published",
+    approvedForKiwi:true,suppressed:false,approvedAt:verifiedAt,
+    sourcePage:"https://grideater.com/business/fictional-supplier-reviewed/",
+    services:[
+      {name:"Compost",verifiedAt,evidenceUrl:"https://example.nz/compost/"},
+      {name:"Native plants",verifiedAt,evidenceUrl:"https://example.nz/native-plants/"}
+    ],
+    serviceAreas:[],
+    publicLocations:[{name:"Swannanoa",verifiedAt,evidenceUrl:"https://example.nz/nursery-location/"}],
+    publicContact:{type:"website",value:"https://example.nz/",verifiedAt,
+      evidenceUrl:"https://example.nz/contact",approvedForPublicUse:true}
+  });
+  const parsed=check(mixed);
+  assert.equal(parsed.records.length,2);
+  assert.deepEqual(parsed.records.map(r=>r.kind),["gardening_service","gardening_supplier"]);
+  const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  const files={};
+  addGardenerDirectoryPages({
+    files,esc,a:(href,label)=>'<a href="'+href+'">'+label+'</a>',
+    articleHero:(_k,title)=>'<h1>'+esc(title)+'</h1>',
+    layout:({path,indexable,content})=>'<meta data-indexable="'+indexable+'">'+path+content,
+    baseTrail:[{name:"Home",path:"/"}],
+    TEL_URL:"tel:+64273406581",PHONE:"027 340 6581",
+    ENQUIRY_URL:"mailto:dallas@kiwigardeners.com"
+  },parsed);
+  assert.equal(Object.keys(files).length,3,"One index and two independently approved source profiles");
+  const hub=files["gardeners/index.html"];
+  const nursery=files["gardeners/fictional-supplier-reviewed/index.html"];
+  assert.equal((hub.match(/data-gardener-card/g)||[]).length,2);
+  assert.ok(hub.includes("Verified gardening service"));
+  assert.ok(hub.includes("Verified supplier"));
+  assert.ok(hub.includes('data-keywords="Compost|Native plants"'));
+  assert.ok(hub.includes('data-areas="" data-locations="Swannanoa"'));
+  assert.ok(hub.includes("Products &amp; supplies:"));
+  assert.ok(nursery.includes("Verified shop or nursery locations"));
+  assert.ok(nursery.includes("Swannanoa"));
+  assert.ok(!nursery.includes("Areas this business says it services"));
+  assert.ok(!nursery.includes("Verified delivery areas"),
+    "The nursery premises must not claim a delivery territory");
+  assert.ok(!nursery.includes("27 000 000"));
+  assert.ok(!hub.includes("approvedForKiwi"));
+});
+test("supplier location cannot become implied delivery coverage or unsupported private location",()=>{
+  const original=copy();
+  original.records[0].kind="gardening_supplier";
+  original.records[0].serviceAreas=[];
+  original.records[0].services=[{name:"Mulch",verifiedAt,evidenceUrl:"https://example.nz/mulch/"}];
+  original.records[0].publicLocations=[{name:"Ashburton",verifiedAt,evidenceUrl:"https://example.nz/shop/"}];
+  assert.equal(check(original).records[0].publicLocations[0].name,"Ashburton");
+  for(const change of [
+    rec=>{rec.publicLocations=[];},
+    rec=>{delete rec.publicLocations;},
+    rec=>{rec.publicLocations[0].inferredFromRegistration=true;},
+    rec=>{rec.publicLocations[0].evidenceUrl="http://example.nz/";},
+    rec=>{rec.publicContact.value="mailto:private@example.nz";}
+  ]){
+    const invalid=structuredClone(original);
+    change(invalid.records[0]);
+    assert.throws(()=>check(invalid),/public feed rejected/);
+  }
+  const invalid=copy();
+  invalid.records[0].publicLocations=[{name:"Canterbury",verifiedAt,evidenceUrl:"https://example.nz"}];
+  assert.throws(()=>check(invalid),/public feed rejected/,
+    "Contractors must not add supplier premises to expand their search coverage");
+});
+
+
+test("first-party gardening service and supplier phrases have distinct approved keyword suggestions",()=>{
+  const data=buildGardenDirectoryFilterData();
+  const normalized=v=>v.toLowerCase().trim();
+  const finds=(phrase,kind)=>data.keywords.filter(x=>x.kind===kind&&
+    [x.label,...x.aliases].some(y=>normalized(y)===normalized(phrase)));
+  for(const phrase of ["Hedge trimming","Lawn mowing","Weeding","Garden makeovers","Garden edging"])
+    assert.ok(finds(phrase,"service").length,phrase+" should find the service");
+  for(const phrase of ["Plant nursery","Hedging plants","Native plants","Compost","Bark nuggets",
+    "Screened soil","Garden mix","Landscape supplies","Bedding sand","Crusher dust"])
+    assert.ok(finds(phrase,"supplier").length,phrase+" should find supplies");
+  assert.equal(finds("Compost","service").length,0,"supplier products are not contractor promises");
+  assert.equal(finds("Lawn mowing","supplier").length,0,"service facts are not retail products");
+  assert.equal(finds("Wordsworth Gardens","service").length,0,
+    "keyword suggestions must not search business names");
+});
