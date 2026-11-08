@@ -245,6 +245,7 @@ try {
     '<div id="gardener-results">'+
       '<article id="fixture-one" data-gardener-card data-keywords="Lawn mowing" data-areas="Canterbury">One</article>'+
       '<article id="fixture-two" data-gardener-card data-keywords="Hedge trimming" data-areas="Dunedin">Two</article>'+
+      '<article id="fixture-supplier" data-gardener-card data-keywords="Compost|Mulch" data-areas="" data-locations="Ashburton">Supplier</article>'+
     '</div><p id="gardener-empty" hidden>No matches</p></main>');
   await page.addScriptTag({path:"assets/gardener-search.js"});
   await page.waitForFunction(()=>document.getElementById("gardener-filter-help")?.textContent.includes("Type a gardening keyword"));
@@ -284,8 +285,17 @@ try {
   if(!(await page.locator("#gardener-area-options").textContent()).includes("Ashburton"))
     failures.push("Nationwide official town suggestion missing Ashburton");
   await page.locator("#gardener-clear").click();
-  if((await page.locator("[data-gardener-card]:visible").count())!==2)
-    failures.push("Gardening search reset failed to restore visible directory cards");
+  await page.fill("#gardener-query","Compost");
+  await page.fill("#gardener-area","Ashburton");
+  if((await page.locator("[data-gardener-card]:visible").count())!==1||
+     !(await page.locator("#fixture-supplier").isVisible()))
+    failures.push("Unified search failed to match verified supplier at exact Ashburton town");
+  await page.fill("#gardener-area","Christchurch");
+  if((await page.locator("[data-gardener-card]:visible").count())!==0)
+    failures.push("Supplier Ashburton premises incorrectly expanded to whole Canterbury");
+  await page.locator("#gardener-clear").click();
+  if((await page.locator("[data-gardener-card]:visible").count())!==3)
+    failures.push("Gardening search reset failed to restore both contractor and supplier results");
   await page.close();
 } finally { await browser.close(); await new Promise((resolve) => server.close(resolve)); }
 if (failures.length) {
