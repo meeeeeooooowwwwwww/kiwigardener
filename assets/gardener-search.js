@@ -123,6 +123,7 @@
   ];
   const close=control=>{
     control.list.hidden=true;
+    control.list.replaceChildren();
     control.input.setAttribute("aria-expanded","false");
     control.input.removeAttribute("aria-activedescendant");
     control.active=-1;
