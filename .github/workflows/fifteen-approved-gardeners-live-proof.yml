@@ -1,0 +1,76 @@
+name: KG-DIR-08 Exact 15 Reviewed Live Gardening Businesses
+on:
+  pull_request:
+    paths:
+      - scripts/verify-live-fifteen-gardeners.mjs
+      - scripts/check-live-fifteen-gardeners.mjs
+      - .github/workflows/fifteen-approved-gardeners-live-proof.yml
+  push:
+    branches: [main]
+    paths:
+      - scripts/verify-live-fifteen-gardeners.mjs
+      - scripts/check-live-fifteen-gardeners.mjs
+      - .github/workflows/fifteen-approved-gardeners-live-proof.yml
+permissions:
+  contents: read
+concurrency:
+  group: kg-dir-08-fifteen-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  offline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Verify exact fifteen with twelve retained and one supplier source and safety controls
+        run: |
+          set -euo pipefail
+          node --check scripts/verify-live-fifteen-gardeners.mjs
+          node --test scripts/check-live-fifteen-gardeners.mjs
+  source-ready:
+    if: github.event_name == 'pull_request'
+    needs: offline
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Require exact verified GRID fifteen public source before native merge
+        run: |
+          node --input-type=module <<'NODE'
+          import {createHash} from "node:crypto";
+          import {SOURCE,SHA,BYTES,verifySource} from "./scripts/verify-live-fifteen-gardeners.mjs";
+          const r=await fetch(SOURCE,{method:"GET",redirect:"error",
+           signal:AbortSignal.timeout(16000),headers:{accept:"application/json"}});
+          if(r.status!==200)throw Error("KG_DIR_08_GRID_FEED_HTTP_HOLD");
+          const bytes=Buffer.from(await r.arrayBuffer());
+          if(bytes.length!==BYTES||createHash("sha256").update(bytes).digest("hex")!==SHA)
+           throw Error("KG_DIR_08_GRID_FEED_EXACT_SHA_HOLD");
+          verifySource(JSON.parse(bytes.toString("utf8")));
+          console.log("KG_DIR_08_GRID_FIFTEEN_SOURCE=PASS");
+          NODE
+  live:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: offline
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Independent native Kiwi build parity with exact approved GRID 15
+        run: |
+          set -euo pipefail
+          # Native Workers Builds deploys this repo; this job ONLY retries public GETs.
+          # Never initiate another deployment from a read-only verification.
+          for i in {1..18}; do
+            if node scripts/verify-live-fifteen-gardeners.mjs; then exit 0; fi
+            if [[ "$i" -eq 18 ]]; then exit 1; fi
+            sleep 10
+          done
