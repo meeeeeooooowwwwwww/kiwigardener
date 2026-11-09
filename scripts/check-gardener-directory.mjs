@@ -144,6 +144,11 @@ test("one approved record creates searchable server-rendered hub and canonical-I
   assert.ok(profile.includes("afnz-9429039092267"));
   assert.ok(profile.includes("Areas this business says it services"));
   assert.ok(profile.includes("https://grideater.com/business/example"));
+  assert.match(profile,/Check protected phone &amp; email options on GRID EATER/);
+  assert.match(profile,/Turnstile-protected phone reveal or an email enquiry/);
+  assert.match(profile,/Contact numbers and email addresses are not published/);
+  assert.ok(!profile.includes("business@example.co.nz"));
+  assert.ok(!profile.includes("+64275918334"));
   assert.ok(!/ratingValue|aggregateRating|customer review/i.test(profile));
   assert.ok(!profile.includes("dallas@kiwigardeners.com")||profile.includes("mailto:dallas@kiwigardeners.com"));
 });

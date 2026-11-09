@@ -226,7 +226,9 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
       (r.serviceAreas.some(x=>x.basis===PROVISIONAL_AREA_BASIS)?'<section><h2>Likely local area (NZBN registration)</h2><p>This town or city is inferred from the business registration, not confirmed as a service or delivery area. Contact the provider to check coverage.</p>'+proofList(r.serviceAreas.filter(x=>x.basis===PROVISIONAL_AREA_BASIS))+'</section>':'')+
       (supplier&&r.publicLocations.length?'<section><h2>Verified shop or nursery locations</h2><p>These premises locations do not imply any delivery territory or on-site gardening service.</p>'+proofList(r.publicLocations)+'</section>':'')+
       '<section><h2>Contact this business</h2><p>'+(contact.type==="grid_profile"?'Open the canonical GRID EATER profile for available contact options. No business phone or email is copied to this site.':'This website was approved for public use in GRID EATER&#39;s source export.')+'</p>'+
-      '<a class="button" href="'+esc(href)+'"'+external+'>'+esc(contactLabel(contact))+' ↗</a></section>'+
+      '<div class="button-row"><a class="button" href="'+esc(href)+'"'+external+'>'+esc(contactLabel(contact))+' ↗</a>'+
+      '<a class="button secondary" href="'+esc(r.sourcePage)+'"'+external+'>Check protected phone &amp; email options on GRID EATER ↗</a></div>'+
+      '<p class="micro">GRID EATER may offer Turnstile-protected phone reveal or an email enquiry where the business has approved contact details. Contact numbers and email addresses are not published in this page.</p></section>'+
       '<section class="gardener-source-note"><h2>Source and corrections</h2><p>This directory consumes a versioned, reviewed, public-safe GRID EATER export. Business records are maintained in GRID EATER rather than edited here. Last source release '+esc(humanDate(feed.releasedAt))+'.</p>'+
       '<p><a href="'+esc(r.sourcePage)+'" target="_blank" rel="noopener noreferrer">View canonical GRID EATER business record ↗</a></p>'+
       '<p>Is a service or service area wrong? Refer to the canonical source record and request correction through GRID EATER.</p></section></article>'+
