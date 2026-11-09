@@ -1,0 +1,52 @@
+name: KG-DIR-07 Exact 12 Approved Live Gardening Services and Supplier
+on:
+  pull_request:
+    paths:
+      - scripts/verify-live-twelve-gardeners.mjs
+      - scripts/check-live-twelve-gardeners.mjs
+      - .github/workflows/twelve-approved-gardeners-live-proof.yml
+  push:
+    branches: [main]
+    paths:
+      - scripts/verify-live-twelve-gardeners.mjs
+      - scripts/check-live-twelve-gardeners.mjs
+      - .github/workflows/twelve-approved-gardeners-live-proof.yml
+permissions:
+  contents: read
+concurrency:
+  group: kg-dir-07-twelve-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  offline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Verify exact twelve and nine-plus-supplier source and safety controls
+        run: |
+          set -euo pipefail
+          node --check scripts/verify-live-twelve-gardeners.mjs
+          node --test scripts/check-live-twelve-gardeners.mjs
+  live:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: offline
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Independent native Kiwi build parity with exact approved GRID 12
+        run: |
+          set -euo pipefail
+          # Native Workers Builds deploys this repo; this job ONLY retries public GETs.
+          # Never initiate another deployment from a read-only verification.
+          for i in {1..18}; do
+            if node scripts/verify-live-twelve-gardeners.mjs; then exit 0; fi
+            if [[ "$i" -eq 18 ]]; then exit 1; fi
+            sleep 10
+          done
