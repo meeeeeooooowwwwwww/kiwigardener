@@ -1,3 +1,9 @@
+## SUPERSEDING CURRENT AUTHORITY / OWNER OUTCOME | 9 NOVEMBER 2026
+
+The live approved independent Kiwi directory has **nine** reviewed garden-service records, verified in [KG-DIR-05](KG-DIR-05-NINE-APPROVED-LIVE-GARDENERS.md); this supersedes old 8 November "zero feed" notes below. Future work follows [KG-DIR-06](KG-DIR-06-CANONICAL-FEED-AND-RELEASE-ROADMAP.md) and the [GRID EATER all-category national master SOW](https://github.com/meeeeeooooowwwwwww/grideater/blob/main/docs/roadmaps/workstreams/NATIONAL_BUSINESS_ENRICHMENT_AND_VERTICAL_PUBLISHING.md). One reviewed GRID master → immutable approved public feed → **Kiwi-owned** native build. Human review, privacy, provisional locality labelling and service-vs-supplier separation persist. Recent GRID 50 new *provisional categories* are not 50 Kiwi listings; newest 25 not yet independently publicly searched. Desired digest-driven update/withdrawal and feed sharding beyond 200 records / 512 KB are **NOT IMPLEMENTED** yet.
+
+---
+
 ## 8 NOVEMBER 2026 | Provisional registered-town service-area matching (population-first)
 
 The owner directs using a current NZBN registered **city/town** as a default *likely* local service area in the initial national gardening population pass, followed by second-pass corrections. Only the town/city, never registered residential or street address, is eligible. The GRID EATER source and its reviewed NZ place identity remain authoritative.
