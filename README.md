@@ -1,3 +1,11 @@
+## OWNER-APPROVED DIRECTORY STRATEGY / CURRENT REALITY | 9 NOVEMBER 2026
+
+**Read first:** [KG-DIR-06, canonical GRID EATER business feed and future native refresh SOW](docs/KG-DIR-06-CANONICAL-FEED-AND-RELEASE-ROADMAP.md), linked to the [all-category GRID EATER master SOW](https://github.com/meeeeeooooowwwwwww/grideater/blob/main/docs/roadmaps/workstreams/NATIONAL_BUSINESS_ENRICHMENT_AND_VERTICAL_PUBLISHING.md). Owner's desired outcome: one national GRID EATER master for **all** business categories; deterministic NZBN/BIC/name classification + existing crawler/Hetzner AI follow-up; reviewed vertical-specific feeds; eventual approved-digest change → **Kiwi-owned** automatic native refresh; versioned/sharded data and SEO pagination for thousands. No second editable business database, no GRID-to-Kiwi cross-site deploy, no automatic Kiwi approval solely from a GRID provisional category.
+
+**Actual production:** Nine approved independent garden-service directory records currently LIVE on Kiwi and sourced from GRID's approved public feed; Dallas's own service is separate. GRID has physically categorised a further 25 distinct provisional gardening businesses (50 new across two cohorts) but has not yet independently proved the latest 25 on public Typesense/profiles or approved any for Kiwi. The existing nine remain unchanged. The event-driven native refresh and all-category auto-classification are **not yet production-verified**; the source nine release was manually reviewed and separately deployed. Earlier 8 November README sections saying "zero approved" or that the feed is "not live" are **dated history**, not the current state. Preserve their evidence but do not follow their old release instructions.
+
+---
+
 # KiwiGardeners.com | Christchurch local SEO
 
 ## Production deployment contract (8 November 2026)
