@@ -78,6 +78,6 @@ test("reject missing cards, incorrect source, bad retailer locality and leaks",(
  ];
  for(const change of changes){
   const x=fixture();change(x);
-  assert.throws(()=>verifyFifteen(x),/KG_DIR_07_|public feed rejected/);
+  assert.throws(()=>verifyFifteen(x),/KG_DIR_08_|public feed rejected/);
  }
 });
