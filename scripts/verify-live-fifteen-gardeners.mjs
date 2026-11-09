@@ -117,7 +117,7 @@ async function get(url,type="text/html"){
  let res;
  try{res=await fetch(url,{method:"GET",redirect:"manual",
   signal:AbortSignal.timeout(16000),
-  headers:{accept:type,"user-agent":"KiwiGardeners-KG-DIR-08-twelve/1.0"}});
+  headers:{accept:type,"user-agent":"KiwiGardeners-KG-DIR-08-fifteen/1.0"}});
  }catch{fail("NETWORK");}
  if(res.status!==200||!(res.headers.get("content-type")||"").includes(type))
   fail("HTTP_OR_TYPE");
