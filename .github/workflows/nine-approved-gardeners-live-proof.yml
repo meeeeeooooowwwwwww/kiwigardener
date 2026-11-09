@@ -1,0 +1,53 @@
+name: KG-DIR-05 Exact Nine Approved Live Gardeners
+on:
+  pull_request:
+    paths:
+      - scripts/verify-live-nine-gardeners.mjs
+      - scripts/check-live-nine-gardeners.mjs
+      - .github/workflows/nine-approved-gardeners-live-proof.yml
+  push:
+    branches: [main]
+    paths:
+      - scripts/verify-live-nine-gardeners.mjs
+      - scripts/check-live-nine-gardeners.mjs
+      - .github/workflows/nine-approved-gardeners-live-proof.yml
+permissions:
+  contents: read
+concurrency:
+  group: kg-dir-05-nine-public-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  offline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Exact source and pure nine-page public acceptance contract
+        run: |
+          set -euo pipefail
+          node --check scripts/verify-live-nine-gardeners.mjs
+          node --test scripts/check-live-nine-gardeners.mjs
+  live:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: offline
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Verify provider native Kiwi build from reviewed GRID nine (READ-ONLY)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Workers Builds processes its independent native main deployment.
+          # Retry only anonymous GETs. Never trigger a second deployment.
+          for i in {1..12}; do
+            if node scripts/verify-live-nine-gardeners.mjs; then exit 0; fi
+            if [[ "$i" -eq 12 ]]; then exit 1; fi
+            sleep 10
+          done
