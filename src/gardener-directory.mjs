@@ -272,7 +272,7 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
       (r.publicPhone?'<p><strong>Business phone:</strong> <a href="'+esc(r.publicPhone.telHref)+'">'+esc(r.publicPhone.display)+'</a></p>':'')+
       '<div class="button-row"><a class="button" href="'+esc(href)+'"'+external+'>'+esc(contactLabel(contact))+' ↗</a>'+
       '<a class="button secondary" href="'+esc(r.sourcePage)+'"'+external+'>View GRID EATER business record ↗</a></div>'+
-      '<div class="gardener-email-reveal" data-business-id="'+esc(r.id)+'"><button type="button" class="button secondary" data-reveal-email>Show business email (Turnstile)</button><p role="status" aria-live="polite" data-reveal-status></p><div data-turnstile-container></div></div>'+
+      '<div class="gardener-email-reveal" data-business-id="'+esc(r.id)+'"><button type="button" class="button secondary" data-reveal-email style="display:none">Show business email (Turnstile)</button><p role="status" aria-live="polite" data-reveal-status></p><div data-turnstile-container></div></div>'+
       '<p class="micro">Public business telephone numbers are shown when available. Email addresses are never included in this public page or its source feed and require a verified Turnstile challenge.</p></section>'+
       '<section class="gardener-source-note"><h2>Source and corrections</h2><p>This directory consumes a versioned, reviewed, public-safe GRID EATER export. Business records are maintained in GRID EATER rather than edited here. Last source release '+esc(humanDate(feed.releasedAt))+'.</p>'+
       '<p><a href="'+esc(r.sourcePage)+'" target="_blank" rel="noopener noreferrer">View canonical GRID EATER business record ↗</a></p>'+
