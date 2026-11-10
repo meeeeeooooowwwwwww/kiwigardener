@@ -11,6 +11,33 @@ export function emailRevealReady(env){
  return Boolean(env.TURNSTILE_SITE_KEY&&env.TURNSTILE_SECRET&&env.CONTACT_LIMIT?.limit&&
    env.KIWI_PRIVATE_CONTACTS?.get&&env.ASSETS?.fetch&&env.BUSINESS_EMAIL_REVEAL_ENABLED==="true");
 }
+export async function loadCurrentPrivateContacts(url,env){
+ let releaseId;
+ try{
+   const result=await env.ASSETS.fetch(new Request(
+     new URL("/assets/gardener-directory-status.json",url.origin),{
+       method:"GET",headers:{"accept":"application/json"}
+     }));
+   if(!result.ok)return {ok:false,status:503};
+   const status=await result.json();
+   if(status?.schemaVersion!==1||status.approvedForKiwi!==true||
+      !Number.isInteger(status.publishedListings)||status.publishedListings<1||
+      status.publishedListings>200||!RELEASE.test(status.releaseId||""))
+      return {ok:false,status:503};
+   releaseId=status.releaseId;
+ }catch{return {ok:false,status:503};}
+ try{
+   const obj=await env.KIWI_PRIVATE_CONTACTS.get(privateContactKey(releaseId));
+   if(!obj)return {ok:false,status:404};
+   if((obj.size||0)>80000)return {ok:false,status:503};
+   const data=await obj.json();
+   if(data?.schemaVersion!==1||data.releaseId!==releaseId||
+      !data.phones||typeof data.phones!=="object"||Array.isArray(data.phones)||
+      !data.emails||typeof data.emails!=="object"||Array.isArray(data.emails))
+     return {ok:false,status:503};
+   return {ok:true,data,releaseId};
+ }catch{return {ok:false,status:503};}
+}
 export async function revealBusinessEmail(request,env,{fetchImpl=fetch}={}){
  const url=new URL(request.url);
  const path=url.pathname.match(/^\/api\/gardeners\/(afnz-\d{13})\/email$/);
@@ -47,27 +74,9 @@ export async function revealBusinessEmail(request,env,{fetchImpl=fetch}={}){
       verdict.action!=="business_email_reveal")
      return json(403,{error:"challenge_failed"});
  }catch{return json(503,{error:"challenge_unavailable"});}
- let releaseId;
- try{
-   const result=await env.ASSETS.fetch(new Request(
-     new URL("/assets/gardener-directory-status.json",url.origin),{
-       method:"GET",headers:{"accept":"application/json"}
-     }));
-   if(!result.ok)return json(503,{error:"directory_unavailable"});
-   const status=await result.json();
-   if(status?.schemaVersion!==1||status.approvedForKiwi!==true||
-      !Number.isInteger(status.publishedListings)||status.publishedListings<1||
-      status.publishedListings>200||!RELEASE.test(status.releaseId||""))
-      return json(503,{error:"directory_unavailable"});
-   releaseId=status.releaseId;
- }catch{return json(503,{error:"directory_unavailable"});}
- let privateData;
- try{
-   const obj=await env.KIWI_PRIVATE_CONTACTS.get(privateContactKey(releaseId));
-   if(!obj)return json(404,{error:"business_email_not_available"});
-   if((obj.size||0)>80000)return json(503,{error:"private_data_invalid"});
-   privateData=await obj.json();
- }catch{return json(503,{error:"private_data_unavailable"});}
+ const contact=await loadCurrentPrivateContacts(url,env);
+ if(!contact.ok)return json(contact.status,{error:"business_email_not_available"});
+ const {data:privateData,releaseId}=contact;
  const email=privateData?.emails?.[path[1]];
  if(privateData?.schemaVersion!==1||privateData?.releaseId!==releaseId||
     !privateData.emails||Array.isArray(privateData.emails)||
