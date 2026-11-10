@@ -4,11 +4,26 @@
 const MAX_RECORDS=200;
 const MAX_BYTES=512_000;
 const ROOT_KEYS=["schemaVersion","source","releaseId","releasedAt","approvedForKiwi","records"];
-const RECORD_KEYS=["id","slug","name","description","kind","status","approvedForKiwi","suppressed","approvedAt","sourcePage","services","serviceAreas","publicLocations","publicContact"];
+const RECORD_KEYS=["id","slug","name","description","kind","status","approvedForKiwi","suppressed","approvedAt","sourcePage","services","serviceAreas","publicLocations","publicContact","publicPhone"];
 const PROOF_KEYS=["name","verifiedAt","evidenceUrl"];
 const PROVISIONAL_AREA_BASIS="nzbn_registered_locality";
 const PROVISIONAL_CATEGORY_BASIS="nzbn_bic_provisional";
 const CONTACT_KEYS=["type","value","verifiedAt","evidenceUrl","approvedForPublicUse"];
+const PHONE_KEYS=["display","telHref","verifiedAt","evidenceUrl","approvedForPublicUse"];
+function publicPhone(value,at){
+  if(value===undefined)return undefined;
+  keys(value,PHONE_KEYS,at);
+  if(value.approvedForPublicUse!==true)reject(at+" phone not approved for public display");
+  const display=string(value.display,at+".display",8,32);
+  const digits=display.replace(/[\s().-]/g,"");
+  if(!/^(?:0\d{8,10}|\+64\d{7,10})$/.test(digits))
+    reject(at+" is not a valid NZ business phone");
+  const telHref=digits.startsWith("+64")?"tel:"+digits:"tel:+64"+digits.slice(1);
+  if(value.telHref!==telHref)reject(at+" phone link mismatch");
+  return {display,telHref,verifiedAt:iso(value.verifiedAt,at+".verifiedAt"),
+    evidenceUrl:httpsUrl(value.evidenceUrl,at+".evidenceUrl","grideater.com"),
+    approvedForPublicUse:true};
+}
 const empty=Object.freeze({schemaVersion:1,source:"grideater.com",releaseId:null,releasedAt:null,approvedForKiwi:false,records:[]});
 
 function reject(message){throw new Error("KG-DIR-00 public feed rejected: "+message);}
@@ -129,7 +144,8 @@ export function validateGridEaterPublicGardeners(value,{now=new Date().toISOStri
       approvedAt:iso(row.approvedAt,at+".approvedAt"),
       sourcePage:httpsUrl(row.sourcePage,at+".sourcePage","grideater.com"),
       services,serviceAreas,...(supplier?{publicLocations}:{}),
-      publicContact:contact(row.publicContact,at+".publicContact",httpsUrl(row.sourcePage,at+".sourcePage","grideater.com"),slug)
+      publicContact:contact(row.publicContact,at+".publicContact",httpsUrl(row.sourcePage,at+".sourcePage","grideater.com"),slug),
+      ...(row.publicPhone?{publicPhone:publicPhone(row.publicPhone,at+".publicPhone")}:{})
     };
   });
   return {schemaVersion:1,source:"grideater.com",releaseId,releasedAt,approvedForKiwi:true,records};
