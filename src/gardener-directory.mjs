@@ -4,26 +4,11 @@
 const MAX_RECORDS=200;
 const MAX_BYTES=512_000;
 const ROOT_KEYS=["schemaVersion","source","releaseId","releasedAt","approvedForKiwi","records"];
-const RECORD_KEYS=["id","slug","name","description","kind","status","approvedForKiwi","suppressed","approvedAt","sourcePage","services","serviceAreas","publicLocations","publicContact","publicPhone"];
+const RECORD_KEYS=["id","slug","name","description","kind","status","approvedForKiwi","suppressed","approvedAt","sourcePage","services","serviceAreas","publicLocations","publicContact"];
 const PROOF_KEYS=["name","verifiedAt","evidenceUrl"];
 const PROVISIONAL_AREA_BASIS="nzbn_registered_locality";
 const PROVISIONAL_CATEGORY_BASIS="nzbn_bic_provisional";
 const CONTACT_KEYS=["type","value","verifiedAt","evidenceUrl","approvedForPublicUse"];
-const PHONE_KEYS=["display","telHref","verifiedAt","evidenceUrl","approvedForPublicUse"];
-function publicPhone(value,at){
-  if(value===undefined)return undefined;
-  keys(value,PHONE_KEYS,at);
-  if(value.approvedForPublicUse!==true)reject(at+" phone not approved for public display");
-  const display=string(value.display,at+".display",8,32);
-  const digits=display.replace(/[\s().-]/g,"");
-  if(!/^(?:0\d{8,10}|\+64\d{7,10})$/.test(digits))
-    reject(at+" is not a valid NZ business phone");
-  const telHref=digits.startsWith("+64")?"tel:"+digits:"tel:+64"+digits.slice(1);
-  if(value.telHref!==telHref)reject(at+" phone link mismatch");
-  return {display,telHref,verifiedAt:iso(value.verifiedAt,at+".verifiedAt"),
-    evidenceUrl:httpsUrl(value.evidenceUrl,at+".evidenceUrl","grideater.com"),
-    approvedForPublicUse:true};
-}
 const empty=Object.freeze({schemaVersion:1,source:"grideater.com",releaseId:null,releasedAt:null,approvedForKiwi:false,records:[]});
 
 function reject(message){throw new Error("KG-DIR-00 public feed rejected: "+message);}
@@ -144,8 +129,7 @@ export function validateGridEaterPublicGardeners(value,{now=new Date().toISOStri
       approvedAt:iso(row.approvedAt,at+".approvedAt"),
       sourcePage:httpsUrl(row.sourcePage,at+".sourcePage","grideater.com"),
       services,serviceAreas,...(supplier?{publicLocations}:{}),
-      publicContact:contact(row.publicContact,at+".publicContact",httpsUrl(row.sourcePage,at+".sourcePage","grideater.com"),slug),
-      ...(row.publicPhone?{publicPhone:publicPhone(row.publicPhone,at+".publicPhone")}:{})
+      publicContact:contact(row.publicContact,at+".publicContact",httpsUrl(row.sourcePage,at+".sourcePage","grideater.com"),slug)
     };
   });
   return {schemaVersion:1,source:"grideater.com",releaseId,releasedAt,approvedForKiwi:true,records};
@@ -204,7 +188,7 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
       (provisional.length?'<p class="gardener-card-fields"><strong>Likely local area (NZBN registration):</strong> '+esc(provisional.map(x=>x.name).join(", "))+' <small>Unconfirmed; ask the provider about coverage.</small></p>':'')+
       (supplier&&r.publicLocations.length?'<p class="gardener-card-fields"><strong>Shop / nursery locations:</strong> '+esc(r.publicLocations.map(x=>x.name).join(", "))+'</p>':'')+
       (provisionalCategory?'<p class="micro">NZBN industry category is provisional. Services, products and coverage should be confirmed with the business.</p>':'')+
-      (r.publicPhone?'<p class="gardener-card-fields"><strong>Phone:</strong> <a href="'+esc(r.publicPhone.telHref)+'">'+esc(r.publicPhone.display)+'</a></p>':'')+
+      '<p class="gardener-card-phone" data-kiwi-public-phone="'+esc(r.id)+'" hidden></p>'+
       '<a class="gardener-card-link" href="/gardeners/'+r.slug+'/">View '+(supplier?'supplier':'gardener')+' profile ↗</a></article>';
   }).join("");
   const house='<aside class="gardener-house" aria-label="Kiwi Gardeners own gardening service">'+
@@ -269,11 +253,11 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
       (provisionalCategory&&r.serviceAreas.length===0&&(!supplier||r.publicLocations.length===0)?
         '<section><h2>Operating area not confirmed</h2><p>No independently established service, delivery or premises location has been published. Ask the business where it operates.</p></section>':'')+
       '<section><h2>Contact this business</h2><p>'+(contact.type==="grid_profile"?'See the canonical GRID EATER business record for contact details and corrections.':'This website is approved for public use in the GRID EATER business feed.')+'</p>'+
-      (r.publicPhone?'<p><strong>Business phone:</strong> <a href="'+esc(r.publicPhone.telHref)+'">'+esc(r.publicPhone.display)+'</a></p>':'')+
+      '<p data-kiwi-public-phone="'+esc(r.id)+'" hidden></p>'+
       '<div class="button-row"><a class="button" href="'+esc(href)+'"'+external+'>'+esc(contactLabel(contact))+' ↗</a>'+
       '<a class="button secondary" href="'+esc(r.sourcePage)+'"'+external+'>View GRID EATER business record ↗</a></div>'+
       '<div class="gardener-email-reveal" data-business-id="'+esc(r.id)+'"><button type="button" class="button secondary" data-reveal-email style="display:none">Show business email (Turnstile)</button><p role="status" aria-live="polite" data-reveal-status></p><div data-turnstile-container></div></div>'+
-      '<p class="micro">Public business telephone numbers are shown when available. Email addresses are never included in this public page or its source feed and require a verified Turnstile challenge.</p></section>'+
+      '<p class="micro">Kiwi Gardeners may show public business telephone numbers from its separately protected GRID EATER contact snapshot. Email addresses require a verified Turnstile challenge and are never embedded in this public page or GRID EATER feed.</p></section>'+
       '<section class="gardener-source-note"><h2>Source and corrections</h2><p>This directory consumes a versioned, reviewed, public-safe GRID EATER export. Business records are maintained in GRID EATER rather than edited here. Last source release '+esc(humanDate(feed.releasedAt))+'.</p>'+
       '<p><a href="'+esc(r.sourcePage)+'" target="_blank" rel="noopener noreferrer">View canonical GRID EATER business record ↗</a></p>'+
       '<p>Is a service or service area wrong? Refer to the canonical source record and request correction through GRID EATER.</p></section></article>'+
