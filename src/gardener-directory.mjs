@@ -7,6 +7,7 @@ const ROOT_KEYS=["schemaVersion","source","releaseId","releasedAt","approvedForK
 const RECORD_KEYS=["id","slug","name","description","kind","status","approvedForKiwi","suppressed","approvedAt","sourcePage","services","serviceAreas","publicLocations","publicContact"];
 const PROOF_KEYS=["name","verifiedAt","evidenceUrl"];
 const PROVISIONAL_AREA_BASIS="nzbn_registered_locality";
+const PROVISIONAL_CATEGORY_BASIS="nzbn_bic_provisional";
 const CONTACT_KEYS=["type","value","verifiedAt","evidenceUrl","approvedForPublicUse"];
 const empty=Object.freeze({schemaVersion:1,source:"grideater.com",releaseId:null,releasedAt:null,approvedForKiwi:false,records:[]});
 
@@ -38,10 +39,12 @@ function httpsUrl(value,at,host=null){
     reject(at+" contains an unsupported host");
   return u.toString();
 }
-function proof(value,at,{allowProvisional=false}={}){
-  keys(value,allowProvisional?[...PROOF_KEYS,"basis"]:PROOF_KEYS,at);
-  if(value.basis!==undefined&&(allowProvisional!==true||value.basis!==PROVISIONAL_AREA_BASIS))
-    reject(at+" invalid provisional locality basis");
+function proof(value,at,{allowProvisional=false,allowProvisionalCategory=false}={}){
+  keys(value,allowProvisional||allowProvisionalCategory?[...PROOF_KEYS,"basis"]:PROOF_KEYS,at);
+  if(value.basis!==undefined&&
+    !((allowProvisional&&value.basis===PROVISIONAL_AREA_BASIS)||
+      (allowProvisionalCategory&&value.basis===PROVISIONAL_CATEGORY_BASIS)))
+    reject(at+" invalid provisional evidence basis");
   return {
     name:string(value.name,at+".name",3,90),
     verifiedAt:iso(value.verifiedAt,at+".verifiedAt"),
@@ -100,11 +103,20 @@ export function validateGridEaterPublicGardeners(value,{now=new Date().toISOStri
       reject(at+" is not an approved active public gardening business");
     if(!Array.isArray(row.services)||!row.services.length||row.services.length>16
       ||!Array.isArray(row.serviceAreas)||row.serviceAreas.length>25
-      ||(!supplier&&(!row.serviceAreas.length||row.publicLocations!==undefined))
-      ||(supplier&&(!Array.isArray(row.publicLocations)||row.publicLocations.length>25
-        ||(!row.publicLocations.length&&!row.serviceAreas.length))))
-      reject(at+" requires independently verified offerings and service, delivery or premises area");
-    const services=row.services.map((v,i)=>proof(v,at+".services["+i+"]"));
+      ||(!supplier&&row.publicLocations!==undefined)
+      ||(supplier&&(!Array.isArray(row.publicLocations)||row.publicLocations.length>25)))
+      reject(at+" requires bounded offerings, locations and public profile fields");
+    const allProvisional=row.services.every(x=>x?.basis===PROVISIONAL_CATEGORY_BASIS);
+    if((!supplier&&!row.serviceAreas.length&&!allProvisional)||
+       (supplier&&!row.publicLocations.length&&!row.serviceAreas.length&&!allProvisional)||
+       (allProvisional&&row.publicContact?.type!=="grid_profile"))
+      reject(at+" missing real area or safely labelled provisional classification");
+    const services=row.services.map((v,i)=>proof(v,at+".services["+i+"]",
+      {allowProvisionalCategory:true}));
+    if(services.some(x=>x.basis===PROVISIONAL_CATEGORY_BASIS&&
+      x.evidenceUrl!=="https://grideater.com/business/"+slug&&
+      x.evidenceUrl!=="https://grideater.com/business/"+slug+"/"))
+      reject(at+" provisional BIC needs exact canonical GRID evidence");
     const serviceAreas=row.serviceAreas.map((v,i)=>proof(v,at+".serviceAreas["+i+"]",{allowProvisional:true}));
     const publicLocations=supplier?row.publicLocations.map((v,i)=>proof(v,at+".publicLocations["+i+"]")):[];
     if([services,serviceAreas,publicLocations].some(arr=>
