@@ -97,3 +97,36 @@ test("source contract keeps private email and public phone out of GRID feed and 
  assert.match(producer,/data-kiwi-public-phone/);
  assert.match(producer,/data-reveal-email/);
 });
+
+test("publish-first provisional NZBN gardening listing has no invented services, website or territory",async()=>{
+ const {validateGridEaterPublicGardeners,addGardenerDirectoryPages}=await import("../src/gardener-directory.mjs");
+ const approvedAt="2026-11-10T04:10:00.000Z";
+ const sourcePage="https://grideater.com/business/example-garden-service-9429032462685";
+ const row={id:ID,slug:"example-garden-service-9429032462685",
+  name:"Example Garden Service Limited",
+  description:"This directory record is provisionally classified from its official NZBN industry category, and specific services, products and operating areas are not yet confirmed. Contact the business before arranging work.",
+  kind:"gardening_service",status:"published",approvedForKiwi:true,suppressed:false,
+  approvedAt,sourcePage,services:[{name:"Gardening services (NZBN industry)",
+   verifiedAt:approvedAt,evidenceUrl:sourcePage,basis:"nzbn_bic_provisional"}],
+  serviceAreas:[],publicContact:{type:"grid_profile",value:sourcePage,
+   verifiedAt:approvedAt,evidenceUrl:sourcePage,approvedForPublicUse:true}
+ };
+ const fixture={schemaVersion:1,source:"grideater.com",releaseId:"kg-provisional-fixture",
+  releasedAt:approvedAt,approvedForKiwi:true,records:[row]};
+ const validated=validateGridEaterPublicGardeners(fixture,{now:approvedAt});
+ assert.equal(validated.records.length,1);
+ const files={};const esc=s=>String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll('"',"&quot;");
+ addGardenerDirectoryPages({files,esc,baseTrail:[],TEL_URL:"tel:+64273406581",
+  PHONE:"027 340 6581",ENQUIRY_URL:"mailto:dallas@kiwigardeners.com",
+  articleHero:(_a,t)=>"<h1>"+esc(t)+"</h1>",a:(href,t)=>'<a href="'+href+'">'+t+"</a>",
+  layout:({content})=>content},validated);
+ const profile=files["gardeners/"+row.slug+"/index.html"];
+ assert.match(profile,/Provisional NZBN gardening listing/);
+ assert.match(profile,/Operating area not confirmed/);
+ assert.match(profile,/Show business email \(Turnstile\)/);
+ assert.match(profile,/data-kiwi-public-phone/);
+ assert.doesNotMatch(profile,/tel:\+6431234567|business@example\.nz/);
+ const invalid=structuredClone(fixture);
+ invalid.records[0].services[0].evidenceUrl="https://unrelated.example.nz/services";
+ assert.throws(()=>validateGridEaterPublicGardeners(invalid,{now:approvedAt}),/provisional BIC needs exact canonical GRID evidence/);
+});
