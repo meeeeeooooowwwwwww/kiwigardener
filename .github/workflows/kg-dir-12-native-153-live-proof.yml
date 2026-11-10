@@ -1,0 +1,73 @@
+name: KG-DIR-12 Exact 153 Provisional Gardening Businesses
+on:
+  pull_request:
+    paths:
+      - scripts/verify-live-153-gardeners.mjs
+      - scripts/check-live-153-gardeners.mjs
+      - .github/workflows/kg-dir-12-native-153-live-proof.yml
+      - docs/KG-DIR-12-153-PROVISIONAL-NATIVE-RELEASE.md
+  push:
+    branches: [main]
+    paths:
+      - scripts/verify-live-153-gardeners.mjs
+      - scripts/check-live-153-gardeners.mjs
+      - .github/workflows/kg-dir-12-native-153-live-proof.yml
+      - docs/KG-DIR-12-153-PROVISIONAL-NATIVE-RELEASE.md
+permissions:
+  contents: read
+concurrency:
+  group: kg-dir-12-native-153-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  offline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Prove exact 153 native count, provisional categories, area and contact negatives
+        run: |
+          set -euo pipefail
+          node --check scripts/verify-live-153-gardeners.mjs
+          node --test scripts/check-live-153-gardeners.mjs
+  source-ready:
+    needs: offline
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: GRID 153 MUST actually be live and byte-SHA-pinned before Kiwi source promotion
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import {GRID,verifySource} from "./scripts/verify-live-153-gardeners.mjs";
+          const r=await fetch(GRID,{method:"GET",redirect:"error",
+           signal:AbortSignal.timeout(20000),headers:{accept:"application/json"}});
+          if(r.status!==200)throw Error("KG_DIR_12_GRID_SOURCE_NOT_200");
+          verifySource(Buffer.from(await r.arrayBuffer()));
+          console.log("KG_DIR_12_SOURCE_READY_153=PASS");
+          NODE
+  live:
+    needs: offline
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Independently prove native 153 public business pages, sitemap and contact source
+        run: |
+          set -euo pipefail
+          for i in {1..22}; do
+            if node scripts/verify-live-153-gardeners.mjs; then exit 0; fi
+            if [[ "$i" -eq 22 ]]; then exit 1; fi
+            sleep 15
+          done
