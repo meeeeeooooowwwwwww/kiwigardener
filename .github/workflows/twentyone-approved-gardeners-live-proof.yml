@@ -1,0 +1,77 @@
+name: KG-DIR-10 Exact Twenty-One Reviewed Gardening Businesses
+on:
+  pull_request:
+    paths:
+      - scripts/verify-live-twentyone-gardeners.mjs
+      - scripts/check-live-twentyone-gardeners.mjs
+      - .github/workflows/twentyone-approved-gardeners-live-proof.yml
+  push:
+    branches: [main]
+    paths:
+      - scripts/verify-live-twentyone-gardeners.mjs
+      - scripts/check-live-twentyone-gardeners.mjs
+      - .github/workflows/twentyone-approved-gardeners-live-proof.yml
+permissions:
+  contents: read
+concurrency:
+  group: kg-dir-10-twentyone-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  offline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Prove exact 17 retained, four new, two suppliers, locality and protected-contact negatives
+        run: |
+          set -euo pipefail
+          node --check scripts/verify-live-twentyone-gardeners.mjs
+          node --test scripts/check-live-twentyone-gardeners.mjs
+  source-ready:
+    if: github.event_name == 'pull_request'
+    needs: offline
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Require live GRID public 21 exact source before Kiwi merge
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import {createHash} from "node:crypto";
+          import {SOURCE,SHA,BYTES,verifySource} from "./scripts/verify-live-twentyone-gardeners.mjs";
+          const r=await fetch(SOURCE,{method:"GET",redirect:"error",
+           signal:AbortSignal.timeout(16000),headers:{accept:"application/json"}});
+          if(r.status!==200)throw Error("KG_DIR_10_GRID_SOURCE_HTTP_HOLD");
+          const bytes=Buffer.from(await r.arrayBuffer());
+          if(bytes.length!==BYTES||createHash("sha256").update(bytes).digest("hex")!==SHA)
+           throw Error("KG_DIR_10_GRID_SOURCE_EXACT_SHA_HOLD");
+          verifySource(JSON.parse(bytes.toString("utf8")));
+          console.log("KG_DIR_10_GRID_TWENTYONE_SOURCE=PASS");
+          NODE
+  live:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: offline
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Independently verify native Kiwi 21 cards/profiles/sitemap/search/contacts
+        run: |
+          set -euo pipefail
+          # Kiwi's own Cloudflare Workers Builds deploys Kiwi repo main.
+          # This read-only check never substitutes for that deployment.
+          for i in {1..18}; do
+            if node scripts/verify-live-twentyone-gardeners.mjs; then exit 0; fi
+            if [[ "$i" -eq 18 ]]; then exit 1; fi
+            sleep 10
+          done
