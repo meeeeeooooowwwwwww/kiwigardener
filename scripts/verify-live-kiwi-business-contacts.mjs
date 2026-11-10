@@ -60,7 +60,9 @@ export async function verifyLive(){
    !hubHtml.includes("data-kiwi-public-phone")||
    hubHtml.includes("business@example.nz")||hubHtml.includes('"emails"'))
   error("HUB_PUBLIC_PHONE_SCRIPT");
- const profile=await req("/gardeners/"+(await getOneSlug())+"/");
+ const first=hubHtml.match(/href="\/gardeners\/([a-z0-9-]+)\/"/);
+ if(!first)error("HUB_NO_BUSINESS_LINK");
+ const profile=await req("/gardeners/"+first[1]+"/");
  if(profile.status!==200)error("PROFILE_HTTP");
  const html=await profile.text();
  if(!html.includes("/assets/gardener-email-reveal.js")||
@@ -75,10 +77,6 @@ export async function verifyLive(){
    emailGetBlocked:true,crossOriginBlocked:true,
    missingTokenBlocked:true,privateR2ObjectNotPublic:true,
    canonicalSourceRelease:RELEASE,productionWrites:0};
-}
-async function getOneSlug(){
- // Known immutable live profile from the existing verified 21 release.
- return "untangled-landscapes-ltd";
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)
  verifyLive().then(r=>console.log("KG_DIR_11_CONTACTS_PROOF="+JSON.stringify(r)))
