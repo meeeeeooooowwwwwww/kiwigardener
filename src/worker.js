@@ -1,3 +1,5 @@
+import {revealBusinessEmail,emailRevealReady} from "./business-email-reveal.js";
+import {publicBusinessPhones} from "./business-phone-public.js";
 // Dedicated contact API for a static-asset Cloudflare Worker.
 // Customer details are never placed in URLs or logged.
 const DESTINATION = "david@americafirst.co.nz";
@@ -84,6 +86,14 @@ export async function contactAPI(request,env){
 }
 export default {async fetch(request,env){
   const path=new URL(request.url).pathname;
+  if(path==="/api/gardeners/phones")return publicBusinessPhones(request,env);
+  if(path==="/api/gardeners/email/config"){
+    if(request.method!=="GET")return reply(405,{error:"Method not allowed."});
+    return reply(200,emailRevealReady(env)?
+      {enabled:true,siteKey:env.TURNSTILE_SITE_KEY}:{enabled:false});
+  }
+  if(/^\/api\/gardeners\/afnz-\d{13}\/email$/.test(path))
+    return revealBusinessEmail(request,env);
   if(path==="/api/contact"||path==="/api/contact/config")return contactAPI(request,env);
   return env.ASSETS.fetch(request);
 }};

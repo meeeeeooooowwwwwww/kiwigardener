@@ -17,6 +17,12 @@
     }
   ],
   "workers_dev": true,
+  "r2_buckets": [
+    {
+      "binding": "KIWI_PRIVATE_CONTACTS",
+      "bucket_name": "grideater-public-vertical-feeds-v1"
+    }
+  ],
   "main": "./src/worker.js",
   "send_email": [
     {
@@ -36,12 +42,14 @@
   ],
   "vars": {
     "TURNSTILE_SITE_KEY": "0x4AAAAAAFp-C1bXQ7sIIZSa",
-    "CONTACT_FORM_ENABLED": "true"
+    "CONTACT_FORM_ENABLED": "true",
+    "BUSINESS_EMAIL_REVEAL_ENABLED": "false"
   },
   "previews": {
     "vars": {
       "TURNSTILE_SITE_KEY": "0x4AAAAAAFp-C1bXQ7sIIZSa",
-      "CONTACT_FORM_ENABLED": "false"
+      "CONTACT_FORM_ENABLED": "false",
+      "BUSINESS_EMAIL_REVEAL_ENABLED": "false"
     },
     "send_email": [
       {

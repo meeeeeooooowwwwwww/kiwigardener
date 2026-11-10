@@ -144,9 +144,9 @@ test("one approved record creates searchable server-rendered hub and canonical-I
   assert.ok(profile.includes("afnz-9429039092267"));
   assert.ok(profile.includes("Areas this business says it services"));
   assert.ok(profile.includes("https://grideater.com/business/example"));
-  assert.match(profile,/Check protected phone &amp; email options on GRID EATER/);
-  assert.match(profile,/Turnstile-protected phone reveal or an email enquiry/);
-  assert.match(profile,/Contact numbers and email addresses are not published/);
+  assert.match(profile,/View GRID EATER business record/);
+  assert.match(profile,/Show business email \(Turnstile\)/);
+  assert.match(profile,/Email addresses require a verified Turnstile challenge/);
   assert.ok(!profile.includes("business@example.co.nz"));
   assert.ok(!profile.includes("+64275918334"));
   assert.ok(!/ratingValue|aggregateRating|customer review/i.test(profile));
@@ -186,7 +186,7 @@ test("canonical GRID profile contact fallback excludes unverified websites and p
   },checked);
   const html=files["gardeners/"+record.slug+"/index.html"];
   assert.match(html,/View contact options on GRID EATER/);
-  assert.match(html,/No business phone or email is copied/);
+  assert.match(html,/Kiwi Gardeners may show public business telephone numbers/);
   assert.ok(!html.includes("example.nz/contact"));
   for(const wrong of [
     {...record.publicContact,type:"phone",value:"+64271234567"},

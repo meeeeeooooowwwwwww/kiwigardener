@@ -7,6 +7,7 @@ const ROOT_KEYS=["schemaVersion","source","releaseId","releasedAt","approvedForK
 const RECORD_KEYS=["id","slug","name","description","kind","status","approvedForKiwi","suppressed","approvedAt","sourcePage","services","serviceAreas","publicLocations","publicContact"];
 const PROOF_KEYS=["name","verifiedAt","evidenceUrl"];
 const PROVISIONAL_AREA_BASIS="nzbn_registered_locality";
+const PROVISIONAL_CATEGORY_BASIS="nzbn_bic_provisional";
 const CONTACT_KEYS=["type","value","verifiedAt","evidenceUrl","approvedForPublicUse"];
 const empty=Object.freeze({schemaVersion:1,source:"grideater.com",releaseId:null,releasedAt:null,approvedForKiwi:false,records:[]});
 
@@ -38,10 +39,13 @@ function httpsUrl(value,at,host=null){
     reject(at+" contains an unsupported host");
   return u.toString();
 }
-function proof(value,at,{allowProvisional=false}={}){
-  keys(value,allowProvisional?[...PROOF_KEYS,"basis"]:PROOF_KEYS,at);
-  if(value.basis!==undefined&&(allowProvisional!==true||value.basis!==PROVISIONAL_AREA_BASIS))
-    reject(at+" invalid provisional locality basis");
+function proof(value,at,{allowProvisional=false,allowProvisionalCategory=false}={}){
+  keys(value,allowProvisional||allowProvisionalCategory?[...PROOF_KEYS,"basis"]:PROOF_KEYS,at);
+  if(value.basis!==undefined&&
+    !((allowProvisional&&value.basis===PROVISIONAL_AREA_BASIS)||
+      (allowProvisionalCategory&&value.basis===PROVISIONAL_CATEGORY_BASIS)))
+    reject(at+(allowProvisional&&!allowProvisionalCategory?
+      " invalid provisional locality basis":" contains unexpected field basis"));
   return {
     name:string(value.name,at+".name",3,90),
     verifiedAt:iso(value.verifiedAt,at+".verifiedAt"),
@@ -100,11 +104,20 @@ export function validateGridEaterPublicGardeners(value,{now=new Date().toISOStri
       reject(at+" is not an approved active public gardening business");
     if(!Array.isArray(row.services)||!row.services.length||row.services.length>16
       ||!Array.isArray(row.serviceAreas)||row.serviceAreas.length>25
-      ||(!supplier&&(!row.serviceAreas.length||row.publicLocations!==undefined))
-      ||(supplier&&(!Array.isArray(row.publicLocations)||row.publicLocations.length>25
-        ||(!row.publicLocations.length&&!row.serviceAreas.length))))
-      reject(at+" requires independently verified offerings and service, delivery or premises area");
-    const services=row.services.map((v,i)=>proof(v,at+".services["+i+"]"));
+      ||(!supplier&&row.publicLocations!==undefined)
+      ||(supplier&&(!Array.isArray(row.publicLocations)||row.publicLocations.length>25)))
+      reject(at+" requires bounded offerings, locations and public profile fields");
+    const allProvisional=row.services.every(x=>x?.basis===PROVISIONAL_CATEGORY_BASIS);
+    if((!supplier&&!row.serviceAreas.length&&!allProvisional)||
+       (supplier&&!row.publicLocations.length&&!row.serviceAreas.length&&!allProvisional)||
+       (allProvisional&&row.publicContact?.type!=="grid_profile"))
+      reject(at+" missing real area or safely labelled provisional classification");
+    const services=row.services.map((v,i)=>proof(v,at+".services["+i+"]",
+      {allowProvisionalCategory:true}));
+    if(services.some(x=>x.basis===PROVISIONAL_CATEGORY_BASIS&&
+      x.evidenceUrl!=="https://grideater.com/business/"+slug&&
+      x.evidenceUrl!=="https://grideater.com/business/"+slug+"/"))
+      reject(at+" provisional BIC needs exact canonical GRID evidence");
     const serviceAreas=row.serviceAreas.map((v,i)=>proof(v,at+".serviceAreas["+i+"]",{allowProvisional:true}));
     const publicLocations=supplier?row.publicLocations.map((v,i)=>proof(v,at+".publicLocations["+i+"]")):[];
     if([services,serviceAreas,publicLocations].some(arr=>
@@ -161,19 +174,22 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
     // Searchable terms are approved commercial service/product facts ONLY,
     // not business names, addresses, generic descriptions or SEO metadata.
     const supplier=r.kind==="gardening_supplier";
+    const provisionalCategory=r.services.every(x=>x.basis===PROVISIONAL_CATEGORY_BASIS);
     const facts=r.services.map(x=>x.name).join("|");
     const provisional=r.serviceAreas.filter(x=>x.basis===PROVISIONAL_AREA_BASIS);
     const confirmed=r.serviceAreas.filter(x=>x.basis!==PROVISIONAL_AREA_BASIS);
     return '<article class="card gardener-directory-card" data-gardener-card data-keywords="'+esc(facts)+
       '" data-areas="'+esc(r.serviceAreas.map(x=>x.name).join("|"))+
       '" data-locations="'+esc((r.publicLocations||[]).map(x=>x.name).join("|"))+'">'+
-      '<div class="gardener-card-meta"><span class="tag">'+(supplier?'Verified supplier':'Verified gardening service')+'</span><span>GRID EATER ID: '+esc(r.id)+'</span></div>'+
+      '<div class="gardener-card-meta"><span class="tag">'+(provisionalCategory?(supplier?'Provisional gardening supplier':'Provisional gardening service'):(supplier?'Verified supplier':'Verified gardening service'))+'</span><span>GRID EATER ID: '+esc(r.id)+'</span></div>'+
       '<h3><a href="/gardeners/'+r.slug+'/">'+esc(r.name)+'</a></h3>'+
       '<p>'+esc(r.description)+'</p>'+
-      '<p class="gardener-card-fields"><strong>'+(supplier?'Products &amp; supplies:':'Services:')+'</strong> '+esc(r.services.map(x=>x.name).join(", "))+'</p>'+
+      '<p class="gardener-card-fields"><strong>'+(provisionalCategory?'Indicative NZBN business category:':(supplier?'Products &amp; supplies:':'Services:'))+'</strong> '+esc(r.services.map(x=>x.name).join(", "))+'</p>'+
       (confirmed.length?'<p class="gardener-card-fields"><strong>'+(supplier?'Verified delivery areas:':'Verified service areas:')+'</strong> '+esc(confirmed.map(x=>x.name).join(", "))+'</p>':'')+
       (provisional.length?'<p class="gardener-card-fields"><strong>Likely local area (NZBN registration):</strong> '+esc(provisional.map(x=>x.name).join(", "))+' <small>Unconfirmed; ask the provider about coverage.</small></p>':'')+
       (supplier&&r.publicLocations.length?'<p class="gardener-card-fields"><strong>Shop / nursery locations:</strong> '+esc(r.publicLocations.map(x=>x.name).join(", "))+'</p>':'')+
+      (provisionalCategory?'<p class="micro">NZBN industry category is provisional. Services, products and coverage should be confirmed with the business.</p>':'')+
+      '<p class="gardener-card-phone" data-kiwi-public-phone="'+esc(r.id)+'" hidden></p>'+
       '<a class="gardener-card-link" href="/gardeners/'+r.slug+'/">View '+(supplier?'supplier':'gardener')+' profile ↗</a></article>';
   }).join("");
   const house='<aside class="gardener-house" aria-label="Kiwi Gardeners own gardening service">'+
@@ -213,29 +229,43 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
   for(const r of records){
     const itemPath="/gardeners/"+r.slug+"/",itemTrail=[...trail,{name:r.name,path:itemPath}];
     const proofList=(items)=>'<ul class="gardener-proof-list">'+items.map(item=>
-      '<li><strong>'+esc(item.name)+'</strong><small>Evidence checked '+humanDate(item.verifiedAt)+'</small></li>').join("")+'</ul>';
+      '<li><strong>'+esc(item.name)+'</strong><small>'+
+      (item.basis===PROVISIONAL_CATEGORY_BASIS?'Provisional NZBN industry classification checked ':
+       'Evidence checked ')+humanDate(item.verifiedAt)+'</small></li>').join("")+'</ul>';
     const contact=r.publicContact;
     const href=hrefContact(contact);
     const external=' target="_blank" rel="noopener noreferrer"';
     const supplier=r.kind==="gardening_supplier";
-    const profile=articleHero(supplier?"Verified gardening supplier":"Verified gardening service",r.name,r.description,itemTrail)+
+    const provisionalCategory=r.services.every(x=>x.basis===PROVISIONAL_CATEGORY_BASIS);
+    const profile=articleHero(provisionalCategory?"Provisional NZBN gardening listing":
+      (supplier?"Verified gardening supplier":"Verified gardening service"),r.name,r.description,itemTrail)+
       '<section class="section"><div class="container gardener-profile-layout"><article class="prose">'+
       '<p class="gardener-profile-status">Verified public GRID EATER business ID: <strong>'+esc(r.id)+'</strong></p>'+
-      '<section><h2>'+(supplier?'Verified products &amp; supplies':'Verified gardening services')+'</h2><p>'+(supplier?'These supplier offerings have public-source evidence. Confirm products, availability, prices and pickup terms directly.':'These services have public-source evidence. Ask the provider to confirm the work scope.')+'</p>'+proofList(r.services)+'</section>'+
+      '<section><h2>'+(provisionalCategory?'Indicative NZBN business classification':
+        (supplier?'Verified products &amp; supplies':'Verified gardening services'))+
+      '</h2><p>'+(provisionalCategory?
+        'This listing is based on an NZBN industry classification and a live GRID EATER business record. Specific activities and availability have NOT been independently confirmed. Contact the business before relying on the classification.':
+        (supplier?'These supplier offerings have public-source evidence. Confirm products, availability, prices and pickup terms directly.':
+        'These services have public-source evidence. Ask the provider to confirm the work scope.'))+
+      '</p>'+proofList(r.services)+'</section>'+
       (r.serviceAreas.some(x=>!x.basis)?'<section><h2>'+(supplier?'Verified delivery areas':'Areas this business says it services')+'</h2><p>Confirmed from public business evidence.</p>'+proofList(r.serviceAreas.filter(x=>!x.basis))+'</section>':'')+
       (r.serviceAreas.some(x=>x.basis===PROVISIONAL_AREA_BASIS)?'<section><h2>Likely local area (NZBN registration)</h2><p>This town or city is inferred from the business registration, not confirmed as a service or delivery area. Contact the provider to check coverage.</p>'+proofList(r.serviceAreas.filter(x=>x.basis===PROVISIONAL_AREA_BASIS))+'</section>':'')+
       (supplier&&r.publicLocations.length?'<section><h2>Verified shop or nursery locations</h2><p>These premises locations do not imply any delivery territory or on-site gardening service.</p>'+proofList(r.publicLocations)+'</section>':'')+
-      '<section><h2>Contact this business</h2><p>'+(contact.type==="grid_profile"?'Open the canonical GRID EATER profile for available contact options. No business phone or email is copied to this site.':'This website was approved for public use in GRID EATER&#39;s source export.')+'</p>'+
+      (provisionalCategory&&r.serviceAreas.length===0&&(!supplier||r.publicLocations.length===0)?
+        '<section><h2>Operating area not confirmed</h2><p>No independently established service, delivery or premises location has been published. Ask the business where it operates.</p></section>':'')+
+      '<section><h2>Contact this business</h2><p>'+(contact.type==="grid_profile"?'See the canonical GRID EATER business record for contact details and corrections.':'This website is approved for public use in the GRID EATER business feed.')+'</p>'+
+      '<p data-kiwi-public-phone="'+esc(r.id)+'" hidden></p>'+
       '<div class="button-row"><a class="button" href="'+esc(href)+'"'+external+'>'+esc(contactLabel(contact))+' ↗</a>'+
-      '<a class="button secondary" href="'+esc(r.sourcePage)+'"'+external+'>Check protected phone &amp; email options on GRID EATER ↗</a></div>'+
-      '<p class="micro">GRID EATER may offer Turnstile-protected phone reveal or an email enquiry where the business has approved contact details. Contact numbers and email addresses are not published in this page.</p></section>'+
+      '<a class="button secondary" href="'+esc(r.sourcePage)+'"'+external+'>View GRID EATER business record ↗</a></div>'+
+      '<div class="gardener-email-reveal" data-business-id="'+esc(r.id)+'"><button type="button" class="button secondary" data-reveal-email style="display:none">Show business email (Turnstile)</button><p role="status" aria-live="polite" data-reveal-status></p><div data-turnstile-container></div></div>'+
+      '<p class="micro">Kiwi Gardeners may show public business telephone numbers from its separately protected GRID EATER contact snapshot. Email addresses require a verified Turnstile challenge and are never embedded in this public page or GRID EATER feed.</p></section>'+
       '<section class="gardener-source-note"><h2>Source and corrections</h2><p>This directory consumes a versioned, reviewed, public-safe GRID EATER export. Business records are maintained in GRID EATER rather than edited here. Last source release '+esc(humanDate(feed.releasedAt))+'.</p>'+
       '<p><a href="'+esc(r.sourcePage)+'" target="_blank" rel="noopener noreferrer">View canonical GRID EATER business record ↗</a></p>'+
       '<p>Is a service or service area wrong? Refer to the canonical source record and request correction through GRID EATER.</p></section></article>'+
       '<aside class="gardener-profile-aside"><h2>More ways to explore</h2>'+
       '<p><a href="/gardeners/">Return to all gardeners ↗</a></p><p><a href="/guides/how-to-choose-a-gardener/">How to compare gardening quotes ↗</a></p><p><a href="/services/">Gardening work explained ↗</a></p></aside></div></section>';
     files["gardeners/"+r.slug+"/index.html"]=layout({
-      path:itemPath,title:r.name+" | Verified Gardening "+(supplier?"Supplier":"Service")+" | Kiwi Gardeners",
+      path:itemPath,title:r.name+" | "+(provisionalCategory?"Provisional":"Verified")+" Gardening "+(supplier?"Supplier":"Service")+" | Kiwi Gardeners",
       description:r.description.length>190?r.description.slice(0,185).replace(/\s+\S*$/,"")+"…":r.description,
       content:profile,trail:itemTrail,type:"WebPage",indexable:true
     });
