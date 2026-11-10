@@ -284,6 +284,6 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
       description:seoDescription.length>210?
         seoDescription.slice(0,207).replace(/\s+\S*$/,"")+"…":seoDescription,
       content:profile,trail:itemTrail,type:"WebPage",indexable:true
-    });;
+    });
   }
 }
