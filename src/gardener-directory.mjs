@@ -204,6 +204,7 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
       (provisional.length?'<p class="gardener-card-fields"><strong>Likely local area (NZBN registration):</strong> '+esc(provisional.map(x=>x.name).join(", "))+' <small>Unconfirmed; ask the provider about coverage.</small></p>':'')+
       (supplier&&r.publicLocations.length?'<p class="gardener-card-fields"><strong>Shop / nursery locations:</strong> '+esc(r.publicLocations.map(x=>x.name).join(", "))+'</p>':'')+
       (provisionalCategory?'<p class="micro">NZBN industry category is provisional. Services, products and coverage should be confirmed with the business.</p>':'')+
+      (r.publicPhone?'<p class="gardener-card-fields"><strong>Phone:</strong> <a href="'+esc(r.publicPhone.telHref)+'">'+esc(r.publicPhone.display)+'</a></p>':'')+
       '<a class="gardener-card-link" href="/gardeners/'+r.slug+'/">View '+(supplier?'supplier':'gardener')+' profile ↗</a></article>';
   }).join("");
   const house='<aside class="gardener-house" aria-label="Kiwi Gardeners own gardening service">'+
@@ -267,10 +268,12 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
       (supplier&&r.publicLocations.length?'<section><h2>Verified shop or nursery locations</h2><p>These premises locations do not imply any delivery territory or on-site gardening service.</p>'+proofList(r.publicLocations)+'</section>':'')+
       (provisionalCategory&&r.serviceAreas.length===0&&(!supplier||r.publicLocations.length===0)?
         '<section><h2>Operating area not confirmed</h2><p>No independently established service, delivery or premises location has been published. Ask the business where it operates.</p></section>':'')+
-      '<section><h2>Contact this business</h2><p>'+(contact.type==="grid_profile"?'Open the canonical GRID EATER profile for available contact options. No business phone or email is copied to this site.':'This website was approved for public use in GRID EATER&#39;s source export.')+'</p>'+
+      '<section><h2>Contact this business</h2><p>'+(contact.type==="grid_profile"?'See the canonical GRID EATER business record for contact details and corrections.':'This website is approved for public use in the GRID EATER business feed.')+'</p>'+
+      (r.publicPhone?'<p><strong>Business phone:</strong> <a href="'+esc(r.publicPhone.telHref)+'">'+esc(r.publicPhone.display)+'</a></p>':'')+
       '<div class="button-row"><a class="button" href="'+esc(href)+'"'+external+'>'+esc(contactLabel(contact))+' ↗</a>'+
-      '<a class="button secondary" href="'+esc(r.sourcePage)+'"'+external+'>Check protected phone &amp; email options on GRID EATER ↗</a></div>'+
-      '<p class="micro">GRID EATER may offer Turnstile-protected phone reveal or an email enquiry where the business has approved contact details. Contact numbers and email addresses are not published in this page.</p></section>'+
+      '<a class="button secondary" href="'+esc(r.sourcePage)+'"'+external+'>View GRID EATER business record ↗</a></div>'+
+      '<div class="gardener-email-reveal" data-business-id="'+esc(r.id)+'"><button type="button" class="button secondary" data-reveal-email>Show business email (Turnstile)</button><p role="status" aria-live="polite" data-reveal-status></p><div data-turnstile-container></div></div>'+
+      '<p class="micro">Public business telephone numbers are shown when available. Email addresses are never included in this public page or its source feed and require a verified Turnstile challenge.</p></section>'+
       '<section class="gardener-source-note"><h2>Source and corrections</h2><p>This directory consumes a versioned, reviewed, public-safe GRID EATER export. Business records are maintained in GRID EATER rather than edited here. Last source release '+esc(humanDate(feed.releasedAt))+'.</p>'+
       '<p><a href="'+esc(r.sourcePage)+'" target="_blank" rel="noopener noreferrer">View canonical GRID EATER business record ↗</a></p>'+
       '<p>Is a service or service area wrong? Refer to the canonical source record and request correction through GRID EATER.</p></section></article>'+
