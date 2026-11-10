@@ -1,5 +1,8 @@
 # KG-DIR-11 | Kiwi-only public phones and Turnstile-protected business email
 
+> **10 November 2026 | CONTACT ENABLEMENT SOURCE STAGE:** GRID EATER's private exact-21 contact source [#42757894744](https://github.com/meeeeeooooowwwwwww/grideater/actions/runs/42757894744) independently passed: 4 public business phones, 17 business emails, 2 indexed D1 SELECT/EXPLAIN statements, 77 rows read, 0 writes. One private R2 upload [#42758545386](https://github.com/meeeeeooooowwwwwww/grideater/actions/runs/42758545386) PASSED with byte-for-byte remote SHA `5cd15f944a02caad96a9f01310aab9f50ca08da7cf53ee0ac6d0371d6a7e817c` (1,186 bytes), and [GRID disarm PR #2613](https://github.com/meeeeeooooowwwwwww/grideater/pull/2613) merged with the one-shot off. A separately controlled Kiwi production PR now flips **BUSINESS_PHONE_PUBLIC_ENABLED** and **BUSINESS_EMAIL_REVEAL_ENABLED** to true; preview email reveal remains disabled. **Do not claim contacts LIVE until the Kiwi native deployment and independent KG-DIR-11 live 4-phone/Turnstile privacy probe PASS.** This change does not increase the 21 listing count; broader provisional listings are a later source-reviewed feed expansion. Existing instructions below describing the original source-only stage are historical.
+
+
 **10 November 2026 NZDT | source and test stage, not yet a live contact release.**
 
 ## Product decision
