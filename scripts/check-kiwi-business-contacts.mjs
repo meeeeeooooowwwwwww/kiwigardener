@@ -80,7 +80,8 @@ test("rejects unverified or cross-origin email reveal, no GET bypass",async()=>{
   method:"POST",headers:{"CF-Connecting-IP":"192.0.2.5","content-type":"application/json"},
   body:JSON.stringify({token:"test-turnstile-token"})});
  assert.equal((await outcome(environment(),challenge(),noOrigin)).status,403);
- assert.equal((await outcome(environment({CONTACT_LIMIT:{limit:async()=>({success:false})}))).status,429);
+ const limited=await outcome(environment({CONTACT_LIMIT:{limit:async()=>({success:false})}}));
+ assert.equal(limited.status,429);
  assert.equal((await outcome(environment(),challenge(),emailReq({token:""}))).status,400);
  const get=await worker.fetch(new Request(ROOT+"/api/gardeners/"+ID+"/email"),environment());
  assert.equal(get.status,405);
