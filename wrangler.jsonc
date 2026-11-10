@@ -43,7 +43,8 @@
   "vars": {
     "TURNSTILE_SITE_KEY": "0x4AAAAAAFp-C1bXQ7sIIZSa",
     "CONTACT_FORM_ENABLED": "true",
-    "BUSINESS_EMAIL_REVEAL_ENABLED": "false"
+    "BUSINESS_EMAIL_REVEAL_ENABLED": "true",
+    "BUSINESS_PHONE_PUBLIC_ENABLED": "true"
   },
   "previews": {
     "vars": {
