@@ -1,0 +1,76 @@
+name: KG-DIR-09 Exact Seventeen Reviewed Gardening Businesses
+on:
+  pull_request:
+    paths:
+      - scripts/verify-live-seventeen-gardeners.mjs
+      - scripts/check-live-seventeen-gardeners.mjs
+      - .github/workflows/seventeen-approved-gardeners-live-proof.yml
+  push:
+    branches: [main]
+    paths:
+      - scripts/verify-live-seventeen-gardeners.mjs
+      - scripts/check-live-seventeen-gardeners.mjs
+      - .github/workflows/seventeen-approved-gardeners-live-proof.yml
+permissions:
+  contents: read
+concurrency:
+  group: kg-dir-09-seventeen-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  offline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Verify exact 15 retained and 2 service additions, existing supplier and privacy boundaries
+        run: |
+          set -euo pipefail
+          node --check scripts/verify-live-seventeen-gardeners.mjs
+          node --test scripts/check-live-seventeen-gardeners.mjs
+  source-ready:
+    if: github.event_name == 'pull_request'
+    needs: offline
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: GRID must physically serve exact SHA-verified 17 approved source before merging Kiwi
+        run: |
+          node --input-type=module <<'NODE'
+          import {createHash} from "node:crypto";
+          import {SOURCE,SHA,BYTES,verifySource} from "./scripts/verify-live-seventeen-gardeners.mjs";
+          const r=await fetch(SOURCE,{method:"GET",redirect:"error",
+           signal:AbortSignal.timeout(16000),headers:{accept:"application/json"}});
+          if(r.status!==200)throw Error("KG_DIR_09_GRID_SOURCE_HTTP_HOLD");
+          const bytes=Buffer.from(await r.arrayBuffer());
+          if(bytes.length!==BYTES||createHash("sha256").update(bytes).digest("hex")!==SHA)
+           throw Error("KG_DIR_09_GRID_SOURCE_EXACT_SHA_HOLD");
+          verifySource(JSON.parse(bytes.toString("utf8")));
+          console.log("KG_DIR_09_GRID_SEVENTEEN_SOURCE=PASS");
+          NODE
+  live:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: offline
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Independent native Kiwi 17 cards/profiles/sitemap/contacts acceptance
+        run: |
+          set -euo pipefail
+          # Native Cloudflare Workers Builds deploys Kiwi repo main itself.
+          # This check never triggers or replaces the separate native deploy.
+          for i in {1..18}; do
+            if node scripts/verify-live-seventeen-gardeners.mjs; then exit 0; fi
+            if [[ "$i" -eq 18 ]]; then exit 1; fi
+            sleep 10
+          done
