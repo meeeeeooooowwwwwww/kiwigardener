@@ -264,9 +264,31 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
       '<p>Is a service or service area wrong? Refer to the canonical source record and request correction through GRID EATER.</p></section></article>'+
       '<aside class="gardener-profile-aside"><h2>More ways to explore</h2>'+
       '<p><a href="/gardeners/">Return to all gardeners ↗</a></p><p><a href="/guides/how-to-choose-a-gardener/">How to compare gardening quotes ↗</a></p><p><a href="/services/">Gardening work explained ↗</a></p></aside></div></section>';
+    // Identity-safe unique metadata. The source-provisional body summaries
+    // are deliberately generic and must not be reused as SEO descriptions.
+    const displayName=/^no trading name$/i.test(r.name.trim())
+      ?"NZBN business "+r.id.slice(5):r.name;
+    const suffix=" | "+(provisionalCategory?"Provisional":"Verified")+
+      " Garden "+(supplier?"Supplier":"Service")+" | Kiwi Gardeners";
+    const identity=" · "+r.id.slice(5);
+    const available=90-suffix.length-identity.length;
+    let titleName=displayName.slice(0,available).trim();
+    let seoTitle=titleName+identity+suffix;
+    // The SEO validator checks rendered HTML text; &amp; is five bytes.
+    while(esc(seoTitle).length>90&&titleName.length>4){
+      titleName=titleName.slice(0,-1).trimEnd();
+      seoTitle=titleName+identity+suffix;
+    }
+    const seoDescription=displayName.slice(0,65).trim()+
+      " (NZBN "+r.id.slice(5)+") is "+(provisionalCategory
+       ?"provisionally categorised as a "+(supplier?"garden supplier":"gardening service")+
+        " in GRID EATER. Its activities and area are unconfirmed."
+       :"a source-reviewed "+(supplier?"garden supplier":"gardening service")+
+        ". Confirm availability and the actual operating area.");
     files["gardeners/"+r.slug+"/index.html"]=layout({
-      path:itemPath,title:r.name+" | "+(provisionalCategory?"Provisional":"Verified")+" Gardening "+(supplier?"Supplier":"Service")+" | Kiwi Gardeners",
-      description:r.description.length>190?r.description.slice(0,185).replace(/\s+\S*$/,"")+"…":r.description,
+      path:itemPath,title:seoTitle,
+      description:seoDescription.length>210?
+        seoDescription.slice(0,207).replace(/\s+\S*$/,"")+"…":seoDescription,
       content:profile,trail:itemTrail,type:"WebPage",indexable:true
     });
   }
