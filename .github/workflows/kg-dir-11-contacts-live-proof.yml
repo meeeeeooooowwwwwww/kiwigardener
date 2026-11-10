@@ -1,0 +1,63 @@
+name: KG-DIR-11 Kiwi Public Phone and Turnstile Email Live Proof
+on:
+  pull_request:
+    paths:
+      - wrangler.jsonc
+      - scripts/verify-live-kiwi-business-contacts.mjs
+      - .github/workflows/kg-dir-11-contacts-live-proof.yml
+      - docs/KG-DIR-11-KIWI-PUBLIC-PHONES-TURNSTILE-EMAIL.md
+  push:
+    branches: [main]
+    paths:
+      - wrangler.jsonc
+      - scripts/verify-live-kiwi-business-contacts.mjs
+      - .github/workflows/kg-dir-11-contacts-live-proof.yml
+      - docs/KG-DIR-11-KIWI-PUBLIC-PHONES-TURNSTILE-EMAIL.md
+permissions:
+  contents: read
+concurrency:
+  group: kg-dir-11-contacts-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  offline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Verify current source phone privacy and Turnstile email negatives
+        run: |
+          set -euo pipefail
+          node --check scripts/verify-live-kiwi-business-contacts.mjs
+          node --check src/worker.js
+          node --test scripts/check-kiwi-business-contacts.mjs
+          node --input-type=module <<'NODE'
+          import {readFileSync} from "node:fs";
+          const c=JSON.parse(readFileSync("wrangler.jsonc","utf8"));
+          if(c.vars?.BUSINESS_PHONE_PUBLIC_ENABLED!=="true"||
+             c.vars?.BUSINESS_EMAIL_REVEAL_ENABLED!=="true"||
+             c.previews?.vars?.BUSINESS_EMAIL_REVEAL_ENABLED!=="false"||
+             !c.r2_buckets?.some(x=>x.binding==="KIWI_PRIVATE_CONTACTS"))
+            throw Error("KG_DIR_11_PRODUCTION_ONLY_FLAGS_HOLD");
+          console.log("KG_DIR_11_FLAGS_AND_R2_BINDING=PASS");
+          NODE
+  live:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: offline
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Prove 4 live phones, email not public, Turnstile required, no private R2 exposure
+        run: |
+          set -euo pipefail
+          for i in {1..24}; do
+            if node scripts/verify-live-kiwi-business-contacts.mjs; then exit 0; fi
+            if [[ "$i" -eq 24 ]]; then exit 1; fi
+            sleep 12
+          done
