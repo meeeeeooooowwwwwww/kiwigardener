@@ -122,7 +122,7 @@ test("publish-first provisional NZBN gardening listing has no invented services,
   articleHero:(_a,t)=>"<h1>"+esc(t)+"</h1>",a:(href,t)=>'<a href="'+href+'">'+t+"</a>",
   layout:({content})=>content},validated);
  const profile=files["gardeners/"+row.slug+"/index.html"];
- assert.match(profile,/Provisional NZBN gardening listing/);
+ assert.match(profile,/Indicative NZBN business classification/);
  assert.match(profile,/Operating area not confirmed/);
  assert.match(profile,/Show business email \(Turnstile\)/);
  assert.match(profile,/data-kiwi-public-phone/);
