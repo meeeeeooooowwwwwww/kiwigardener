@@ -1,6 +1,8 @@
+> **CLOSED AS PHYSICALLY LIVE | 10 NOVEMBER 2026 NZDT:** [Kiwi native run #42748171794](https://github.com/meeeeeooooowwwwwww/kiwigardener/actions/runs/42748171794) **SUCCESS** after independently verified live [GRID 21 public #42747039217](https://github.com/meeeeeooooowwwwwww/grideater/actions/runs/42747039217) and GRID [post-disarm #42748090440](https://github.com/meeeeeooooowwwwwww/grideater/actions/runs/42748090440). Exact native **21 cards / 21 profiles / 21 sitemap entries** on `kiwigardeners.com`, 17 prior approved unchanged, four added (two services and two suppliers); [Kiwi build #42748171808](https://github.com/meeeeeooooowwwwwww/kiwigardener/actions/runs/42748171808) SUCCESS. Old staging instructions below are kept as historical release procedure, not current pending gates. Provisional Waiheke, Twin Falls plant delivery without walk-in, Greenlife public Ōtaki shop, prior Te Puna nursery and independent Dallas contact all verified. Zero direct D1 writes and no private phone/email leak. New candidate work resumes through GRID's [fresh 50 private review #42748999787](https://github.com/meeeeeooooowwwwwww/grideater/actions/runs/42748999787), with 21 live excluded and **0 unreviewed approvals**. Native protected contact reveal/automatic approved-digest/sharding remain future scope.
+
 # KG-DIR-10 | Native Kiwi directory acceptance for 21 GRID EATER reviewed gardening businesses
 
-**10 November 2026 NZDT | Source-only preparation. Do not merge or publish native Kiwi before exact GRID public feed is verified at 21.**
+**Source-only preparation and do-not-merge gate below were satisfied before the verified live release; retained as historical procedure.**
 
 ## Source authority and current staged release
 
