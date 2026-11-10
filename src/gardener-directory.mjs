@@ -272,7 +272,13 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
       " Garden "+(supplier?"Supplier":"Service")+" | Kiwi Gardeners";
     const identity=" · "+r.id.slice(5);
     const available=90-suffix.length-identity.length;
-    const seoTitle=displayName.slice(0,available).trim()+identity+suffix;
+    let titleName=displayName.slice(0,available).trim();
+    let seoTitle=titleName+identity+suffix;
+    // The SEO validator checks rendered HTML text; &amp; is five bytes.
+    while(esc(seoTitle).length>90&&titleName.length>4){
+      titleName=titleName.slice(0,-1).trimEnd();
+      seoTitle=titleName+identity+suffix;
+    }
     const seoDescription=displayName.slice(0,65).trim()+
       " (NZBN "+r.id.slice(5)+") is "+(provisionalCategory
        ?"provisionally categorised as a "+(supplier?"garden supplier":"gardening service")+
