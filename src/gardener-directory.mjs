@@ -45,7 +45,7 @@ function proof(value,at,{allowProvisional=false,allowProvisionalCategory=false}=
     !((allowProvisional&&value.basis===PROVISIONAL_AREA_BASIS)||
       (allowProvisionalCategory&&value.basis===PROVISIONAL_CATEGORY_BASIS)))
     reject(at+(allowProvisional&&!allowProvisionalCategory?
-      " invalid provisional locality basis":" invalid provisional evidence basis"));
+      " invalid provisional locality basis":" contains unexpected field basis"));
   return {
     name:string(value.name,at+".name",3,90),
     verifiedAt:iso(value.verifiedAt,at+".verifiedAt"),
