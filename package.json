@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "build": "node build.mjs && node scripts/check.mjs && node --test scripts/check-gardener-directory.mjs scripts/check-reviewed-supplier-directory.mjs scripts/check-first-party-gardening-services.mjs scripts/check-contact.mjs scripts/check-kiwi-business-contacts.mjs && node --check src/worker.js && node --check src/business-email-reveal.js && node --check src/business-phone-public.js && node --check assets/gardener-email-reveal.js && node --check assets/gardener-public-phone.js",
+    "build": "node build.mjs && node scripts/check.mjs && node --test scripts/check-gardener-directory.mjs scripts/check-reviewed-supplier-directory.mjs scripts/check-first-party-gardening-services.mjs scripts/check-contact.mjs scripts/check-kiwi-business-contacts.mjs && node --check src/worker.js && node --check src/business-email-reveal.js && node --check src/business-phone-public.js && node --check assets/gardener-email-reveal.js && node --check assets/gardener-public-phone.js && node --check assets/gardener-search.js",
     "check": "npm run build"
   },
   "engines": {
