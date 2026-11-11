@@ -102,17 +102,22 @@
   };
   const update=(persist=false)=>{
     const searching=!!(query.value.trim()||area.value.trim());
-    let visible=0;
+    let visible=0,reviewed=0,provisional=0;
     for(const card of cards){
       const match=!searching||(dictionary&&matchesKeywords(card)&&matchesArea(card));
       card.hidden=!match;
-      if(match)visible++;
+      if(match){
+        visible++;
+        if(card.dataset.sourceGrade==="provisional")provisional++;
+        else if(card.dataset.sourceGrade==="reviewed")reviewed++;
+      }
     }
     if(searching&&!dictionary){
       count.textContent="Loading search filters…";
     }else{
-      count.textContent=cards.length===0?"No verified independent listings yet":
-        visible+" approved "+(visible===1?"business":"businesses")+" found";
+      count.textContent=cards.length===0?"No independent listings yet":
+        visible+" listed "+(visible===1?"business":"businesses")+" · "+
+        reviewed+" source-reviewed · "+provisional+" provisional NZBN";
     }
     if(empty)empty.hidden=visible!==0||!dictionary&&searching;
     if(persist)updateUrl();
