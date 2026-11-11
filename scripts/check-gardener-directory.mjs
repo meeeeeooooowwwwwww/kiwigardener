@@ -362,3 +362,43 @@ test("provisional basis never permits private fields, unknown basis or claimed s
  const bad4=copy();bad4.records[0].kind="gardening_supplier";bad4.records[0].publicLocations=[{name:"Ashburton",verifiedAt,evidenceUrl:"https://example.nz/premises",basis:"nzbn_registered_locality"}];
  assert.throws(()=>check(bad4),/unexpected field/);
 });
+
+test("153-directory evidence grades remain honest and GRID-approved contact is one click away",async()=>{
+ const v=copy();
+ v.records.push({
+  id:"afnz-9429041785683",slug:"provisional-garden-services-test",
+  name:"Example Provisional Gardening Company",
+  description:"This business is provisionally included based on a public NZBN gardening category.",
+  kind:"gardening_service",status:"published",approvedForKiwi:true,suppressed:false,
+  approvedAt:verifiedAt,sourcePage:"https://grideater.com/business/provisional-garden-services-test/",
+  services:[{name:"Indicative gardening services (NZBN category)",
+   basis:"nzbn_bic_provisional",verifiedAt,evidenceUrl:"https://grideater.com/business/provisional-garden-services-test/"}],
+  serviceAreas:[],
+  publicContact:{type:"grid_profile",
+   value:"https://grideater.com/business/provisional-garden-services-test/",
+   evidenceUrl:"https://grideater.com/business/provisional-garden-services-test/",
+   verifiedAt,approvedForPublicUse:true}
+ });
+ const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+ const files={};
+ addGardenerDirectoryPages({
+  files,esc,a:(href,label)=>'<a href="'+href+'">'+esc(label)+'</a>',
+  articleHero:(_k,title)=>'<h1>'+esc(title)+'</h1>',
+  layout:({content})=>content,baseTrail:[],
+  TEL_URL:"tel:+64273406581",PHONE:"027 340 6581",
+  ENQUIRY_URL:"mailto:dallas@kiwigardeners.com"
+ },check(v));
+ const hub=files["gardeners/index.html"];
+ assert.match(hub,/2 listed businesses · 1 source-reviewed · 1 provisional NZBN/);
+ assert.match(hub,/data-source-grade="reviewed"/);
+ assert.match(hub,/data-source-grade="provisional"/);
+ assert.match(hub,/Town \/ service area not confirmed/);
+ assert.match(hub,/Contact options on GRID EATER/);
+ assert.match(hub,/Visit verified business website/);
+ assert.match(hub,/NZBN: 9429041785683/);
+ assert.doesNotMatch(hub,/2 verified public listings/);
+ assert.doesNotMatch(hub,/business@example.co.nz/);
+ const js=await readFile(new URL("../assets/gardener-search.js",import.meta.url),"utf8");
+ assert.match(js,/card\.dataset\.sourceGrade==="provisional"/);
+ assert.match(js,/reviewed\+" source-reviewed · "\+provisional\+" provisional NZBN"/);
+});
