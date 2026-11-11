@@ -168,6 +168,8 @@ const contactLabel=(v)=>v.type==="grid_profile"?"View contact options on GRID EA
 
 export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTrail,TEL_URL,PHONE,ENQUIRY_URL},feed){
   const records=feed.records;
+  const provisionalCount=records.filter(r=>r.services.every(x=>x.basis===PROVISIONAL_CATEGORY_BASIS)).length;
+  const reviewedCount=records.length-provisionalCount;
   const path="/gardeners/";
   const trail=[...baseTrail,{name:"Gardening services and supplies",path}];
   const cards=records.map(r=>{
@@ -178,10 +180,10 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
     const facts=r.services.map(x=>x.name).join("|");
     const provisional=r.serviceAreas.filter(x=>x.basis===PROVISIONAL_AREA_BASIS);
     const confirmed=r.serviceAreas.filter(x=>x.basis!==PROVISIONAL_AREA_BASIS);
-    return '<article class="card gardener-directory-card" data-gardener-card data-keywords="'+esc(facts)+
+    return '<article class="card gardener-directory-card" data-gardener-card data-source-grade="'+(provisionalCategory?'provisional':'reviewed')+'" data-keywords="'+esc(facts)+
       '" data-areas="'+esc(r.serviceAreas.map(x=>x.name).join("|"))+
       '" data-locations="'+esc((r.publicLocations||[]).map(x=>x.name).join("|"))+'">'+
-      '<div class="gardener-card-meta"><span class="tag">'+(provisionalCategory?(supplier?'Provisional gardening supplier':'Provisional gardening service'):(supplier?'Verified supplier':'Verified gardening service'))+'</span><span>GRID EATER ID: '+esc(r.id)+'</span></div>'+
+      '<div class="gardener-card-meta"><span class="tag">'+(provisionalCategory?(supplier?'Provisional gardening supplier':'Provisional gardening service'):(supplier?'Source-reviewed supplier':'Source-reviewed gardening service'))+'</span><span>NZBN: '+esc(r.id.slice(5))+'</span></div>'+
       '<h3><a href="/gardeners/'+r.slug+'/">'+esc(r.name)+'</a></h3>'+
       '<p>'+esc(r.description)+'</p>'+
       '<p class="gardener-card-fields"><strong>'+(provisionalCategory?'Indicative NZBN business category:':(supplier?'Products &amp; supplies:':'Services:'))+'</strong> '+esc(r.services.map(x=>x.name).join(", "))+'</p>'+
@@ -189,8 +191,12 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
       (provisional.length?'<p class="gardener-card-fields"><strong>Likely local area (NZBN registration):</strong> '+esc(provisional.map(x=>x.name).join(", "))+' <small>Unconfirmed; ask the provider about coverage.</small></p>':'')+
       (supplier&&r.publicLocations.length?'<p class="gardener-card-fields"><strong>Shop / nursery locations:</strong> '+esc(r.publicLocations.map(x=>x.name).join(", "))+'</p>':'')+
       (provisionalCategory?'<p class="micro">NZBN industry category is provisional. Services, products and coverage should be confirmed with the business.</p>':'')+
+      (provisionalCategory&&!r.serviceAreas.length?'<p class="micro"><strong>Town / service area not confirmed.</strong> This business may not appear in town-filtered results until a source-backed locality is available.</p>':'')+
       '<p class="gardener-card-phone" data-kiwi-public-phone="'+esc(r.id)+'" hidden></p>'+
-      '<a class="gardener-card-link" href="/gardeners/'+r.slug+'/">View '+(supplier?'supplier':'gardener')+' profile ↗</a></article>';
+      '<a class="gardener-card-link" href="/gardeners/'+r.slug+'/">View '+(supplier?'supplier':'gardener')+' profile ↗</a>'+
+      '<p class="micro"><a href="'+esc(r.publicContact.value)+'" target="_blank" rel="noopener noreferrer">'+
+      (r.publicContact.type==='grid_profile'?'Contact options on GRID EATER ↗':'Visit verified business website ↗')+
+      '</a></p></article>';
   }).join("");
   const house='<aside class="gardener-house" aria-label="Kiwi Gardeners own gardening service">'+
     '<div><span class="eyebrow">From Kiwi Gardeners</span><h2>Need a gardener in Christchurch?</h2>'+
@@ -203,7 +209,8 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
   const body=articleHero("New Zealand gardening directory","Find gardening services and supplies",
     "Search gardening keywords and towns across New Zealand. Only independently approved GRID EATER records appear in directory results.",trail)+
     '<section class="section gardener-directory"><div class="container">'+
-    '<p class="gardener-intro">One search for approved gardening services, nurseries, plants and supplies across New Zealand. A region-wide service or delivery claim can match towns in that region. A registered NZBN town may be used as a provisional local-area search clue and is labelled unconfirmed. A verified shop or nursery location matches only its own town and does not imply delivery or contracting coverage.</p>'+
+    '<p class="gardener-intro">Explore '+records.length+' GRID EATER business listings across New Zealand: '+reviewedCount+' with source-reviewed offerings and '+provisionalCount+' with provisional NZBN gardening categories. These provisional records are discovery leads, not confirmed services or operating areas. Town and service filters rely on published evidence and may exclude businesses whose details are still being enriched.</p>'+
+    '<p class="micro">An approved region-wide service or delivery claim may match towns in that region; provisional NZBN towns are labelled unconfirmed. A verified shop or nursery location matches only its own town and does not imply delivery or contracting coverage.</p>'+
     '<div class="gardener-search-filters" role="search" aria-label="Search approved gardening businesses">'+
     '<div class="gardener-filter-field gardener-query"><label for="gardener-query">Gardening service or supplies</label>'+
       '<div class="gardener-combobox"><input id="gardener-query" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="gardener-keyword-options" aria-expanded="false" autocomplete="off" spellcheck="false" placeholder="Try lawn mowing, native plants or compost">'+
@@ -213,7 +220,7 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
       '<ul id="gardener-area-options" class="gardener-suggestions" role="listbox" hidden></ul></div></div>'+
     '<button type="button" class="button secondary" id="gardener-clear">Clear filters</button></div>'+
     '<p id="gardener-filter-help" class="micro gardener-filter-help">Type a gardening service or supplies keyword and NZ town. Results use approved offerings, verified premises, confirmed coverage and clearly labelled provisional NZBN registration towns. Confirm actual service or delivery with the provider.</p>'+
-    '<p class="gardener-result-count" id="gardener-count" role="status" aria-live="polite">'+(records.length?records.length+" verified public listings":"No verified independent listings yet")+'</p>'+
+    '<p class="gardener-result-count" id="gardener-count" role="status" aria-live="polite">'+(records.length?records.length+" listed businesses · "+reviewedCount+" source-reviewed · "+provisionalCount+" provisional NZBN":"No independent listings yet")+'</p>'+
     '<div class="cards gardener-results" id="gardener-results">'+cards+'</div>'+emptyMessage+
     house+
     '<div class="gardener-guide-links"><h2>Plan your gardening job</h2>'+
