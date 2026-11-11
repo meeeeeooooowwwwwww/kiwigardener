@@ -183,7 +183,7 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
     return '<article class="card gardener-directory-card" data-gardener-card data-source-grade="'+(provisionalCategory?'provisional':'reviewed')+'" data-keywords="'+esc(facts)+
       '" data-areas="'+esc(r.serviceAreas.map(x=>x.name).join("|"))+
       '" data-locations="'+esc((r.publicLocations||[]).map(x=>x.name).join("|"))+'">'+
-      '<div class="gardener-card-meta"><span class="tag">'+(provisionalCategory?(supplier?'Provisional gardening supplier':'Provisional gardening service'):(supplier?'Source-reviewed supplier':'Source-reviewed gardening service'))+'</span><span>NZBN: '+esc(r.id.slice(5))+'</span></div>'+
+      '<div class="gardener-card-meta"><span class="tag">'+(provisionalCategory?(supplier?'Provisional gardening supplier':'Provisional gardening service'):(supplier?'Verified supplier':'Verified gardening service'))+'</span><span>NZBN: '+esc(r.id.slice(5))+'</span></div>'+
       '<h3><a href="/gardeners/'+r.slug+'/">'+esc(r.name)+'</a></h3>'+
       '<p>'+esc(r.description)+'</p>'+
       '<p class="gardener-card-fields"><strong>'+(provisionalCategory?'Indicative NZBN business category:':(supplier?'Products &amp; supplies:':'Services:'))+'</strong> '+esc(r.services.map(x=>x.name).join(", "))+'</p>'+
