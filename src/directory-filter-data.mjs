@@ -21,6 +21,7 @@ const KEYWORDS=[
   entry("hedge-trimming","Hedge trimming","service","hedge cutting","hedge maintenance","hedge shaping","topiary","hedges","hedge pruning"),
   entry("lawn-mowing","Lawn mowing","service","mowing","grass cutting","mow lawns","lawn care","ride on mowing","lawns","grass mowing"),
   entry("lawn-treatment","Lawn treatment","service","lawn fertilising","lawn renovation","lawn aeration","dethatching","lawn weed control"),
+  entry("landscaping","Landscaping","service","landscaper","landscapers","landscaping services","landscape gardening"),
   entry("landscape-design","Landscape design","service","garden design","landscape planning","landscape architect"),
   entry("landscape-construction","Landscape construction","service","hard landscaping","garden edging","retaining walls","paving installation"),
   entry("tree-services","Tree services","service","arborist","arboriculture","tree removal","tree pruning","stump grinding","tree felling"),
