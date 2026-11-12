@@ -1,5 +1,9 @@
 # KG-DIR-14 | Native Kiwi category-specific 153 release
-**12 November 2026 NZDT | Source and validation only until GRID EATER physically deploys the new public pin.**
+**12 November 2026 NZDT | PHYSICALLY LIVE AND INDEPENDENTLY PROVEN.**
+
+> **Latest source-of-truth release receipt:** [GRID protected Worker #43139851091](https://github.com/meeeeeooooowwwwwww/grideater/actions/runs/43139851091) **SUCCESS**, exact public release ID `kg-category-provisional-20261111045747746`, 173,880 bytes SHA `8b416584f93af81a0b4ce3dac7b114dc4a5cfa05653ef77e09e9e094b598a796`, 153 approved identities and all 132 category labels; safe GET 200 / HEAD 200 / invalid query 404 / POST 405, home/shop/directory/SEO/legal-name/location controls PASS. [Kiwi independent native main #43140647104](https://github.com/meeeeeooooowwwwwww/kiwigardener/actions/runs/43140647104) **SUCCESS**: exact live new source, **153 cards, 153 canonical profiles, 153 sitemap URLs**, five-category terms on each correct card/profile, all 21 reviewed entries retained, **five public Kiwi business phones**, Turnstile protected emails, zero D1 writes. Independent website CI is tracked separately from live proof. **Release steps 1–3 below are now historical completed workflow, not instructions to re-deploy.**
+
+
 
 ## Canonical source provenance
 GRID EATER remains the only canonical master. The existing approved independent gardening directory contains **153 NZBN business identities**, of which 21 have previously source-reviewed business offerings and 132 are approved as **provisional** NZBN/BIC-related gardening discovery leads. There are **no additional business identities** in this release.
@@ -20,3 +24,9 @@ All 153 businesses must remain in one accessible native directory, with 153 uniq
 
 ## Cost boundaries
 This Kiwi change adds **zero** D1 SQL/reads/writes, zero R2 PUTs, zero database, no new upstream crawler, model, search provider or paid feature. Kiwi fetches the single approved public GRID JSON once **at build time**, never per visitor. Existing Kiwi static directory search remains client-side. The source-only PR requires standard GitHub tests; the independent Kiwi provider build is existing account infrastructure. Preserve old release evidence and tests for regression, not as current live status.
+
+## Post-release open work (not claimed complete)
+- The 132 new industry-specific category descriptions are classification-based, not independently verified actual jobs or inventory. GRID EATER still needs company websites, owner/first-party service evidence, correct public contact information, and approved city/town/region mapping; do not infer locations from category alone.
+- Real NZBN company changes/closures and deregistration must continue to be reconciled through NZBN-P0 #2314. The exact 153 release is a snapshot, not proof of automated continuous business add/update/remove synchronisation.
+- Scaling beyond the current v1 maximum 200 businesses requires reviewed sharding/digest and Kiwi-owned automated native refresh, not a visitor-time direct D1 query.
+- Preserve old and new immutable R2 releases and independent Worker rollback. Do not replay the now completed R2/Worker one-shot deployments.
