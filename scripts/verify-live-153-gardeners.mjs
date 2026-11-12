@@ -85,10 +85,17 @@ export function verifyNative({source,hub,status,sitemap,profiles,phoneCount,conf
     !html.includes(row.sourcePage)||
     !sitemap.includes("<loc>"+SITE+path+"</loc>"))
    hold("PROFILE_"+i);
-  if(!old.has(row.id)&&
-     (!hub.includes(esc(row.services[0].name))||
-      !html.includes(esc(row.services[0].name))))
-   hold("CATEGORY_LABEL_"+i);
+  if(!old.has(row.id)){
+   const cardLink='href="'+path+'"';
+   const cardPos=hub.indexOf(cardLink);
+   const cardStart=cardPos<0?-1:hub.lastIndexOf("<article ",cardPos);
+   const cardEnd=cardPos<0?-1:hub.indexOf("</article>",cardPos);
+   const card=cardStart>=0&&cardEnd>cardStart?hub.slice(cardStart,cardEnd):"";
+   if(!card.includes("data-gardener-card")||
+     !card.includes(esc(row.services[0].name))||
+     !html.includes(esc(row.services[0].name)))
+    hold("CATEGORY_LABEL_"+i);
+  }
   if(!old.has(row.id)&&
      (!html.includes("Indicative NZBN business classification")||
       !html.includes("Operating area not confirmed")||
