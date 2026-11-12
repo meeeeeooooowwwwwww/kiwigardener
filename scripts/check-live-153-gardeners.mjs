@@ -50,6 +50,8 @@ test("wrong native card/profile/sitemap counts, provisional labels or contacts h
   x=>x.profiles.pop(),
   x=>x.sitemap=x.sitemap.replace("<loc>"+base+"/gardeners/business-152/</loc>",""),
   x=>x.profiles[21]=x.profiles[21].replace("Operating area not confirmed",""),
+  x=>x.profiles[21]=x.profiles[21].replace(provisionalLabels[0],""),
+  x=>x.hub=x.hub.replace(provisionalLabels[0],""),
   x=>x.phoneCount=4,
   x=>x.config.enabled=false,
   x=>x.hub+="privateContact",
