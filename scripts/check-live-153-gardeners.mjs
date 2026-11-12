@@ -5,6 +5,7 @@ import {RELEASE,SHA,BYTES,verifySource,verifyNative}
  from "./verify-live-153-gardeners.mjs";
 import {ALL as OLD} from "./verify-live-twentyone-gardeners.mjs";
 const base="https://kiwigardeners.com";
+const provisionalLabels=["Indicative general gardening (NZBN category)","Indicative lawn care (NZBN category)","Indicative landscaping (NZBN category)","Indicative arborist or tree services (NZBN category)","Indicative garden centre or nursery retail (NZBN category)"];
 const ids=[...OLD,...Array.from({length:132},(_,i)=>
  "afnz-"+String(9429009000000+i))];
 function fixture(){
@@ -12,7 +13,7 @@ function fixture(){
   id,slug:"business-"+i,name:"Garden Business "+i,
   sourcePage:"https://grideater.com/business/business-"+i,
   kind:i<21?"gardening_service":i<146?"gardening_service":"gardening_supplier",
-  services:[{name:"Indicative garden category",
+  services:[{name:i<21?"Garden maintenance":provisionalLabels[i<146?(i-21)%4:4],
     ...(i>=21?{basis:"nzbn_bic_provisional"}:{})}]
  }));
  const source={records};
@@ -21,7 +22,7 @@ function fixture(){
    '"><a href="/gardeners/'+x.slug+'/">'+x.name+'</a>'+x.id+'</article>').join("");
  const profiles=records.map((x,i)=>
   '<link rel="canonical" href="'+base+'/gardeners/'+x.slug+'/">'+
-   x.id+x.name+x.sourcePage+(i>=21?
+   x.id+x.name+x.sourcePage+x.services[0].name+(i>=21?
    'Indicative NZBN business classification Operating area not confirmed Show business email (Turnstile)':''));
  const sitemap='<urlset>'+records.map(x=>
    '<loc>'+base+'/gardeners/'+x.slug+'/</loc>').join("")+'</urlset>';
@@ -30,16 +31,16 @@ function fixture(){
  return {source,hub,sitemap,status,profiles,phoneCount:5,config:{enabled:true}};
 }
 test("exact pinned source and bounded 153 native verifier",()=>{
- assert.equal(RELEASE,"kg-bulk-provisional-20261110052336535");
- assert.equal(SHA,"0e186bb362bd025d1b4b728e137b7a4d343e63c88693eeb93d89672146f68a34");
- assert.equal(BYTES,178914);
+ assert.equal(RELEASE,"kg-category-provisional-20261111045747746");
+ assert.equal(SHA,"8b416584f93af81a0b4ce3dac7b114dc4a5cfa05653ef77e09e9e094b598a796");
+ assert.equal(BYTES,173880);
  assert.equal(ids.length,153);assert.equal(new Set(ids).size,153);
  assert.throws(()=>verifySource(Buffer.from("{}")),/SOURCE_SHA_HOLD/);
  assert.deepEqual(verifyNative(fixture()),{
   state:"KIWI_153_PROVISIONAL_GARDENERS_LIVE",releaseId:RELEASE,
   sourceSha256:SHA,previouslyLive:21,addedServices:125,addedSuppliers:7,
   cards:153,profiles:153,sitemapProfiles:153,publicPhoneCount:5,
-  turnstileEnabled:true,newBicListingsClearlyProvisional:true,
+  turnstileEnabled:true,newBicListingsClearlyProvisional:true,categoryLabelsVerified:true,
   d1Writes:0,productionWrites:0});
 });
 test("wrong native card/profile/sitemap counts, provisional labels or contacts hold",()=>{
