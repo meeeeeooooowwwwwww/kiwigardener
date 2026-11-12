@@ -19,7 +19,7 @@ function fixture(){
  const source={records};
  const hub='<script src="/assets/gardener-public-phone.js"></script><p>Dallas Timpson</p>'+
   records.map(x=>'<article data-gardener-card data-id="'+x.id+
-   '"><a href="/gardeners/'+x.slug+'/">'+x.name+'</a>'+x.id+'</article>').join("");
+   '"><a href="/gardeners/'+x.slug+'/">'+x.name+'</a>'+x.id+x.services[0].name+'</article>').join("");
  const profiles=records.map((x,i)=>
   '<link rel="canonical" href="'+base+'/gardeners/'+x.slug+'/">'+
    x.id+x.name+x.sourcePage+x.services[0].name+(i>=21?
