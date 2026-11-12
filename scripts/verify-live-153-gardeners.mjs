@@ -8,12 +8,21 @@ import {validateGridEaterPublicGardeners} from "../src/gardener-directory.mjs";
 import {ALL as EXISTING} from "./verify-live-twentyone-gardeners.mjs";
 export const GRID="https://grideater.com/feeds/gardeners/v1.json";
 export const SITE="https://kiwigardeners.com";
-export const RELEASE="kg-bulk-provisional-20261110052336535";
-export const SHA="0e186bb362bd025d1b4b728e137b7a4d343e63c88693eeb93d89672146f68a34";
-export const BYTES=178914;
+export const RELEASE="kg-category-provisional-20261111045747746";
+export const SHA="8b416584f93af81a0b4ce3dac7b114dc4a5cfa05653ef77e09e9e094b598a796";
+export const BYTES=173880;
 const hash=b=>createHash("sha256").update(b).digest("hex");
 const hold=c=>{throw Error("KG_DIR_12_"+c+"_HOLD");};
 const old=new Set(EXISTING);
+// These are currently recorded GRID EATER canonical NZBN/BIC category clues,
+// NOT independent confirmation of actual business services or locations.
+export const PROVISIONAL_CATEGORY_COUNTS=new Map([
+ ["Indicative general gardening (NZBN category)",32],
+ ["Indicative lawn care (NZBN category)",30],
+ ["Indicative landscaping (NZBN category)",32],
+ ["Indicative arborist or tree services (NZBN category)",31],
+ ["Indicative garden centre or nursery retail (NZBN category)",7]
+]);
 export function verifySource(bytes,now=new Date().toISOString()){
  if(!Buffer.isBuffer(bytes)||bytes.length!==BYTES||hash(bytes)!==SHA)
   hold("SOURCE_SHA");
@@ -35,6 +44,16 @@ export function verifySource(bytes,now=new Date().toISOString()){
      x.serviceAreas.length!==0||
      x.kind==="gardening_supplier"&&x.publicLocations.length!==0))
   hold("PROVISIONAL_GRADE");
+ const groups=new Map([...PROVISIONAL_CATEGORY_COUNTS].map(([name])=>[name,0]));
+ for(const row of fresh){
+  const name=row.services[0].name;
+  if(!groups.has(name))hold("PROVISIONAL_CATEGORY_NAME");
+  if((row.kind==="gardening_supplier")!==(name==="Indicative garden centre or nursery retail (NZBN category)"))
+   hold("CATEGORY_SUPPLIER_KIND");
+  groups.set(name,groups.get(name)+1);
+ }
+ if([...PROVISIONAL_CATEGORY_COUNTS].some(([name,count])=>groups.get(name)!==count))
+  hold("CATEGORY_COUNTS");
  if(data.records.some(x=>Object.keys(x).some(k=>
    ["privateContact","publicPhone","publicEmail","protectedPhone","rawNZBN"].includes(k))))
   hold("PROTECTED_FIELDS");
@@ -66,6 +85,17 @@ export function verifyNative({source,hub,status,sitemap,profiles,phoneCount,conf
     !html.includes(row.sourcePage)||
     !sitemap.includes("<loc>"+SITE+path+"</loc>"))
    hold("PROFILE_"+i);
+  if(!old.has(row.id)){
+   const cardLink='href="'+path+'"';
+   const cardPos=hub.indexOf(cardLink);
+   const cardStart=cardPos<0?-1:hub.lastIndexOf("<article ",cardPos);
+   const cardEnd=cardPos<0?-1:hub.indexOf("</article>",cardPos);
+   const card=cardStart>=0&&cardEnd>cardStart?hub.slice(cardStart,cardEnd):"";
+   if(!card.includes("data-gardener-card")||
+     !card.includes(esc(row.services[0].name))||
+     !html.includes(esc(row.services[0].name)))
+    hold("CATEGORY_LABEL_"+i);
+  }
   if(!old.has(row.id)&&
      (!html.includes("Indicative NZBN business classification")||
       !html.includes("Operating area not confirmed")||
@@ -83,7 +113,7 @@ export function verifyNative({source,hub,status,sitemap,profiles,phoneCount,conf
   addedServices:125,addedSuppliers:7,
   cards:153,profiles:153,sitemapProfiles:153,
   publicPhoneCount:5,turnstileEnabled:true,
-  newBicListingsClearlyProvisional:true,d1Writes:0,productionWrites:0};
+  newBicListingsClearlyProvisional:true,categoryLabelsVerified:true,d1Writes:0,productionWrites:0};
 }
 async function get(path,type="text/html"){
  const url=path.startsWith("http")?path:SITE+path;
