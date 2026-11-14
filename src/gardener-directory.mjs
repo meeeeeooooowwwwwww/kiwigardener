@@ -211,10 +211,8 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
   const emptyMessage=records.length?'<p id="gardener-empty" class="gardener-empty" hidden>No approved gardening businesses match these filters. Try fewer filters or confirm delivery and service areas directly with a provider.</p>':
     '<div class="gardener-empty"><strong>No independent directory listings are published yet.</strong><p>Approved gardening contractors, nurseries and suppliers appear here only when their categories, public offerings, service/delivery areas or premises, and contact permissions have passed GRID EATER review. Our Christchurch guides and Dallas enquiry service remain available.</p></div>';
   const body=articleHero("New Zealand gardening directory","Find gardening services and supplies",
-    "Search gardening keywords and towns across New Zealand. Only independently approved GRID EATER records appear in directory results.",trail)+
+    "",trail,{compact:true})+
     '<section class="section gardener-directory"><div class="container">'+
-    '<p class="gardener-intro">Explore '+records.length+' GRID EATER business listings across New Zealand: '+reviewedCount+' with source-reviewed offerings and '+provisionalCount+' with provisional NZBN gardening categories. These provisional records are discovery leads, not confirmed services or operating areas. Town and service filters rely on published evidence and may exclude businesses whose details are still being enriched.</p>'+
-    '<p class="micro">An approved region-wide service or delivery claim may match towns in that region; provisional NZBN towns are labelled unconfirmed. A verified shop or nursery location matches only its own town and does not imply delivery or contracting coverage.</p>'+
     '<div class="gardener-search-filters" role="search" aria-label="Search approved gardening businesses">'+
     '<div class="gardener-filter-field gardener-query"><label for="gardener-query">Gardening service or supplies</label>'+
       '<div class="gardener-combobox"><input id="gardener-query" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="gardener-keyword-options" aria-expanded="false" autocomplete="off" spellcheck="false" placeholder="Try lawn mowing, native plants or compost">'+
