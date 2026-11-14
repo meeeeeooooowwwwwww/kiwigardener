@@ -403,4 +403,6 @@ test("153-directory evidence grades remain honest and GRID-approved contact is o
  const js=await readFile(new URL("../assets/gardener-search.js",import.meta.url),"utf8");
  assert.match(js,/card\.dataset\.sourceGrade==="provisional"/);
  assert.match(js,/reviewed\+" source-reviewed · "\+provisional\+" provisional NZBN"/);
+ assert.match(hub,/id="gardener-pagination"/);
+ assert.match(js,/PAGE_SIZE=15/);
 });

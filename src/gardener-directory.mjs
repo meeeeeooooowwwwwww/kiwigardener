@@ -222,8 +222,9 @@ export function addGardenerDirectoryPages({esc,a,articleHero,layout,files,baseTr
       '<ul id="gardener-area-options" class="gardener-suggestions" role="listbox" hidden></ul></div></div>'+
     '<button type="button" class="button secondary" id="gardener-clear">Clear filters</button></div>'+
     '<p id="gardener-filter-help" class="micro gardener-filter-help">Type a gardening service or supplies keyword and NZ town. Results use approved offerings, verified premises, confirmed coverage and clearly labelled provisional NZBN registration towns. Confirm actual service or delivery with the provider.</p>'+
-    '<p class="gardener-result-count" id="gardener-count" role="status" aria-live="polite">'+(records.length?records.length+" listed businesses · "+reviewedCount+" source-reviewed · "+provisionalCount+" provisional NZBN":"No independent listings yet")+'</p>'+
+    '<p class="gardener-result-count" id="gardener-count" tabindex="-1" role="status" aria-live="polite">'+(records.length?records.length+" listed businesses · "+reviewedCount+" source-reviewed · "+provisionalCount+" provisional NZBN":"No independent listings yet")+'</p>'+
     '<div class="cards gardener-results" id="gardener-results">'+cards+'</div>'+emptyMessage+
+    '<nav class="gardener-pagination" id="gardener-pagination" aria-label="Directory results pages" hidden></nav>'+
     house+
     '<div class="gardener-guide-links"><h2>Plan your gardening job</h2>'+
     '<p>Not sure which service to request? Our free guides explain what to include in a quote and how to compare work scopes. Use the <a href="/plants/">plant finder</a> for planting inspiration, or explore <a href="/areas/">Canterbury area guides</a>.</p>'+

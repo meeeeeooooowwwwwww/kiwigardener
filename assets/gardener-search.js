@@ -20,6 +20,9 @@
   const words=value=>String(value||"").split("|").map(normal).filter(Boolean);
   const pairs=code=>String(code||"").match(/.{2}/g)||[];
   const MAX_OPTIONS=10;
+  const PAGE_SIZE=15;
+  const pager=document.getElementById("gardener-pagination");
+  let currentPage=1;
   let dictionary=null;
   let selectedKeyword=null;
   let selectedTown=null;
@@ -88,38 +91,77 @@
     if(!area.value.trim())return true;
     return placeCandidates().some(place=>matchesPlace(card,place));
   };
-  const updateUrl=()=>{
+  const updateUrl=(push=false)=>{
     const p=new URLSearchParams();
     if(query.value.trim())p.set("q",query.value.trim().slice(0,100));
     if(area.value.trim())p.set("area",area.value.trim().slice(0,100));
-    window.history.replaceState(null,"",window.location.pathname+(p.size?"?"+p:""));
+    if(currentPage>1)p.set("page",String(currentPage));
+    window.history[push?"pushState":"replaceState"](null,"",window.location.pathname+(p.size?"?"+p:""));
   };
   const restore=()=>{
     const p=new URLSearchParams(window.location.search);
     query.value=(p.get("q")||"").slice(0,100);
     area.value=(p.get("area")||"").slice(0,100);
     selectedKeyword=null;selectedTown=null;
+    const requested=Number(p.get("page")||1);
+    currentPage=Number.isSafeInteger(requested)&&requested>0?requested:1;
+  };
+  const renderPager=total=>{
+    if(!pager)return;
+    pager.replaceChildren();
+    pager.hidden=total<=1;
+    if(total<=1)return;
+    const add=(label,page,disabled=false,active=false)=>{
+      const button=document.createElement("button");
+      button.type="button";button.textContent=label;button.disabled=disabled;
+      button.setAttribute("aria-label",typeof label==="number"?"Page "+label:label+" page");
+      if(active)button.setAttribute("aria-current","page");
+      button.addEventListener("click",()=>{
+        if(page===currentPage)return;
+        currentPage=page;update();updateUrl(true);
+        count.focus({preventScroll:true});
+        count.scrollIntoView({block:"start",behavior:"instant"});
+      });
+      pager.append(button);
+    };
+    add("Previous",currentPage-1,currentPage===1);
+    const start=Math.max(1,Math.min(currentPage-2,total-4));
+    const end=Math.min(total,start+4);
+    if(start>1){add(1,1);if(start>2){const gap=document.createElement("span");gap.textContent="…";gap.setAttribute("aria-hidden","true");pager.append(gap);}}
+    for(let p=start;p<=end;p++)add(p,p,false,p===currentPage);
+    if(end<total){if(end<total-1){const gap=document.createElement("span");gap.textContent="…";gap.setAttribute("aria-hidden","true");pager.append(gap);}add(total,total);}
+    add("Next",currentPage+1,currentPage===total);
   };
   const update=(persist=false)=>{
     const searching=!!(query.value.trim()||area.value.trim());
-    let visible=0,reviewed=0,provisional=0;
+    let reviewed=0,provisional=0;
+    const matches=[];
     for(const card of cards){
       const match=!searching||(dictionary&&matchesKeywords(card)&&matchesArea(card));
-      card.hidden=!match;
       if(match){
-        visible++;
+        matches.push(card);
         if(card.dataset.sourceGrade==="provisional")provisional++;
         else if(card.dataset.sourceGrade==="reviewed")reviewed++;
       }
     }
-    if(searching&&!dictionary){
+    const visible=matches.length;
+    const loading=searching&&!dictionary;
+    const total=Math.ceil(visible/PAGE_SIZE);
+    // Do not discard a restored filtered page while its index is loading.
+    if(!loading)currentPage=Math.max(1,Math.min(currentPage,total||1));
+    const offset=(currentPage-1)*PAGE_SIZE;
+    const shown=new Set(matches.slice(offset,offset+PAGE_SIZE));
+    for(const card of cards)card.hidden=!shown.has(card);
+    if(loading){
       count.textContent="Loading search filters…";
     }else{
       count.textContent=cards.length===0?"No independent listings yet":
         visible+" listed "+(visible===1?"business":"businesses")+" · "+
-        reviewed+" source-reviewed · "+provisional+" provisional NZBN";
+        reviewed+" source-reviewed · "+provisional+" provisional NZBN"+
+        (visible?" · Showing "+(offset+1)+"–"+Math.min(offset+PAGE_SIZE,visible)+" of "+visible:"");
     }
-    if(empty)empty.hidden=visible!==0||!dictionary&&searching;
+    if(empty)empty.hidden=visible!==0||loading;
+    renderPager(loading?0:total);
     if(persist)updateUrl();
   };
 
@@ -146,6 +188,7 @@
       area.value=item[0];
     }
     close(control);
+    currentPage=1;
     update(true);
     control.input.focus();
   };
@@ -188,7 +231,7 @@
     c.input.addEventListener("input",()=>{
       if(c.kind==="keyword")selectedKeyword=null;
       else selectedTown=null;
-      render(c);update(true);
+      currentPage=1;render(c);update(true);
     });
     c.input.addEventListener("focus",()=>render(c));
     c.input.addEventListener("keydown",e=>{
@@ -215,7 +258,7 @@
     query.value="";area.value="";
     selectedKeyword=null;selectedTown=null;
     controls.forEach(close);
-    update(true);query.focus();
+    currentPage=1;update(true);query.focus();
   });
   window.addEventListener("popstate",()=>{
     restore();controls.forEach(close);update();
@@ -234,7 +277,7 @@
       dictionary=value;
       for(const [code,label] of value.regions)regionNames.set(code,label);
       if(help)help.textContent="Type a gardening keyword or NZ town to filter approved listings. Search does not use company names.";
-      update();controls.forEach(c=>{if(c.input===document.activeElement)render(c);});
+      update(true);controls.forEach(c=>{if(c.input===document.activeElement)render(c);});
     }).catch(()=>{
       if(help)help.textContent="The town and keyword suggestions are temporarily unavailable. Please try again.";
       if(query.value.trim()||area.value.trim())count.textContent="Search filters unavailable";
