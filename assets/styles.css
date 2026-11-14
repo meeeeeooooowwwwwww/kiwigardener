@@ -614,3 +614,9 @@ img.card-image[hidden],figure.local-figure[hidden]{display:none!important}
   .gardener-search-filters button{grid-column:auto;width:100%}
   .gardener-suggestions li{min-height:44px}
 }
+
+/* Directory search: keep the heading and form close together on all screens. */
+.article-hero.article-hero-compact{padding:24px 0 22px}
+.article-hero-compact h1{margin:10px 0 0;font-size:clamp(2rem,4vw,3.5rem);line-height:1.12}
+.section.gardener-directory{padding-top:20px}
+@media(max-width:720px){.article-hero.article-hero-compact{padding:16px 0}.article-hero-compact h1{font-size:clamp(1.85rem,7vw,2.6rem)}.section.gardener-directory{padding-top:14px}}
