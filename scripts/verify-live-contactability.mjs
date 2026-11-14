@@ -2,6 +2,7 @@
 /** Independent public-only proof of the native contactability visibility cut. */
 import {verifySource,GRID,SITE} from "./verify-live-153-gardeners.mjs";
 import {selectContactableDirectory,PUBLISHED_IDS,RELEASE_ID} from "../src/gardener-contactability.mjs";
+import {CONTACT_SNAPSHOT_SHA,CONTACT_SOURCE_SHA,CONTACT_PHONE_COUNT} from "../src/gardener-contact-snapshot.js";
 const hold=c=>{throw Error("KIWI_CONTACTABILITY_"+c+"_HOLD");};
 async function get(url,status=200,accept="text/html"){
  const res=await fetch(url,{method:"GET",redirect:"manual",headers:{accept},signal:AbortSignal.timeout(20000)});
@@ -21,16 +22,17 @@ const [hubRaw,siteRaw,statusRaw,phonesRaw,configRaw]=await Promise.all([
  get(SITE+"/api/gardeners/email/config",200,"application/json")
 ]);
 const hub=hubRaw.toString("utf8"),sitemap=siteRaw.toString("utf8"),status=JSON.parse(statusRaw),phones=JSON.parse(phonesRaw),config=JSON.parse(configRaw);
-if(status.releaseId!==RELEASE_ID||status.publishedListings!==90||status.approvedForKiwi!==true)hold("STATUS");
+if(status.releaseId!==RELEASE_ID||status.publishedListings!==90||status.approvedForKiwi!==true||status.contactSnapshotSha256!==CONTACT_SNAPSHOT_SHA||status.sourceSha256!==CONTACT_SOURCE_SHA)hold("STATUS");
 const cardIds=[...hub.matchAll(/data-kiwi-public-phone="(afnz-\d{13})"/g)].map(m=>m[1]);
 if(cardIds.length!==90||new Set(cardIds).size!==90||cardIds.some(x=>!accepted.has(x)))hold("CARDS");
 const locs=[...sitemap.matchAll(/<loc>https:\/\/kiwigardeners\.com\/gardeners\/([^<]+)\/<\/loc>/g)].map(m=>m[1]);
 if(locs.length!==90||new Set(locs).size!==90||selected.records.some(r=>!locs.includes(r.slug))||hidden.some(r=>locs.includes(r.slug)))hold("SITEMAP");
 if(!hub.includes("Dallas Timpson")||phones.releaseId!==RELEASE_ID||config.enabled!==true||!phones.phones||typeof phones.phones!=="object")hold("CONTACT_BOUNDARY");
+if(Object.keys(phones.phones).length!==CONTACT_PHONE_COUNT)hold("PHONE_COUNT");
 if(Object.keys(phones.phones).some(id=>!accepted.has(id)))hold("PHONE_FOR_HIDDEN_BUSINESS");
 // Test three ordinary hidden routes and three retained routes; build independently
 // proves every expected card/sitemap entry. No contact value or hidden ID logged.
 for(const [records,expected] of [[hidden,404],[selected.records,200]]){
  for(const r of records.slice(0,3))await get(SITE+"/gardeners/"+r.slug+"/",expected);
 }
-console.log("KIWI_CONTACTABILITY_LIVE="+JSON.stringify({sourceRecords:source.records.length,cards:cardIds.length,sitemapProfiles:locs.length,hidden:63,hiddenProfileSamples404:3,retainedProfileSamples200:3,publicPhoneCount:Object.keys(phones.phones).length,turnstileEnabled:true,rawContactsLogged:false,d1Writes:0}));
+console.log("KIWI_CONTACTABILITY_LIVE="+JSON.stringify({sourceRecords:source.records.length,cards:cardIds.length,sitemapProfiles:locs.length,hidden:63,hiddenProfileSamples404:3,retainedProfileSamples200:3,publicPhoneCount:Object.keys(phones.phones).length,contactSnapshotSha256:CONTACT_SNAPSHOT_SHA,turnstileEnabled:true,rawContactsLogged:false,d1Writes:0}));
