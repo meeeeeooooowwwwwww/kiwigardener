@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {revealBusinessEmail,emailRevealReady,privateContactKey}
+import {revealBusinessEmail,emailRevealReady,privateContactKey,readVerifiedSnapshot,sha256Hex,loadCurrentPrivateContacts}
  from "../src/business-email-reveal.js";
 import {publicBusinessPhones,normaliseKiwiPhone}
  from "../src/business-phone-public.js";
@@ -148,4 +148,32 @@ test("contacts for hidden directory identities are excluded without exposing raw
   schemaVersion:1,source:"grideater.com",releaseId:RELEASE,approvedForKiwi:true,publishedListings:1
  }),{status:200})}});
  assert.equal((await outcome(bad)).status,503);
+});
+
+test("immutable private snapshot validates exact bytes, source, counts and visible IDs",async()=>{
+ const sourceSha="a".repeat(64),visibleIds=new Set([ID]);
+ const data={...DB,sourceReleaseSha256:sourceSha};
+ const raw=new TextEncoder().encode(JSON.stringify(data)),digest=await sha256Hex(raw);
+ const obj={size:raw.byteLength,arrayBuffer:async()=>raw.buffer};
+ const options={digest,bytes:raw.byteLength,releaseId:RELEASE,sourceSha,visibleIds,phoneCount:1,emailCount:1};
+ assert.deepEqual(await readVerifiedSnapshot(obj,options),data);
+ assert.equal(privateContactKey(RELEASE,digest),"verticals/kiwigardeners.com/v1/private-contacts/"+RELEASE+"/"+digest+".json");
+ await assert.rejects(readVerifiedSnapshot(obj,{...options,digest:"b".repeat(64)}),/snapshot_digest/);
+ await assert.rejects(readVerifiedSnapshot(obj,{...options,bytes:raw.byteLength+1}),/snapshot_size/);
+ await assert.rejects(readVerifiedSnapshot(obj,{...options,sourceSha:"c".repeat(64)}),/snapshot_schema/);
+ await assert.rejects(readVerifiedSnapshot(obj,{...options,visibleIds:new Set()}),/snapshot_schema/);
+ await assert.rejects(readVerifiedSnapshot(obj,{...options,phoneCount:2}),/snapshot_schema/);
+});
+test("current release refuses an unpinned legacy snapshot and mismatched visibility before R2 access",async()=>{
+ const {CONTACT_RELEASE_ID,CONTACT_SOURCE_SHA,CONTACT_SNAPSHOT_SHA}=await import("../src/gardener-contact-snapshot.js");
+ const {PUBLISHED_IDS}=await import("../src/gardener-contactability.mjs");
+ let seen=[];
+ const correct={schemaVersion:1,source:"grideater.com",releaseId:CONTACT_RELEASE_ID,approvedForKiwi:true,publishedListings:90,publishedBusinessIds:[...PUBLISHED_IDS],contactSnapshotSha256:CONTACT_SNAPSHOT_SHA,sourceSha256:CONTACT_SOURCE_SHA};
+ const envFor=status=>environment({ASSETS:{fetch:async()=>new Response(JSON.stringify(status))},KIWI_PRIVATE_CONTACTS:{get:async(key)=>{seen.push(key);return null;}}});
+ const url=new URL(ROOT+"/api/gardeners/phones");
+ assert.equal((await loadCurrentPrivateContacts(url,envFor({...correct,contactSnapshotSha256:undefined}))).status,503);
+ assert.equal((await loadCurrentPrivateContacts(url,envFor({...correct,publishedBusinessIds:[...PUBLISHED_IDS.slice(1),"afnz-9429000000001"]}))).status,503);
+ assert.deepEqual(seen,[]);
+ assert.equal((await loadCurrentPrivateContacts(url,envFor(correct))).status,404);
+ assert.deepEqual(seen,[privateContactKey(CONTACT_RELEASE_ID,CONTACT_SNAPSHOT_SHA)]);
 });

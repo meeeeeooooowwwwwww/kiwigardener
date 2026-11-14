@@ -2,6 +2,7 @@ import {readFile, stat} from "node:fs/promises";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import {PUBLISHED_IDS,RELEASE_ID,SOURCE_COUNT} from "../src/gardener-contactability.mjs";
+import {CONTACT_SNAPSHOT_SHA,CONTACT_SOURCE_SHA} from "../src/gardener-contact-snapshot.js";
 import {plants} from "../src/plant-catalogue.mjs";
 import {plantEditorial} from "../src/plant-editorial.mjs";
 import {plantPhotoLinks} from "../src/plant-photo-links.mjs";
@@ -22,6 +23,8 @@ assert.equal(Object.keys(plantEditorial).length,plants.length,"Every plant must 
 for (const p of plants){const n=plantEditorial[p.slug];assert.ok(n?.length===2&&n.every(s=>s.length>=100),"Missing substantive care notes: "+p.slug);}
 const gardenerStatus=JSON.parse(await readFile("dist/assets/gardener-directory-status.json","utf8"));
 assert.equal(gardenerStatus.releaseId,RELEASE_ID,"Contactability release drift");
+assert.equal(gardenerStatus.contactSnapshotSha256,CONTACT_SNAPSHOT_SHA,"Contact snapshot drift");
+assert.equal(gardenerStatus.sourceSha256,CONTACT_SOURCE_SHA,"Contact source digest drift");
 assert.equal(gardenerStatus.publishedListings,PUBLISHED_IDS.length,"Incorrect contactability subset count");
 assert.equal(SOURCE_COUNT-PUBLISHED_IDS.length,63,"Expected exact hidden count for current release");
 assert.equal(gardenerStatus.schemaVersion,1,"Unexpected gardener status schema");

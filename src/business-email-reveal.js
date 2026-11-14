@@ -1,18 +1,38 @@
 /** Server-side Kiwi business-email reveal. Never embed emails into HTML/public feed.
  * Exact current-release R2 private snapshot, server verified Turnstile + rate limit.
  */
+import {CONTACT_RELEASE_ID,CONTACT_SOURCE_SHA,CONTACT_SNAPSHOT_SHA,CONTACT_SNAPSHOT_BYTES,
+ CONTACT_VISIBLE_IDS_SHA,CONTACT_VISIBLE_COUNT,CONTACT_PHONE_COUNT,CONTACT_EMAIL_COUNT} from "./gardener-contact-snapshot.js";
 const headers={"content-type":"application/json; charset=utf-8","cache-control":"private, no-store, max-age=0","x-content-type-options":"nosniff","x-robots-tag":"noindex, nofollow, noarchive"};
 const json=(status,data)=>new Response(JSON.stringify(data),{status,headers});
 const RELEASE=/^kg-[a-z0-9._-]{8,94}$/;
 const EMAIL=/^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/;
-export const privateContactKey=(releaseId)=>
- "verticals/kiwigardeners.com/v1/private-contacts/"+releaseId+".json";
+export const privateContactKey=(releaseId,digest=null)=>
+ "verticals/kiwigardeners.com/v1/private-contacts/"+releaseId+(digest?"/"+digest:"")+".json";
+export async function sha256Hex(bytes){
+ return Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",bytes)),n=>n.toString(16).padStart(2,"0")).join("");
+}
+export async function readVerifiedSnapshot(obj,{digest,bytes,releaseId,sourceSha,visibleIds,phoneCount,emailCount}){
+ if(!obj||obj.size!==bytes||bytes>80000||typeof obj.arrayBuffer!=="function")throw Error("snapshot_size");
+ const raw=await obj.arrayBuffer();
+ if(raw.byteLength!==bytes||await sha256Hex(raw)!==digest)throw Error("snapshot_digest");
+ const data=JSON.parse(new TextDecoder().decode(raw));
+ if(data?.schemaVersion!==1||data.releaseId!==releaseId||data.sourceReleaseSha256!==sourceSha||
+    !data.phones||typeof data.phones!=="object"||Array.isArray(data.phones)||
+    !data.emails||typeof data.emails!=="object"||Array.isArray(data.emails)||
+    Object.keys(data.phones).length!==phoneCount||Object.keys(data.emails).length!==emailCount||
+    [...Object.keys(data.phones),...Object.keys(data.emails)].some(id=>!visibleIds.has(id))||
+    Object.values(data.phones).some(n=>typeof n!=="string"||n.length>32||!/^(?:0\d{8,10}|\+64\d{7,10})$/.test(n.trim().replace(/[\s().-]/g,"")))||
+    Object.values(data.emails).some(n=>typeof n!=="string"||n.length>254||!EMAIL.test(n)))
+   throw Error("snapshot_schema");
+ return data;
+}
 export function emailRevealReady(env){
  return Boolean(env.TURNSTILE_SITE_KEY&&env.TURNSTILE_SECRET&&env.CONTACT_LIMIT?.limit&&
    env.KIWI_PRIVATE_CONTACTS?.get&&env.ASSETS?.fetch&&env.BUSINESS_EMAIL_REVEAL_ENABLED==="true");
 }
 export async function loadCurrentPrivateContacts(url,env){
- let releaseId,visibleIds;
+ let releaseId,visibleIds,versioned=false;
  try{
    const result=await env.ASSETS.fetch(new Request(
      new URL("/assets/gardener-directory-status.json",url.origin),{
@@ -31,12 +51,19 @@ export async function loadCurrentPrivateContacts(url,env){
       return {ok:false,status:503};
    visibleIds=new Set(status.publishedBusinessIds);
    releaseId=status.releaseId;
+   if(releaseId===CONTACT_RELEASE_ID){
+     versioned=true;
+     if(status.contactSnapshotSha256!==CONTACT_SNAPSHOT_SHA||status.sourceSha256!==CONTACT_SOURCE_SHA||
+        visibleIds.size!==CONTACT_VISIBLE_COUNT||await sha256Hex(new TextEncoder().encode([...visibleIds].sort().join("\n")+"\n"))!==CONTACT_VISIBLE_IDS_SHA)
+       return {ok:false,status:503};
+   }else if(status.contactSnapshotSha256!==undefined)return {ok:false,status:503};
  }catch{return {ok:false,status:503};}
  try{
-   const obj=await env.KIWI_PRIVATE_CONTACTS.get(privateContactKey(releaseId));
+   const obj=await env.KIWI_PRIVATE_CONTACTS.get(privateContactKey(releaseId,versioned?CONTACT_SNAPSHOT_SHA:null));
    if(!obj)return {ok:false,status:404};
    if((obj.size||0)>80000)return {ok:false,status:503};
-   const data=await obj.json();
+   const data=versioned?await readVerifiedSnapshot(obj,{digest:CONTACT_SNAPSHOT_SHA,bytes:CONTACT_SNAPSHOT_BYTES,
+     releaseId,sourceSha:CONTACT_SOURCE_SHA,visibleIds,phoneCount:CONTACT_PHONE_COUNT,emailCount:CONTACT_EMAIL_COUNT}):await obj.json();
    if(data?.schemaVersion!==1||data.releaseId!==releaseId||
       !data.phones||typeof data.phones!=="object"||Array.isArray(data.phones)||
       !data.emails||typeof data.emails!=="object"||Array.isArray(data.emails))

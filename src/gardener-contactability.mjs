@@ -3,12 +3,13 @@
 // Current release only; a new upstream release requires a matching approved
 // contactability manifest rather than silently republishing unreviewed entries.
 import {createHash} from "node:crypto";
-export const RELEASE_ID="kg-category-provisional-20261111045747746";
-export const SOURCE_SHA="8b416584f93af81a0b4ce3dac7b114dc4a5cfa05653ef77e09e9e094b598a796";
+import {CONTACT_RELEASE_ID,CONTACT_SOURCE_SHA,CONTACT_VISIBLE_IDS_SHA,CONTACT_VISIBLE_COUNT} from "./gardener-contact-snapshot.js";
+export const RELEASE_ID=CONTACT_RELEASE_ID;
+export const SOURCE_SHA=CONTACT_SOURCE_SHA;
 export const POLICY_VERSION=1;
 export const SOURCE_COUNT=153;
 export const SOURCE_IDS_SHA="b9e83feea5e0688f3139cf5b99320f600a560af8927ac901b394357c4a874901";
-export const PUBLISHED_IDS_SHA="f2444b7ad381a84c7da00c2abd2abdc15a9fa234bd04697c5393194cec45d7fe";
+export const PUBLISHED_IDS_SHA=CONTACT_VISIBLE_IDS_SHA;
 export const PUBLISHED_IDS=Object.freeze([
   "afnz-9429030072053",
   "afnz-9429030118973",
@@ -112,7 +113,7 @@ export function selectContactableDirectory(feed){
  if(ids.some(x=>!idOk(x))||new Set(ids).size!==SOURCE_COUNT||digest(ids)!==SOURCE_IDS_SHA)
    hold("SOURCE_IDENTITY");
  const accepted=new Set(PUBLISHED_IDS);
- if(accepted.size!==90||PUBLISHED_IDS.some(x=>!idOk(x))||digest(PUBLISHED_IDS)!==PUBLISHED_IDS_SHA||
+ if(accepted.size!==CONTACT_VISIBLE_COUNT||PUBLISHED_IDS.some(x=>!idOk(x))||digest(PUBLISHED_IDS)!==PUBLISHED_IDS_SHA||
     PUBLISHED_IDS.some(id=>!ids.includes(id)))hold("MANIFEST");
  const records=feed.records.filter(r=>accepted.has(r.id));
  if(records.length!==accepted.size||records.some(r=>r.status!=="published"||r.approvedForKiwi!==true||r.suppressed!==false))

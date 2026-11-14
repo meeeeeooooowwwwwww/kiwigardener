@@ -4,6 +4,7 @@ import {newAreas,newGuides,images,localProfiles} from "./src/local-editorial.mjs
 import {addPlantPages} from "./src/plant-pages.mjs";
 import {addGardenerDirectoryPages,loadGridEaterPublicGardeners} from "./src/gardener-directory.mjs";
 import {selectContactableDirectory,SOURCE_SHA as CONTACT_SOURCE_SHA} from "./src/gardener-contactability.mjs";
+import {CONTACT_SNAPSHOT_SHA} from "./src/gardener-contact-snapshot.js";
 import {buildGardenDirectoryFilterData} from "./src/directory-filter-data.mjs";
 import {loadReviewedSuppliers,addReviewedSupplierPages} from "./src/reviewed-supplier-directory.mjs";
 import {loadFirstPartyServices,addFirstPartyServiceReferencePages} from "./src/reviewed-gardening-service-directory.mjs";
@@ -399,6 +400,7 @@ const generateSite = function generateSite(){
   files["assets/gardener-directory-status.json"]=JSON.stringify({schemaVersion:1,source:"grideater.com",
     releaseId:gardenersSnapshot.releaseId,approvedForKiwi:gardenersSnapshot.approvedForKiwi,
     publishedListings:gardenersSnapshot.records.length,
+    sourceSha256:CONTACT_SOURCE_SHA,contactSnapshotSha256:CONTACT_SNAPSHOT_SHA,
     publishedBusinessIds:gardenersSnapshot.records.map(r=>r.id)},null,2)+"\n";
   const contactPath="/contact/",contactTrail=[{name:"Home",path:"/"},{name:"Contact",path:contactPath}];
   const contactContent=articleHero("Get in touch","Tell us about your Christchurch garden","Need lawn care, hedge trimming or a garden tidy-up in eastern Christchurch, Cashmere or Beckenham? Call Dallas Timpson for a quote.",contactTrail)+`<div class="container text-layout"><article class="prose"><section class="contact-form-wrap" id="enquiry-form" hidden>
