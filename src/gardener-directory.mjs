@@ -1,3 +1,4 @@
+import {createHash} from "node:crypto";
 // Kiwi Gardeners read-only consumer for a separately approved GRID EATER public export.
 // No direct D1/CRM access, protected contacts or crawler work.
 // Provisional NZBN registered towns may appear with an explicit inference label.
@@ -135,7 +136,7 @@ export function validateGridEaterPublicGardeners(value,{now=new Date().toISOStri
   });
   return {schemaVersion:1,source:"grideater.com",releaseId,releasedAt,approvedForKiwi:true,records};
 }
-export async function loadGridEaterPublicGardeners({readFile,fetchImpl=fetch,feedUrl=""}={}){
+export async function loadGridEaterPublicGardeners({readFile,fetchImpl=fetch,feedUrl="",expectedSha256=null}={}){
   if(typeof readFile!=="function")throw new TypeError("readFile is required");
   let raw;
   if(feedUrl){
@@ -152,8 +153,11 @@ export async function loadGridEaterPublicGardeners({readFile,fetchImpl=fetch,fee
     if(size>MAX_BYTES)reject("feed too large");
     const bytes=await res.arrayBuffer();
     if(bytes.byteLength>MAX_BYTES)reject("feed exceeds size cap");
+    if(expectedSha256!==null&&(!/^[0-9a-f]{64}$/.test(expectedSha256)||createHash("sha256").update(Buffer.from(bytes)).digest("hex")!==expectedSha256))
+      reject("approved contactability source SHA changed");
     raw=new TextDecoder("utf-8",{fatal:true}).decode(bytes);
   }else{
+    if(expectedSha256!==null)reject("contactability requires exact remote source");
     raw=await readFile("src/grid-eater-gardeners-public.json","utf8");
   }
   if(raw.length>MAX_BYTES)reject("local feed exceeds size cap");
