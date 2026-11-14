@@ -15,7 +15,7 @@
   if(!query||!area||!clear||!count||!keywordList||!areaList)return;
 
   const normal=value=>String(value||"").normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase("en-NZ")
+    .replace(/[\u0300-\u036f]/g,"").toLowerCase()
     .replace(/\s+/g," ").trim();
   const words=value=>String(value||"").split("|").map(normal).filter(Boolean);
   const pairs=code=>String(code||"").match(/.{2}/g)||[];
@@ -28,75 +28,65 @@
   let selectedTown=null;
   const regionNames=new Map();
 
-  const keywordsFor=text=>{
-    const needle=normal(text);
-    if(!dictionary||!needle)return [];
-    return dictionary.keywords
-      .filter(x=>[x.label,...x.aliases].some(v=>normal(v).includes(needle)))
-      .sort((a,b)=>(normal(a.label).startsWith(needle)?0:1)-
-        (normal(b.label).startsWith(needle)?0:1)||a.label.localeCompare(b.label,"en-NZ"))
-      .slice(0,MAX_OPTIONS);
+  // Normalize once, never repeatedly scan the town catalogue per card.
+  const cardFacts=new Map(cards.map(card=>[card,{
+    keywords:words(card.dataset.keywords),
+    areas:new Set(words(card.dataset.areas)),
+    locations:new Set(words(card.dataset.locations))
+  }]));
+  let keywordIndex=[],placeIndex=[];
+  const collator=new Intl.Collator("en-NZ");
+  const rank=(items,needle)=>{
+    if(!needle)return [];
+    const prefix=[],other=[];
+    for(const item of items){
+      if(!item.terms.some(v=>v.includes(needle)))continue;
+      const list=item.name.startsWith(needle)?prefix:other;
+      if(list.length<MAX_OPTIONS)list.push(item.value);
+      if(prefix.length===MAX_OPTIONS)break;
+    }
+    return prefix.concat(other).slice(0,MAX_OPTIONS);
   };
-  const placesFor=text=>{
-    const needle=normal(text);
-    if(!dictionary||!needle)return [];
-    return dictionary.places
-      .filter(x=>normal(x[0]).includes(needle))
-      .sort((a,b)=>(normal(a[0]).startsWith(needle)?0:1)-
-        (normal(b[0]).startsWith(needle)?0:1)||a[0].localeCompare(b[0],"en-NZ"))
-      .slice(0,MAX_OPTIONS);
+  const keywordsFor=text=>rank(keywordIndex,normal(text));
+  const placesFor=text=>rank(placeIndex,normal(text));
+  const candidateTerms=()=>{
+    const keyword=normal(query.value),town=normal(area.value);
+    const keywords=keyword?(selectedKeyword&&normal(selectedKeyword.label)===keyword
+      ?keywordIndex.filter(x=>x.value===selectedKeyword)
+      :keywordIndex.filter(x=>x.terms.some(v=>v.includes(keyword)))):[];
+    const places=town?(selectedTown&&normal(selectedTown[0])===town
+      ?placeIndex.filter(x=>x.value===selectedTown)
+      :placeIndex.filter(x=>x.name.includes(town))):[];
+    const synonyms=[...new Set(keywords.flatMap(x=>x.terms))];
+    const towns=new Set(),regions=new Set();
+    for(const place of places){
+      towns.add(place.name);
+      for(const code of pairs(place.value[1])){
+        const region=regionNames.get(code);
+        if(!region||code==="99")continue;
+        regions.add(region);
+        regions.add(region.replace(/ region$/,""));
+      }
+    }
+    return {keyword,town,synonyms,towns,regions};
   };
-  const placeCandidates=()=>{
-    if(!area.value.trim())return [];
-    if(selectedTown&&normal(selectedTown[0])===normal(area.value))return [selectedTown];
-    const term=normal(area.value);
-    return dictionary?dictionary.places.filter(x=>normal(x[0]).includes(term)):[];
-  };
-  const keywordCandidates=()=>{
-    if(!query.value.trim())return [];
-    if(selectedKeyword&&normal(selectedKeyword.label)===normal(query.value))return [selectedKeyword];
-    const term=normal(query.value);
-    return dictionary?dictionary.keywords.filter(x=>
-      [x.label,...x.aliases].some(v=>normal(v).includes(term))):[];
-  };
-  const matchesKeywords=card=>{
-    if(!query.value.trim())return true;
-    const candidates=keywordCandidates();
-    if(!candidates.length)return false;
-    const facts=words(card.dataset.keywords);
-    return candidates.some(x=>{
-      const synonyms=[x.label,...x.aliases].map(normal);
-      return facts.some(fact=>synonyms.some(v=>
-        fact===v||(v.length>=5&&fact.includes(v))||
-        (fact.length>=5&&v.includes(fact))));
-    });
-  };
-  const matchesPlace=(card,place)=>{
-    const verified=new Set(words(card.dataset.areas));
-    // Supplier physical shops and nurseries match EXACT official town only.
-    // They cannot imply delivery or contractor service coverage.
-    const premises=new Set(words(card.dataset.locations));
-    if(premises.has(normal(place[0])))return true;
-    if(verified.has(normal(place[0])))return true;
-    // Only independently approved service/delivery AREA claims expand from
-    // region to official towns. The premises dataset never expands coverage.
-    return pairs(place[1]).some(code=>{
-      const region=regionNames.get(code);
-      if(!region||code==="99")return false;
-      return verified.has(normal(region))||
-        verified.has(normal(region.replace(/ Region$/,"")));
-    });
-  };
-  const matchesArea=card=>{
-    if(!area.value.trim())return true;
-    return placeCandidates().some(place=>matchesPlace(card,place));
+  const matchesKeywords=(facts,terms)=>!terms.keyword||facts.keywords.some(fact=>
+    terms.synonyms.some(v=>fact===v||(v.length>=5&&fact.includes(v))||
+      (fact.length>=5&&v.includes(fact))));
+  const matchesArea=(facts,terms)=>{
+    if(!terms.town)return true;
+    // Supplier premises never expand into inferred service areas.
+    for(const name of facts.locations)if(terms.towns.has(name))return true;
+    for(const name of facts.areas)if(terms.towns.has(name)||terms.regions.has(name))return true;
+    return false;
   };
   const updateUrl=(push=false)=>{
     const p=new URLSearchParams();
     if(query.value.trim())p.set("q",query.value.trim().slice(0,100));
     if(area.value.trim())p.set("area",area.value.trim().slice(0,100));
     if(currentPage>1)p.set("page",String(currentPage));
-    window.history[push?"pushState":"replaceState"](null,"",window.location.pathname+(p.size?"?"+p:""));
+    const next=window.location.pathname+(p.size?"?"+p:"");
+    if(next!==window.location.pathname+window.location.search)window.history[push?"pushState":"replaceState"](null,"",next);
   };
   const restore=()=>{
     const p=new URLSearchParams(window.location.search);
@@ -106,8 +96,12 @@
     const requested=Number(p.get("page")||1);
     currentPage=Number.isSafeInteger(requested)&&requested>0?requested:1;
   };
+  let lastPager="";
   const renderPager=total=>{
     if(!pager)return;
+    const key=total+":"+currentPage;
+    if(key===lastPager)return;
+    lastPager=key;
     pager.replaceChildren();
     pager.hidden=total<=1;
     if(total<=1)return;
@@ -136,8 +130,10 @@
     const searching=!!(query.value.trim()||area.value.trim());
     let reviewed=0,provisional=0;
     const matches=[];
+    const terms=searching&&dictionary?candidateTerms():null;
     for(const card of cards){
-      const match=!searching||(dictionary&&matchesKeywords(card)&&matchesArea(card));
+      const facts=cardFacts.get(card);
+      const match=!searching||(terms&&matchesKeywords(facts,terms)&&matchesArea(facts,terms));
       if(match){
         matches.push(card);
         if(card.dataset.sourceGrade==="provisional")provisional++;
@@ -151,16 +147,17 @@
     if(!loading)currentPage=Math.max(1,Math.min(currentPage,total||1));
     const offset=(currentPage-1)*PAGE_SIZE;
     const shown=new Set(matches.slice(offset,offset+PAGE_SIZE));
-    for(const card of cards)card.hidden=!shown.has(card);
+    for(const card of cards){const hide=!shown.has(card);if(card.hidden!==hide)card.hidden=hide;}
     if(loading){
-      count.textContent="Loading search filters…";
+      if(count.textContent!=="Loading search filters…")count.textContent="Loading search filters…";
     }else{
-      count.textContent=cards.length===0?"No independent listings yet":
+      const message=cards.length===0?"No independent listings yet":
         visible+" listed "+(visible===1?"business":"businesses")+" · "+
         reviewed+" source-reviewed · "+provisional+" provisional NZBN"+
         (visible?" · Showing "+(offset+1)+"–"+Math.min(offset+PAGE_SIZE,visible)+" of "+visible:"");
+      if(count.textContent!==message)count.textContent=message;
     }
-    if(empty)empty.hidden=visible!==0||loading;
+    if(empty){const hide=visible!==0||loading;if(empty.hidden!==hide)empty.hidden=hide;}
     renderPager(loading?0:total);
     if(persist)updateUrl();
   };
@@ -172,8 +169,8 @@
       title:x=>x[0],extra:x=>x[2]==="rural"?"Town / settlement":"Town / city"}
   ];
   const close=control=>{
-    control.list.hidden=true;
-    control.list.replaceChildren();
+    if(!control.list.hidden)control.list.hidden=true;
+    if(control.list.childElementCount)control.list.replaceChildren();
     control.input.setAttribute("aria-expanded","false");
     control.input.removeAttribute("aria-activedescendant");
     control.active=-1;
@@ -199,6 +196,7 @@
     const options=control.options(text);
     if(!options.length)return;
     control.values=options;
+    const fragment=document.createDocumentFragment();
     options.forEach((item,i)=>{
       const li=document.createElement("li");
       li.id=control.list.id+"-"+i;
@@ -211,8 +209,9 @@
       li.append(main,meta);
       li.addEventListener("mousedown",event=>event.preventDefault());
       li.addEventListener("click",()=>choose(control,item));
-      control.list.append(li);
+      fragment.append(li);
     });
+    control.list.append(fragment);
     control.list.hidden=false;
     control.input.setAttribute("aria-expanded","true");
   };
@@ -263,23 +262,36 @@
   window.addEventListener("popstate",()=>{
     restore();controls.forEach(close);update();
   });
-  restore();update();
-  fetch("/assets/garden-directory-filter-data.json",{cache:"force-cache",credentials:"omit",redirect:"error"})
-    .then(async response=>{
-      if(!response.ok)throw Error("search index unavailable");
-      const value=await response.json();
-      if(value.version!==1||value.places?.length!==597||
-        !Array.isArray(value.keywords)||value.keywords.length<20||
-        !Array.isArray(value.regions)||value.regions.length!==17)
-        throw Error("unexpected search index");
-      return value;
-    }).then(value=>{
-      dictionary=value;
-      for(const [code,label] of value.regions)regionNames.set(code,label);
-      if(help)help.textContent="Type a gardening keyword or NZ town to filter approved listings. Search does not use company names.";
-      update(true);controls.forEach(c=>{if(c.input===document.activeElement)render(c);});
-    }).catch(()=>{
-      if(help)help.textContent="The town and keyword suggestions are temporarily unavailable. Please try again.";
-      if(query.value.trim()||area.value.trim())count.textContent="Search filters unavailable";
-    });
+  function initialise(value){
+    if(value.version!==1||value.places?.length!==597||
+       !Array.isArray(value.keywords)||value.keywords.length<20||
+       !Array.isArray(value.regions)||value.regions.length!==17)
+      throw Error("unexpected search index");
+    keywordIndex=value.keywords.map(item=>({value:item,name:normal(item.label),
+      terms:[item.label,...item.aliases].map(normal)})).sort((a,b)=>collator.compare(a.value.label,b.value.label));
+    placeIndex=value.places.map(item=>({value:item,name:normal(item[0]),terms:[normal(item[0])]}))
+      .sort((a,b)=>collator.compare(a.value[0],b.value[0]));
+    for(const [code,label] of value.regions)regionNames.set(code,normal(label));
+    dictionary=value;
+    if(help)help.textContent="Type a gardening keyword or NZ town to filter approved listings. Search does not use company names.";
+    update(true);
+    controls.forEach(c=>{if(c.input===document.activeElement)render(c);});
+  }
+  const unavailable=()=>{
+    if(help)help.textContent="The town and keyword suggestions are temporarily unavailable. Please try again.";
+    if(query.value.trim()||area.value.trim())count.textContent="Search filters unavailable";
+  };
+  restore();
+  // The small build-time vocabulary ships with the directory HTML: typing
+  // never waits for a separate network request. Legacy/fixture fallback only.
+  const inline=document.getElementById("gardener-search-index");
+  if(inline){
+    try{initialise(JSON.parse(inline.textContent));}
+    catch{update();unavailable();}
+  }else{
+    update();
+    fetch("/assets/garden-directory-filter-data.json",{cache:"force-cache",credentials:"omit",redirect:"error"})
+      .then(r=>{if(!r.ok)throw Error("search index unavailable");return r.json();})
+      .then(initialise).catch(unavailable);
+  }
 })();
