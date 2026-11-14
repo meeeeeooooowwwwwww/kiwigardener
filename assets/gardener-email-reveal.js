@@ -51,13 +51,13 @@
    button.style.display="none";
    target.replaceChildren();
   }catch(e){
-   status.textContent=e.message||"Could not reveal email.";
+   status.textContent=e.message||"Could not reveal contact details.";
    window.turnstile?.reset(widgetId);
   }finally{working=false;button.disabled=false;}
  };
  button.addEventListener("click",()=>{
   if(widgetId!==null)return;
-  status.textContent="Complete the Cloudflare verification below to show the business email.";
+  status.textContent="Complete the Cloudflare verification below to show contact details.";
   const script=document.createElement("script");
   script.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
   script.async=true;

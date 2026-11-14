@@ -185,8 +185,8 @@ test("canonical GRID profile contact fallback excludes unverified websites and p
     ENQUIRY_URL:"mailto:dallas@kiwigardeners.com"
   },checked);
   const html=files["gardeners/"+record.slug+"/index.html"];
-  assert.match(html,/View contact options on GRID EATER/);
-  assert.match(html,/Kiwi Gardeners may show public business telephone numbers/);
+  assert.doesNotMatch(html,/View contact options on GRID EATER/);
+  assert.match(html,/Show contact details \(Turnstile\)/);
   assert.ok(!html.includes("example.nz/contact"));
   for(const wrong of [
     {...record.publicContact,type:"phone",value:"+64271234567"},
