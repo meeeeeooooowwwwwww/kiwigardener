@@ -296,32 +296,22 @@ try {
   await page.locator("#gardener-clear").click();
   if((await page.locator("[data-gardener-card]:visible").count())!==3)
     failures.push("Gardening search reset failed to restore both contractor and supplier results");
-  // Real directory pagination, URL navigation, reset and lazy phone hydration.
-  let phoneRequests=0;
-  await page.route("**/api/gardeners/phones",async route=>{
-    phoneRequests++;
-    const ids=await page.locator("[data-kiwi-public-phone]").evaluateAll(els=>els.map(e=>e.dataset.kiwiPublicPhone));
-    await route.fulfill({json:{phones:Object.fromEntries(ids.map(id=>[id,{display:"03 555 0101",telHref:"tel:+6435550101"}]))}});
-  });
+  // Pagination and protected contact boundary: search must not fetch any contact.
+  let contactRequests=0;
+  await page.route("**/api/gardeners/**",async route=>{contactRequests++;await route.abort();});
   await page.setViewportSize({width:390,height:780});
   await page.goto("http://127.0.0.1:"+port+"/gardeners/",{waitUntil:"load"});
   const visibleCards=page.locator("[data-gardener-card]:visible");
   await page.waitForFunction(()=>document.querySelectorAll("[data-gardener-card]:not([hidden])").length===15);
-  const firstIds=await visibleCards.locator("[data-kiwi-public-phone]").evaluateAll(els=>els.map(e=>e.dataset.kiwiPublicPhone));
-  await page.locator("[data-gardener-card]:visible").first().scrollIntoViewIfNeeded();
-  await page.waitForFunction(()=>document.querySelector("[data-gardener-card]:not([hidden]) [data-kiwi-public-phone]:not([hidden]) a"));
-  if(phoneRequests!==1)failures.push("Lazy phone loader did not use a single shared request");
-  if(await page.locator("[data-gardener-card][hidden] [data-kiwi-public-phone]:not([hidden])").count())
-    failures.push("Phone links eagerly populated on unvisited pages");
+  const firstIds=await visibleCards.evaluateAll(els=>els.map(e=>e.dataset.directoryId));
+  if(await page.locator("[data-gardener-card] a[href^='tel:'],[data-gardener-card] a[href^='mailto:'],[data-gardener-card] a[href^='https:']").count())failures.push("Directory card leaks direct contact links");
   await page.getByRole("button",{name:"Next page",exact:true}).click();
   if(await visibleCards.count()!==15||!page.url().includes("page=2"))failures.push("Next page did not show exactly 15 listings or persist page");
-  const secondIds=await visibleCards.locator("[data-kiwi-public-phone]").evaluateAll(els=>els.map(e=>e.dataset.kiwiPublicPhone));
+  const secondIds=await visibleCards.evaluateAll(els=>els.map(e=>e.dataset.directoryId));
   if(secondIds.some(id=>firstIds.includes(id)))failures.push("Page two repeats page one");
-  await page.locator("[data-gardener-card]:visible").first().scrollIntoViewIfNeeded();
-  await page.waitForFunction(()=>document.querySelector("[data-gardener-card]:not([hidden]) [data-kiwi-public-phone]:not([hidden]) a"));
-  if(phoneRequests!==1)failures.push("Page navigation repeated contact fetch");
+  if(contactRequests!==0)failures.push("Directory search fetched protected contact details");
   await page.goBack();
-  if((await visibleCards.locator("[data-kiwi-public-phone]").evaluateAll(els=>els.map(e=>e.dataset.kiwiPublicPhone))).join()!==firstIds.join())failures.push("Browser back did not restore page one");
+  if((await visibleCards.evaluateAll(els=>els.map(e=>e.dataset.directoryId))).join()!==firstIds.join())failures.push("Browser back did not restore page one");
   await page.getByRole("button",{name:"Page 6",exact:true}).click();
   if(await visibleCards.count()!==15||!await page.getByRole("button",{name:"Next page",exact:true}).isDisabled())failures.push("Last page incorrect");
   await page.locator("#gardener-clear").click();

@@ -6,11 +6,13 @@
  const button=mount.querySelector("[data-reveal-email]");
  const status=mount.querySelector("[data-reveal-status]");
  const target=mount.querySelector("[data-turnstile-container]");
+ const output=mount.querySelector("[data-contact-details]");
+ if(!output)return;
  const id=mount.getAttribute("data-business-id");
  if(!/^afnz-\d{13}$/.test(id||""))return;
  let config;
  try{
-  const r=await fetch("/api/gardeners/email/config",{cache:"no-store",credentials:"omit"});
+  const r=await fetch("/api/gardeners/contact/config",{cache:"no-store",credentials:"omit"});
   if(!r.ok)return;
   config=await r.json();
  }catch{return;}
@@ -20,23 +22,32 @@
  const verify=async(token)=>{
   if(working)return;
   working=true;button.disabled=true;
-  status.textContent="Checking and retrieving business email…";
+  status.textContent="Checking and retrieving contact details…";
   try{
-   const response=await fetch("/api/gardeners/"+encodeURIComponent(id)+"/email",{
+   const response=await fetch("/api/gardeners/"+encodeURIComponent(id)+"/contact",{
     method:"POST",headers:{"content-type":"application/json"},
     body:JSON.stringify({token}),cache:"no-store",credentials:"omit"
    });
    const result=await response.json();
-   if(!response.ok||typeof result.email!=="string"||
-      !/^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(result.email))
-    throw Error(response.status===404?
-      "No public business email is available for this listing.":
-      "Verification failed or email unavailable. Try again.");
-   const link=document.createElement("a");
-   link.href="mailto:"+result.email;
-   link.textContent=result.email;
-   status.textContent="Business email: ";
-   status.appendChild(link);
+   if(!response.ok)throw Error(response.status===404?"No contact details are available for this listing.":"Verification failed or contact details unavailable. Try again.");
+   const nodes=[];
+   const add=(label,text,href,external=false)=>{
+    const p=document.createElement("p"),a=document.createElement("a");
+    a.textContent=text;a.href=href;
+    if(external){a.target="_blank";a.rel="noopener noreferrer";}
+    p.append(label+": ",a);nodes.push(p);
+   };
+   if(typeof result.phone?.display==="string"&&/^tel:\+64\d{7,10}$/.test(result.phone.telHref||""))
+    add("Phone",result.phone.display,result.phone.telHref);
+   if(typeof result.email==="string"&&/^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(result.email))
+    add("Email",result.email,"mailto:"+result.email);
+   for(const [key,label] of [["website","Website"],["sourcePage","GRID EATER business record"]]){
+    if(typeof result[key]!=="string")continue;
+    try{const url=new URL(result[key]);if(["https:","http:"].includes(url.protocol)&&!url.username&&!url.password)add(label,key==="website"?url.hostname:"View business record",url.href,true);}catch{}
+   }
+   if(!nodes.length)throw Error("No contact details are available for this listing.");
+   output.replaceChildren(...nodes);
+   status.textContent="Contact details verified.";
    button.style.display="none";
    target.replaceChildren();
   }catch(e){

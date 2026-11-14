@@ -97,7 +97,7 @@ assert.ok(gardenerHub.includes('href="tel:+64273406581"'),"Dallas independent co
 assert.equal(urls.includes(site+"/gardeners/"),gardenerStatus.publishedListings>0,"Empty hub indexing mismatch");
 assert.equal(gardenerHub.includes('name="robots" content="noindex,follow"'),gardenerStatus.publishedListings===0,"Empty directory must be noindex");
 const gardenerProfileUrls=urls.filter(url=>new URL(url).pathname.startsWith("/gardeners/")&&new URL(url).pathname!=="/gardeners/");
-const cardIds=[...gardenerHub.matchAll(/data-kiwi-public-phone="(afnz-\d{13})"/g)].map(m=>m[1]).sort();
+const cardIds=[...gardenerHub.matchAll(/data-directory-id="(afnz-\d{13})"/g)].map(m=>m[1]).sort();
 assert.deepEqual(cardIds,[...PUBLISHED_IDS].sort(),"Contactability visibility differs from approved public subset");
 assert.equal((gardenerHub.match(/data-gardener-card(?:\s|>)/g)||[]).length,PUBLISHED_IDS.length,"Unexpected native directory cards");
 assert.equal(gardenerProfileUrls.length,gardenerStatus.publishedListings,"Unapproved gardener profile in sitemap");

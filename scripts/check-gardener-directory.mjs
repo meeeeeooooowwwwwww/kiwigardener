@@ -143,10 +143,10 @@ test("one approved record creates searchable server-rendered hub and canonical-I
   assert.ok(hub.includes('<meta data-indexable="true">'));
   assert.ok(profile.includes("afnz-9429039092267"));
   assert.ok(profile.includes("Areas this business says it services"));
-  assert.ok(profile.includes("https://grideater.com/business/example"));
-  assert.match(profile,/View GRID EATER business record/);
-  assert.match(profile,/Show business email \(Turnstile\)/);
-  assert.match(profile,/Email addresses require a verified Turnstile challenge/);
+  assert.ok(!profile.includes("https://grideater.com/business/example"));
+  assert.doesNotMatch(profile,/View GRID EATER business record/);
+  assert.match(profile,/Show contact details \(Turnstile\)/);
+  assert.match(profile,/Contact details require a verified Turnstile challenge/);
   assert.ok(!profile.includes("business@example.co.nz"));
   assert.ok(!profile.includes("+64275918334"));
   assert.ok(!/ratingValue|aggregateRating|customer review/i.test(profile));
@@ -395,8 +395,8 @@ test("153-directory evidence grades remain honest and GRID-approved contact is o
  assert.match(hub,/data-source-grade="reviewed"/);
  assert.match(hub,/data-source-grade="provisional"/);
  assert.match(hub,/Town \/ service area not confirmed/);
- assert.match(hub,/Contact options on GRID EATER/);
- assert.match(hub,/Visit verified business website/);
+ assert.doesNotMatch(hub,/Contact options on GRID EATER/);
+ assert.doesNotMatch(hub,/Visit verified business website/);
  assert.match(hub,/NZBN: 9429041785683/);
  assert.doesNotMatch(hub,/2 verified public listings/);
  assert.doesNotMatch(hub,/business@example.co.nz/);

@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {revealBusinessEmail,emailRevealReady,privateContactKey,readVerifiedSnapshot,sha256Hex,loadCurrentPrivateContacts}
+import {revealBusinessContact,emailRevealReady,privateContactKey,readVerifiedSnapshot,sha256Hex,loadCurrentPrivateContacts}
  from "../src/business-email-reveal.js";
-import {publicBusinessPhones,normaliseKiwiPhone}
- from "../src/business-phone-public.js";
+import {publicBusinessPhones} from "../src/business-phone-public.js";
+import {normaliseProtectedPhone as normaliseKiwiPhone,approvedLinksFromBytes} from "../src/business-email-reveal.js";
 import worker from "../src/worker.js";
 const ROOT="https://kiwigardeners.com";
 const ID="afnz-9429032462685",RELEASE="kg-reviewed-four-20261110022228";
@@ -28,7 +28,7 @@ function environment(overrides={}){
  };
 }
 function emailReq(body={token:"test-turnstile-token"}){
- return new Request(ROOT+"/api/gardeners/"+ID+"/email",{
+ return new Request(ROOT+"/api/gardeners/"+ID+"/contact",{
   method:"POST",headers:{"origin":ROOT,"CF-Connecting-IP":"192.0.2.5",
    "content-type":"application/json"},body:JSON.stringify(body)
  });
@@ -36,20 +36,25 @@ function emailReq(body={token:"test-turnstile-token"}){
 const challenge=(ok=true,action="business_email_reveal",hostname="kiwigardeners.com")=>
  async()=>new Response(JSON.stringify({success:ok,action,hostname}),{status:200});
 async function outcome(env=environment(),verify=challenge(),req=emailReq()){
- const r=await revealBusinessEmail(req,env,{fetchImpl:verify});
+ const r=await revealBusinessContact(req,env,{fetchImpl:verify});
  return {status:r.status,headers:r.headers,body:await r.json()};
 }
-test("phone source is published only from Kiwi server, not in GRID feed or email payload",async()=>{
- assert.deepEqual(normaliseKiwiPhone("03 123 4567"),{
-  display:"03 123 4567",telHref:"tel:+6431234567"});
+test("bulk endpoint retired and one verified business exposes only its own contact details",async()=>{
+ assert.deepEqual(normaliseKiwiPhone("03 123 4567"),{display:"03 123 4567",telHref:"tel:+6431234567"});
  assert.equal(normaliseKiwiPhone("not a phone"),null);
- const res=await publicBusinessPhones(new Request(ROOT+"/api/gardeners/phones"),environment());
- assert.equal(res.status,200);
- const body=await res.json();
- assert.deepEqual(body.phones[ID],{display:"03 123 4567",telHref:"tel:+6431234567"});
- assert.equal(JSON.stringify(body).includes("business@example.nz"),false);
- assert.equal(JSON.stringify(body).includes("emails"),false);
- assert.equal(body.releaseId,RELEASE);
+ let reads=0;
+ const env=environment({KIWI_PRIVATE_CONTACTS:{get:async()=>{reads++;return {size:100,json:async()=>structuredClone(DB)};}}});
+ for(const method of ["GET","POST"]){
+  const response=await worker.fetch(new Request(ROOT+"/api/gardeners/phones",{method}),env);
+  assert.equal(response.status,410);
+  assert.match(response.headers.get("cache-control"),/no-store/);
+ }
+ assert.equal(reads,0);
+ assert.equal((await outcome(env,challenge(false))).status,403);
+ assert.equal(reads,0);
+ const good=await outcome(env);
+ assert.deepEqual(good.body,{phone:{display:"03 123 4567",telHref:"tel:+6431234567"},email:"business@example.nz"});
+ assert.equal(reads,1);
 });
 test("Turnstile action and hostname verification precedes retrieving business email",async()=>{
  const good=await outcome();
@@ -65,7 +70,7 @@ test("missing binding, no contact, stale published source and invalid phone fail
  assert.equal((await outcome(environment({BUSINESS_EMAIL_REVEAL_ENABLED:"false"}))).status,503);
  const missing=environment({KIWI_PRIVATE_CONTACTS:{get:async()=>null}});
  assert.equal((await outcome(missing)).status,404);
- assert.equal((await publicBusinessPhones(new Request(ROOT+"/api/gardeners/phones"),missing)).status,404);
+ assert.equal((await publicBusinessPhones()).status,410);
  const wrongRelease=environment({KIWI_PRIVATE_CONTACTS:{get:async()=>({
   size:10,json:async()=>({...DB,releaseId:"kg-old-release"})
  })}});
@@ -73,20 +78,20 @@ test("missing binding, no contact, stale published source and invalid phone fail
  const invalid=environment({KIWI_PRIVATE_CONTACTS:{get:async()=>({
   size:10,json:async()=>({...DB,phones:{[ID]:"invalid phone"}})
  })}});
- assert.equal((await publicBusinessPhones(new Request(ROOT+"/api/gardeners/phones"),invalid)).status,503);
+ assert.equal((await outcome(invalid)).status,503);
 });
 test("rejects unverified or cross-origin email reveal, no GET bypass",async()=>{
- const noOrigin=new Request(ROOT+"/api/gardeners/"+ID+"/email",{
+ const noOrigin=new Request(ROOT+"/api/gardeners/"+ID+"/contact",{
   method:"POST",headers:{"CF-Connecting-IP":"192.0.2.5","content-type":"application/json"},
   body:JSON.stringify({token:"test-turnstile-token"})});
  assert.equal((await outcome(environment(),challenge(),noOrigin)).status,403);
  const limited=await outcome(environment({CONTACT_LIMIT:{limit:async()=>({success:false})}}));
  assert.equal(limited.status,429);
  assert.equal((await outcome(environment(),challenge(),emailReq({token:""}))).status,400);
- const get=await worker.fetch(new Request(ROOT+"/api/gardeners/"+ID+"/email"),environment());
+ const get=await worker.fetch(new Request(ROOT+"/api/gardeners/"+ID+"/contact"),environment());
  assert.equal(get.status,405);
  const wrong=await worker.fetch(new Request(ROOT+"/api/gardeners/phones",{method:"POST"}),environment());
- assert.equal(wrong.status,405);
+ assert.equal(wrong.status,410);
 });
 test("source contract keeps private email and public phone out of GRID feed and static HTML",async()=>{
  const {readFileSync}=await import("node:fs");
@@ -94,8 +99,8 @@ test("source contract keeps private email and public phone out of GRID feed and 
  const generator=readFileSync("build.mjs","utf8");
  assert.doesNotMatch(producer,/publicPhone:\s*publicPhone/);
  assert.match(generator,/gardener-email-reveal\.js/);
- assert.match(generator,/gardener-public-phone\.js/);
- assert.match(producer,/data-kiwi-public-phone/);
+ assert.doesNotMatch(generator,/<script src="\/assets\/gardener-public-phone\.js/);
+ assert.doesNotMatch(producer,/data-kiwi-public-phone/);
  assert.match(producer,/data-reveal-email/);
 });
 
@@ -124,8 +129,8 @@ test("publish-first provisional NZBN gardening listing has no invented services,
  const profile=files["gardeners/"+row.slug+"/index.html"];
  assert.match(profile,/Indicative NZBN business classification/);
  assert.match(profile,/Operating area not confirmed/);
- assert.match(profile,/Show business email \(Turnstile\)/);
- assert.match(profile,/data-kiwi-public-phone/);
+ assert.match(profile,/Show contact details \(Turnstile\)/);
+ assert.match(profile,/data-contact-details/);
  assert.doesNotMatch(profile,/tel:\+6431234567|business@example\.nz/);
  const invalid=structuredClone(fixture);
  invalid.records[0].services[0].evidenceUrl="https://unrelated.example.nz/services";
@@ -137,10 +142,10 @@ test("contacts for hidden directory identities are excluded without exposing raw
  const env=environment({KIWI_PRIVATE_CONTACTS:{get:async()=>({
   size:500,json:async()=>({...DB,phones:{...DB.phones,[hidden]:"03 234 5678"},emails:{...DB.emails,[hidden]:"hidden@example.nz"}})
  })}});
- const phones=await publicBusinessPhones(new Request(ROOT+"/api/gardeners/phones"),env);
- assert.equal(phones.status,200);
- assert.deepEqual(Object.keys((await phones.json()).phones),[ID]);
- const req=new Request(ROOT+"/api/gardeners/"+hidden+"/email",{
+ const good=await outcome(env);
+ assert.equal(good.status,200);
+ assert.doesNotMatch(JSON.stringify(good.body),/hidden@example|234 5678/);
+ const req=new Request(ROOT+"/api/gardeners/"+hidden+"/contact",{
   method:"POST",headers:{"origin":ROOT,"CF-Connecting-IP":"192.0.2.5","content-type":"application/json"},
   body:JSON.stringify({token:"test-turnstile-token"})});
  assert.equal((await outcome(env,challenge(),req)).status,404);
@@ -176,4 +181,15 @@ test("current release refuses an unpinned legacy snapshot and mismatched visibil
  assert.deepEqual(seen,[]);
  assert.equal((await loadCurrentPrivateContacts(url,envFor(correct))).status,404);
  assert.deepEqual(seen,[privateContactKey(CONTACT_RELEASE_ID,CONTACT_SNAPSHOT_SHA)]);
+});
+
+test("verified source bytes select one approved website and canonical link only",async()=>{
+ const sourcePage="https://grideater.com/business/example";
+ const row={id:ID,status:"published",approvedForKiwi:true,suppressed:false,sourcePage,publicContact:{type:"website",value:"https://example.nz/",approvedForPublicUse:true}};
+ const raw=new TextEncoder().encode(JSON.stringify({schemaVersion:1,source:"grideater.com",releaseId:RELEASE,approvedForKiwi:true,records:[row]}));
+ const digest=await sha256Hex(raw);
+ const opts={id:ID,digest,releaseId:RELEASE,sourceCount:1};
+ assert.deepEqual(await approvedLinksFromBytes(raw,opts),{sourcePage,website:"https://example.nz/"});
+ await assert.rejects(approvedLinksFromBytes(raw,{...opts,id:"afnz-9429000000001"}),/source_identity/);
+ await assert.rejects(approvedLinksFromBytes(raw,{...opts,digest:"f".repeat(64)}),/source_digest/);
 });

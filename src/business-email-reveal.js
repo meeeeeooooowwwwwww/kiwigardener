@@ -71,12 +71,12 @@ export async function loadCurrentPrivateContacts(url,env){
    // Contact access is limited to businesses currently published by Kiwi.
    // Keep values in the existing private binding and retain Turnstile.
    const filter=map=>Object.fromEntries(Object.entries(map).filter(([id])=>visibleIds.has(id)));
-   return {ok:true,data:{...data,phones:filter(data.phones),emails:filter(data.emails)},releaseId};
+   return {ok:true,data:{...data,phones:filter(data.phones),emails:filter(data.emails)},releaseId,visibleIds};
  }catch{return {ok:false,status:503};}
 }
-export async function revealBusinessEmail(request,env,{fetchImpl=fetch}={}){
+export async function revealBusinessContact(request,env,{fetchImpl=fetch}={}){
  const url=new URL(request.url);
- const path=url.pathname.match(/^\/api\/gardeners\/(afnz-\d{13})\/email$/);
+ const path=url.pathname.match(/^\/api\/gardeners\/(afnz-\d{13})\/(?:contact|email)$/);
  if(!path)return json(404,{error:"not_found"});
  if(request.method!=="POST")return json(405,{error:"method_not_allowed"});
  if(!emailRevealReady(env))return json(503,{error:"not_configured"});
@@ -112,11 +112,56 @@ export async function revealBusinessEmail(request,env,{fetchImpl=fetch}={}){
  }catch{return json(503,{error:"challenge_unavailable"});}
  const contact=await loadCurrentPrivateContacts(url,env);
  if(!contact.ok)return json(contact.status,{error:"business_email_not_available"});
- const {data:privateData,releaseId}=contact;
- const email=privateData?.emails?.[path[1]];
- if(privateData?.schemaVersion!==1||privateData?.releaseId!==releaseId||
-    !privateData.emails||Array.isArray(privateData.emails)||
-    typeof email!=="string"||email.length>254||!EMAIL.test(email)||/[\r\n]/.test(email))
-   return json(404,{error:"business_email_not_available"});
- return json(200,{email});
+ const {data:privateData,releaseId,visibleIds}=contact;
+ const id=path[1];
+ if(!visibleIds?.has(id))return json(404,{error:"business_contact_not_available"});
+ const raw=privateData.phones[id],email=privateData.emails[id];
+ const result={};
+ if(raw!==undefined){
+  const phone=normaliseProtectedPhone(raw);
+  if(!phone)return json(503,{error:"business_contact_not_available"});
+  result.phone=phone;
+ }
+ if(email!==undefined){
+  if(typeof email!=="string"||email.length>254||!EMAIL.test(email))return json(503,{error:"business_contact_not_available"});
+  result.email=email;
+ }
+ // The same immutable public feed already used at build time contains
+ // approved website and canonical source links. Read it only after a
+ // successful per-business challenge, from R2 (not the GRID visitor API).
+ if(releaseId===CONTACT_RELEASE_ID){
+  try{Object.assign(result,await loadApprovedLinks(env,id));}
+  catch{return json(503,{error:"business_contact_not_available"});}
+ }
+ return Object.keys(result).length?json(200,result):json(404,{error:"business_contact_not_available"});
+}
+export function normaliseProtectedPhone(value){
+ if(typeof value!=="string"||value.length>32)return null;
+ const display=value.trim(),compact=display.replace(/[\s().-]/g,"");
+ if(!/^(?:0\d{8,10}|\+64\d{7,10})$/.test(compact))return null;
+ return {display,telHref:compact.startsWith("+64")?"tel:"+compact:"tel:+64"+compact.slice(1)};
+}
+export async function approvedLinksFromBytes(raw,{id,digest=CONTACT_SOURCE_SHA,releaseId=CONTACT_RELEASE_ID,sourceCount=153}={}){
+ if(raw.byteLength>300000||await sha256Hex(raw)!==digest)throw Error("source_digest");
+ const feed=JSON.parse(new TextDecoder().decode(raw));
+ if(feed.schemaVersion!==1||feed.source!=="grideater.com"||feed.releaseId!==releaseId||
+    feed.approvedForKiwi!==true||!Array.isArray(feed.records)||feed.records.length!==sourceCount)throw Error("source_schema");
+ const matches=feed.records.filter(r=>r.id===id);
+ if(matches.length!==1||matches[0].status!=="published"||matches[0].approvedForKiwi!==true||matches[0].suppressed!==false)throw Error("source_identity");
+ const row=matches[0],source=new URL(row.sourcePage);
+ if(source.protocol!=="https:"||source.hostname!=="grideater.com"||!source.pathname.startsWith("/business/")||source.username||source.password)throw Error("source_url");
+ const out={sourcePage:source.href};
+ if(row.publicContact?.type==="website"&&row.publicContact.approvedForPublicUse===true){
+  const website=new URL(row.publicContact.value);
+  if(!["https:","http:"].includes(website.protocol)||website.username||website.password)throw Error("website_url");
+  out.website=website.href;
+ }
+ return out;
+}
+async function loadApprovedLinks(env,id){
+ const obj=await env.KIWI_PRIVATE_CONTACTS.get("verticals/kiwigardeners.com/v1/releases/"+CONTACT_RELEASE_ID+".json");
+ if(!obj||obj.size<1||obj.size>300000||typeof obj.arrayBuffer!=="function")throw Error("source_object");
+ const raw=await obj.arrayBuffer();
+ if(raw.byteLength!==obj.size)throw Error("source_bytes");
+ return approvedLinksFromBytes(raw,{id});
 }

@@ -18,21 +18,26 @@ const hidden=source.records.filter(r=>!accepted.has(r.id));
 const [hubRaw,siteRaw,statusRaw,phonesRaw,configRaw]=await Promise.all([
  get(SITE+"/gardeners/"),get(SITE+"/sitemap.xml",200,"application/xml"),
  get(SITE+"/assets/gardener-directory-status.json",200,"application/json"),
- get(SITE+"/api/gardeners/phones",200,"application/json"),
- get(SITE+"/api/gardeners/email/config",200,"application/json")
+ get(SITE+"/api/gardeners/phones",410,"application/json"),
+ get(SITE+"/api/gardeners/contact/config",200,"application/json")
 ]);
 const hub=hubRaw.toString("utf8"),sitemap=siteRaw.toString("utf8"),status=JSON.parse(statusRaw),phones=JSON.parse(phonesRaw),config=JSON.parse(configRaw);
 if(status.releaseId!==RELEASE_ID||status.publishedListings!==90||status.approvedForKiwi!==true||status.contactSnapshotSha256!==CONTACT_SNAPSHOT_SHA||status.sourceSha256!==CONTACT_SOURCE_SHA)hold("STATUS");
-const cardIds=[...hub.matchAll(/data-kiwi-public-phone="(afnz-\d{13})"/g)].map(m=>m[1]);
+const cardIds=[...hub.matchAll(/data-directory-id="(afnz-\d{13})"/g)].map(m=>m[1]);
 if(cardIds.length!==90||new Set(cardIds).size!==90||cardIds.some(x=>!accepted.has(x)))hold("CARDS");
 const locs=[...sitemap.matchAll(/<loc>https:\/\/kiwigardeners\.com\/gardeners\/([^<]+)\/<\/loc>/g)].map(m=>m[1]);
 if(locs.length!==90||new Set(locs).size!==90||selected.records.some(r=>!locs.includes(r.slug))||hidden.some(r=>locs.includes(r.slug)))hold("SITEMAP");
-if(!hub.includes("Dallas Timpson")||phones.releaseId!==RELEASE_ID||config.enabled!==true||!phones.phones||typeof phones.phones!=="object")hold("CONTACT_BOUNDARY");
-if(Object.keys(phones.phones).length!==CONTACT_PHONE_COUNT)hold("PHONE_COUNT");
-if(Object.keys(phones.phones).some(id=>!accepted.has(id)))hold("PHONE_FOR_HIDDEN_BUSINESS");
+if(!hub.includes("Dallas Timpson")||config.enabled!==true||phones.error!=="contact_verification_required"||phones.phones)hold("CONTACT_BOUNDARY");
+if(/data-kiwi-public-phone|gardener-public-phone\.js|data-reveal-email/.test(hub))hold("CARD_CONTACT_LEAK");
+for(const row of selected.records.slice(0,3)){
+ const profile=(await get(SITE+"/gardeners/"+row.slug+"/")).toString("utf8");
+ if(!profile.includes("Show contact details (Turnstile)")||profile.includes("data-kiwi-public-phone"))hold("PROFILE_CONTACT");
+ const getOnly=await get(SITE+"/api/gardeners/"+row.id+"/contact",405,"application/json");
+ if(JSON.parse(getOnly).phone||JSON.parse(getOnly).email)hold("GET_BYPASS");
+}
 // Test three ordinary hidden routes and three retained routes; build independently
 // proves every expected card/sitemap entry. No contact value or hidden ID logged.
 for(const [records,expected] of [[hidden,404],[selected.records,200]]){
  for(const r of records.slice(0,3))await get(SITE+"/gardeners/"+r.slug+"/",expected);
 }
-console.log("KIWI_CONTACTABILITY_LIVE="+JSON.stringify({sourceRecords:source.records.length,cards:cardIds.length,sitemapProfiles:locs.length,hidden:63,hiddenProfileSamples404:3,retainedProfileSamples200:3,publicPhoneCount:Object.keys(phones.phones).length,contactSnapshotSha256:CONTACT_SNAPSHOT_SHA,turnstileEnabled:true,rawContactsLogged:false,d1Writes:0}));
+console.log("KIWI_CONTACTABILITY_LIVE="+JSON.stringify({sourceRecords:source.records.length,cards:cardIds.length,sitemapProfiles:locs.length,hidden:63,hiddenProfileSamples404:3,retainedProfileSamples200:3,stagedPhoneCount:CONTACT_PHONE_COUNT,bulkPhonesDisabled:true,profileContactVerificationRequired:true,contactSnapshotSha256:CONTACT_SNAPSHOT_SHA,turnstileEnabled:true,rawContactsLogged:false,d1Writes:0}));
