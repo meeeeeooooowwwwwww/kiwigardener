@@ -620,3 +620,13 @@ img.card-image[hidden],figure.local-figure[hidden]{display:none!important}
 .article-hero-compact h1{margin:10px 0 0;font-size:clamp(2rem,4vw,3.5rem);line-height:1.12}
 .section.gardener-directory{padding-top:20px}
 @media(max-width:720px){.article-hero.article-hero-compact{padding:16px 0}.article-hero-compact h1{font-size:clamp(1.85rem,7vw,2.6rem)}.section.gardener-directory{padding-top:14px}}
+
+/* Directory: render only the active page, skip off-screen layout/paint. */
+.gardener-directory-card{content-visibility:auto;contain-intrinsic-size:auto 350px}
+.gardener-pagination{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;margin:24px 0 32px}
+.gardener-pagination[hidden]{display:none!important}
+.gardener-pagination button{min-width:44px;min-height:44px;padding:8px 12px;border:1px solid #b4c7af;border-radius:10px;background:var(--paper);color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
+.gardener-pagination button[aria-current="page"]{background:#18382c;color:#fff;border-color:#18382c}
+.gardener-pagination button:disabled{opacity:.45;cursor:default}
+.gardener-pagination button:focus-visible{outline:3px solid #567f48;outline-offset:3px}
+#gardener-count{scroll-margin-top:90px}
