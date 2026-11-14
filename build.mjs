@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import {newAreas,newGuides,images,localProfiles} from "./src/local-editorial.mjs";
 import {addPlantPages} from "./src/plant-pages.mjs";
 import {addGardenerDirectoryPages,loadGridEaterPublicGardeners} from "./src/gardener-directory.mjs";
+import {selectContactableDirectory,SOURCE_SHA as CONTACT_SOURCE_SHA} from "./src/gardener-contactability.mjs";
 import {buildGardenDirectoryFilterData} from "./src/directory-filter-data.mjs";
 import {loadReviewedSuppliers,addReviewedSupplierPages} from "./src/reviewed-supplier-directory.mjs";
 import {loadFirstPartyServices,addFirstPartyServiceReferencePages} from "./src/reviewed-gardening-service-directory.mjs";
@@ -36,10 +37,12 @@ const councilImageKeys=new Set(Object.keys(councilImageAssets));
  // An explicitly configured KG_GRID_EATER_PUBLIC_FEED_URL can override it.
  const GRID_APPROVED_GARDENERS_FEED_URL="https://grideater.com/feeds/gardeners/v1.json";
  const gardenersFeedUrl=process.env.KG_GRID_EATER_PUBLIC_FEED_URL || GRID_APPROVED_GARDENERS_FEED_URL;
- const gardenersSnapshot=await loadGridEaterPublicGardeners({readFile,feedUrl:gardenersFeedUrl});
- if(gardenersFeedUrl && (gardenersSnapshot.approvedForKiwi!==true ||
-    gardenersSnapshot.records.length===0))
+ const upstreamGardenersSnapshot=await loadGridEaterPublicGardeners({readFile,feedUrl:gardenersFeedUrl,expectedSha256:CONTACT_SOURCE_SHA});
+ if(gardenersFeedUrl && (upstreamGardenersSnapshot.approvedForKiwi!==true ||
+    upstreamGardenersSnapshot.records.length===0))
    throw new Error("KG_DIR_02_APPROVED_REMOTE_FEED_EMPTY_OR_WITHDRAWN");
+ const gardenersSnapshot=selectContactableDirectory(upstreamGardenersSnapshot);
+ console.log("Kiwi contactability: "+gardenersSnapshot.records.length+" retained, "+(upstreamGardenersSnapshot.records.length-gardenersSnapshot.records.length)+" hidden");
 // Stats NZ 2026 places and gardening vocabulary compiled ONCE at build time.
 const gardenerFilterData=buildGardenDirectoryFilterData();
 // Finite first-party supplier references; never infer contractor service areas.
