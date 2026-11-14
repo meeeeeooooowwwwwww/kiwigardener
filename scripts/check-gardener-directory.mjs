@@ -390,6 +390,8 @@ test("153-directory evidence grades remain honest and GRID-approved contact is o
  },check(v));
  const hub=files["gardeners/index.html"];
  assert.match(hub,/2 listed businesses · 1 source-reviewed · 1 provisional NZBN/);
+ assert.doesNotMatch(hub,/Only independently approved GRID EATER records|Explore .*GRID EATER business listings|An approved region-wide service or delivery claim/);
+ assert.match(hub,/<section class="section gardener-directory"><div class="container"><div class="gardener-search-filters"/);
  assert.match(hub,/data-source-grade="reviewed"/);
  assert.match(hub,/data-source-grade="provisional"/);
  assert.match(hub,/Town \/ service area not confirmed/);
