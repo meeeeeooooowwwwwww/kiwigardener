@@ -1,6 +1,7 @@
 import {readFile, stat} from "node:fs/promises";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import {PUBLISHED_IDS,RELEASE_ID,SOURCE_COUNT} from "../src/gardener-contactability.mjs";
 import {plants} from "../src/plant-catalogue.mjs";
 import {plantEditorial} from "../src/plant-editorial.mjs";
 import {plantPhotoLinks} from "../src/plant-photo-links.mjs";
@@ -20,6 +21,9 @@ assert.equal(plants.length,331,"Expected expanded sourced botanical listings");
 assert.equal(Object.keys(plantEditorial).length,plants.length,"Every plant must have a reviewed, indexable profile");
 for (const p of plants){const n=plantEditorial[p.slug];assert.ok(n?.length===2&&n.every(s=>s.length>=100),"Missing substantive care notes: "+p.slug);}
 const gardenerStatus=JSON.parse(await readFile("dist/assets/gardener-directory-status.json","utf8"));
+assert.equal(gardenerStatus.releaseId,RELEASE_ID,"Contactability release drift");
+assert.equal(gardenerStatus.publishedListings,PUBLISHED_IDS.length,"Incorrect contactability subset count");
+assert.equal(SOURCE_COUNT-PUBLISHED_IDS.length,63,"Expected exact hidden count for current release");
 assert.equal(gardenerStatus.schemaVersion,1,"Unexpected gardener status schema");
 assert.equal(gardenerStatus.source,"grideater.com","GRID EATER must remain directory source of truth");
 assert.ok(Number.isSafeInteger(gardenerStatus.publishedListings)&&gardenerStatus.publishedListings>=0&&gardenerStatus.publishedListings<=200,"Invalid bounded gardener count");
@@ -90,6 +94,9 @@ assert.ok(gardenerHub.includes('href="tel:+64273406581"'),"Dallas independent co
 assert.equal(urls.includes(site+"/gardeners/"),gardenerStatus.publishedListings>0,"Empty hub indexing mismatch");
 assert.equal(gardenerHub.includes('name="robots" content="noindex,follow"'),gardenerStatus.publishedListings===0,"Empty directory must be noindex");
 const gardenerProfileUrls=urls.filter(url=>new URL(url).pathname.startsWith("/gardeners/")&&new URL(url).pathname!=="/gardeners/");
+const cardIds=[...gardenerHub.matchAll(/data-kiwi-public-phone="(afnz-\d{13})"/g)].map(m=>m[1]).sort();
+assert.deepEqual(cardIds,[...PUBLISHED_IDS].sort(),"Contactability visibility differs from approved public subset");
+assert.equal((gardenerHub.match(/data-gardener-card(?:\s|>)/g)||[]).length,PUBLISHED_IDS.length,"Unexpected native directory cards");
 assert.equal(gardenerProfileUrls.length,gardenerStatus.publishedListings,"Unapproved gardener profile in sitemap");
 const gardenerSearchJs=await readFile("dist/assets/gardener-search.js","utf8");
 assert.ok(gardenerSearchJs.includes("URLSearchParams")&&gardenerSearchJs.includes("[data-gardener-card]"),"Offline-friendly search script contract missing");

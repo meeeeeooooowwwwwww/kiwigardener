@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import {newAreas,newGuides,images,localProfiles} from "./src/local-editorial.mjs";
 import {addPlantPages} from "./src/plant-pages.mjs";
 import {addGardenerDirectoryPages,loadGridEaterPublicGardeners} from "./src/gardener-directory.mjs";
+import {selectContactableDirectory,SOURCE_SHA as CONTACT_SOURCE_SHA} from "./src/gardener-contactability.mjs";
 import {buildGardenDirectoryFilterData} from "./src/directory-filter-data.mjs";
 import {loadReviewedSuppliers,addReviewedSupplierPages} from "./src/reviewed-supplier-directory.mjs";
 import {loadFirstPartyServices,addFirstPartyServiceReferencePages} from "./src/reviewed-gardening-service-directory.mjs";
@@ -36,10 +37,12 @@ const councilImageKeys=new Set(Object.keys(councilImageAssets));
  // An explicitly configured KG_GRID_EATER_PUBLIC_FEED_URL can override it.
  const GRID_APPROVED_GARDENERS_FEED_URL="https://grideater.com/feeds/gardeners/v1.json";
  const gardenersFeedUrl=process.env.KG_GRID_EATER_PUBLIC_FEED_URL || GRID_APPROVED_GARDENERS_FEED_URL;
- const gardenersSnapshot=await loadGridEaterPublicGardeners({readFile,feedUrl:gardenersFeedUrl});
- if(gardenersFeedUrl && (gardenersSnapshot.approvedForKiwi!==true ||
-    gardenersSnapshot.records.length===0))
+ const upstreamGardenersSnapshot=await loadGridEaterPublicGardeners({readFile,feedUrl:gardenersFeedUrl,expectedSha256:CONTACT_SOURCE_SHA});
+ if(gardenersFeedUrl && (upstreamGardenersSnapshot.approvedForKiwi!==true ||
+    upstreamGardenersSnapshot.records.length===0))
    throw new Error("KG_DIR_02_APPROVED_REMOTE_FEED_EMPTY_OR_WITHDRAWN");
+ const gardenersSnapshot=selectContactableDirectory(upstreamGardenersSnapshot);
+ console.log("Kiwi contactability: "+gardenersSnapshot.records.length+" retained, "+(upstreamGardenersSnapshot.records.length-gardenersSnapshot.records.length)+" hidden");
 // Stats NZ 2026 places and gardening vocabulary compiled ONCE at build time.
 const gardenerFilterData=buildGardenDirectoryFilterData();
 // Finite first-party supplier references; never infer contractor service areas.
@@ -395,7 +398,8 @@ const generateSite = function generateSite(){
   addFirstPartyServiceReferencePages({esc,articleHero,layout,files,baseTrail},serviceEditorialSnapshot);
   files["assets/gardener-directory-status.json"]=JSON.stringify({schemaVersion:1,source:"grideater.com",
     releaseId:gardenersSnapshot.releaseId,approvedForKiwi:gardenersSnapshot.approvedForKiwi,
-    publishedListings:gardenersSnapshot.records.length},null,2)+"\n";
+    publishedListings:gardenersSnapshot.records.length,
+    publishedBusinessIds:gardenersSnapshot.records.map(r=>r.id)},null,2)+"\n";
   const contactPath="/contact/",contactTrail=[{name:"Home",path:"/"},{name:"Contact",path:contactPath}];
   const contactContent=articleHero("Get in touch","Tell us about your Christchurch garden","Need lawn care, hedge trimming or a garden tidy-up in eastern Christchurch, Cashmere or Beckenham? Call Dallas Timpson for a quote.",contactTrail)+`<div class="container text-layout"><article class="prose"><section class="contact-form-wrap" id="enquiry-form" hidden>
 <h2>Send your gardening enquiry</h2>

@@ -12,7 +12,7 @@ export function emailRevealReady(env){
    env.KIWI_PRIVATE_CONTACTS?.get&&env.ASSETS?.fetch&&env.BUSINESS_EMAIL_REVEAL_ENABLED==="true");
 }
 export async function loadCurrentPrivateContacts(url,env){
- let releaseId;
+ let releaseId,visibleIds;
  try{
    const result=await env.ASSETS.fetch(new Request(
      new URL("/assets/gardener-directory-status.json",url.origin),{
@@ -24,6 +24,12 @@ export async function loadCurrentPrivateContacts(url,env){
       !Number.isInteger(status.publishedListings)||status.publishedListings<1||
       status.publishedListings>200||!RELEASE.test(status.releaseId||""))
       return {ok:false,status:503};
+   if(status.source!=="grideater.com"||!Array.isArray(status.publishedBusinessIds)||
+      status.publishedBusinessIds.length!==status.publishedListings||
+      new Set(status.publishedBusinessIds).size!==status.publishedListings||
+      status.publishedBusinessIds.some(id=>typeof id!=="string"||!/^afnz-\d{13}$/.test(id)))
+      return {ok:false,status:503};
+   visibleIds=new Set(status.publishedBusinessIds);
    releaseId=status.releaseId;
  }catch{return {ok:false,status:503};}
  try{
@@ -35,7 +41,10 @@ export async function loadCurrentPrivateContacts(url,env){
       !data.phones||typeof data.phones!=="object"||Array.isArray(data.phones)||
       !data.emails||typeof data.emails!=="object"||Array.isArray(data.emails))
      return {ok:false,status:503};
-   return {ok:true,data,releaseId};
+   // Contact access is limited to businesses currently published by Kiwi.
+   // Keep values in the existing private binding and retain Turnstile.
+   const filter=map=>Object.fromEntries(Object.entries(map).filter(([id])=>visibleIds.has(id)));
+   return {ok:true,data:{...data,phones:filter(data.phones),emails:filter(data.emails)},releaseId};
  }catch{return {ok:false,status:503};}
 }
 export async function revealBusinessEmail(request,env,{fetchImpl=fetch}={}){

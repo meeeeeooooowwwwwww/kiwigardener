@@ -18,7 +18,7 @@ function environment(overrides={}){
   BUSINESS_PHONE_PUBLIC_ENABLED:"true",
   ASSETS:{fetch:async()=>new Response(JSON.stringify({
    schemaVersion:1,source:"grideater.com",releaseId:RELEASE,
-   approvedForKiwi:true,publishedListings:21
+   approvedForKiwi:true,publishedListings:1,publishedBusinessIds:[ID]
   }),{status:200})},
   KIWI_PRIVATE_CONTACTS:{get:async(key)=>{
    assert.equal(key,privateContactKey(RELEASE));
@@ -130,4 +130,22 @@ test("publish-first provisional NZBN gardening listing has no invented services,
  const invalid=structuredClone(fixture);
  invalid.records[0].services[0].evidenceUrl="https://unrelated.example.nz/services";
  assert.throws(()=>validateGridEaterPublicGardeners(invalid,{now:approvedAt}),/provisional BIC needs exact canonical GRID evidence/);
+});
+
+test("contacts for hidden directory identities are excluded without exposing raw emails",async()=>{
+ const hidden="afnz-9429000000001";
+ const env=environment({KIWI_PRIVATE_CONTACTS:{get:async()=>({
+  size:500,json:async()=>({...DB,phones:{...DB.phones,[hidden]:"03 234 5678"},emails:{...DB.emails,[hidden]:"hidden@example.nz"}})
+ })}});
+ const phones=await publicBusinessPhones(new Request(ROOT+"/api/gardeners/phones"),env);
+ assert.equal(phones.status,200);
+ assert.deepEqual(Object.keys((await phones.json()).phones),[ID]);
+ const req=new Request(ROOT+"/api/gardeners/"+hidden+"/email",{
+  method:"POST",headers:{"origin":ROOT,"CF-Connecting-IP":"192.0.2.5","content-type":"application/json"},
+  body:JSON.stringify({token:"test-turnstile-token"})});
+ assert.equal((await outcome(env,challenge(),req)).status,404);
+ const bad=environment({ASSETS:{fetch:async()=>new Response(JSON.stringify({
+  schemaVersion:1,source:"grideater.com",releaseId:RELEASE,approvedForKiwi:true,publishedListings:1
+ }),{status:200})}});
+ assert.equal((await outcome(bad)).status,503);
 });

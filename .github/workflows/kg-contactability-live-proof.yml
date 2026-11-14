@@ -1,0 +1,66 @@
+name: Kiwi Contactability Public Visibility Proof
+on:
+  pull_request:
+    paths:
+      - 'src/gardener-contactability.mjs'
+      - 'src/gardener-directory.mjs'
+      - 'src/business-email-reveal.js'
+      - 'build.mjs'
+      - 'scripts/verify-live-contactability.mjs'
+      - '.github/workflows/kg-contactability-live-proof.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/gardener-contactability.mjs'
+      - 'src/gardener-directory.mjs'
+      - 'src/business-email-reveal.js'
+      - 'build.mjs'
+      - 'scripts/verify-live-contactability.mjs'
+      - '.github/workflows/kg-contactability-live-proof.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-ready:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify exact public source and visibility subset without touching private contact data
+        run: |
+          set -euo pipefail
+          node --check scripts/verify-live-contactability.mjs
+          node --test scripts/check-kiwi-business-contacts.mjs scripts/check-gardener-directory.mjs
+          node --input-type=module <<'NODE'
+          import {GRID,verifySource} from "./scripts/verify-live-153-gardeners.mjs";
+          import {selectContactableDirectory} from "./src/gardener-contactability.mjs";
+          const r=await fetch(GRID,{method:"GET",redirect:"error",signal:AbortSignal.timeout(15000)});
+          if(r.status!==200)throw Error("SOURCE_HTTP");
+          const source=verifySource(Buffer.from(await r.arrayBuffer()));
+          const filtered=selectContactableDirectory(source);
+          if(filtered.records.length!==90||source.records.length!==153)throw Error("SUBSET_COUNT");
+          console.log("KIWI_CONTACTABILITY_SOURCE=PASS retained=90 hidden=63");
+          NODE
+  live:
+    needs: source-ready
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Independently check live cards, sitemap, removed routes and contact boundary
+        run: |
+          set -euo pipefail
+          for i in {1..12}; do
+            if node scripts/verify-live-contactability.mjs; then exit 0; fi
+            if [[ "$i" -eq 12 ]]; then exit 1; fi
+            sleep 12
+          done
