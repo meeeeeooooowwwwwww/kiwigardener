@@ -297,13 +297,30 @@ try {
   if((await page.locator("[data-gardener-card]:visible").count())!==3)
     failures.push("Gardening search reset failed to restore both contractor and supplier results");
   // Pagination and protected contact boundary: search must not fetch any contact.
-  let contactRequests=0;
+  let contactRequests=0,indexRequests=0;
+  await page.route("**/assets/garden-directory-filter-data.json",async route=>{indexRequests++;await route.abort();});
   await page.route("**/api/gardeners/**",async route=>{contactRequests++;await route.abort();});
   await page.setViewportSize({width:390,height:780});
   await page.goto("http://127.0.0.1:"+port+"/gardeners/",{waitUntil:"load"});
   const visibleCards=page.locator("[data-gardener-card]:visible");
   await page.waitForFunction(()=>document.querySelectorAll("[data-gardener-card]:not([hidden])").length===15);
   const firstIds=await visibleCards.evaluateAll(els=>els.map(e=>e.dataset.directoryId));
+  await page.waitForFunction(()=>document.getElementById("gardener-filter-help")?.textContent.includes("Type a gardening keyword"));
+  if(indexRequests!==0)failures.push("Directory unnecessarily requests a separate search index");
+  const perf=await page.evaluate(()=>{
+    const el=document.getElementById("gardener-area"),query=document.getElementById("gardener-query");
+    const values=["a","au","auc","auck","auckl","auckland","c","ch","chr","christchurch"];
+    const timings=[];
+    for(const value of values){
+      el.value=value;const t=performance.now();el.dispatchEvent(new Event("input",{bubbles:true}));timings.push(performance.now()-t);
+    }
+    el.value="";el.dispatchEvent(new Event("input",{bubbles:true}));
+    query.value="";query.dispatchEvent(new Event("input",{bubbles:true}));
+    return {maxMs:Math.max(...timings),meanMs:timings.reduce((a,b)=>a+b,0)/timings.length};
+  });
+  console.log("KIWI_DIRECTORY_INPUT_PERF="+JSON.stringify(perf));
+  if(perf.maxMs>100)failures.push("Directory search synchronous input exceeds 100ms: "+perf.maxMs);
+
   if(await page.locator("[data-gardener-card] a[href^='tel:'],[data-gardener-card] a[href^='mailto:'],[data-gardener-card] a[href^='https:']").count())failures.push("Directory card leaks direct contact links");
   await page.getByRole("button",{name:"Next page",exact:true}).click();
   if(await visibleCards.count()!==15||!page.url().includes("page=2"))failures.push("Next page did not show exactly 15 listings or persist page");

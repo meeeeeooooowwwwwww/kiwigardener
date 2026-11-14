@@ -92,7 +92,7 @@ assert.ok(filterData.keywords.some(x=>x.kind==="service"&&x.label==="Lawn mowing
 assert.ok(filterData.keywords.some(x=>x.kind==="supplier"&&x.label==="Compost"),"Gardening supplies vocabulary absent");
 assert.ok(filterData.places.some(x=>x[0]==="Ashburton"&&x[1]==="13"),"Ashburton region missing");
 assert.ok(filterData.places.some(x=>x[0]==="Christchurch"&&x[1]==="13"),"Christchurch region missing");
-assert.ok(/src="\/assets\/gardener-search\.js\?v=20261115-pagination"/.test(gardenerHub),"Client-side gardener search missing");
+assert.ok(/src="\/assets\/gardener-search\.js\?v=20261115-fast"/.test(gardenerHub),"Client-side gardener search missing");
 assert.ok(gardenerHub.includes('href="tel:+64273406581"'),"Dallas independent contact route lost");
 assert.equal(urls.includes(site+"/gardeners/"),gardenerStatus.publishedListings>0,"Empty hub indexing mismatch");
 assert.equal(gardenerHub.includes('name="robots" content="noindex,follow"'),gardenerStatus.publishedListings===0,"Empty directory must be noindex");
